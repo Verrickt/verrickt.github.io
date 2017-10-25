@@ -168,6 +168,23 @@
 	
 	</section>
 	
+		<section id="comments">
+			<div id="gitment_thread"></div>
+			<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+			<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+			<script>
+					var gitment = new Gitment({
+							owner: 'verrcikt',
+							repo: 'verrickt.github.io',
+							oauth: {
+									client_id: '9a5cc0fe7b4e920d91f3',
+									client_secret: 'ae774015efba47b603a7c6540c276f744e32e07d',
+							},
+					})
+					gitment.render('comments')
+			</script>
+		</section>
+	
 </article>
 <script>
 	window.subData = {
