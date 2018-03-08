@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Melchior on CLR</title>
+  <title>闭包，变量捕获与重入 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -12,17 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="A programmer focus mainly on Microsoft Technologies">
-<meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/index.html">
+  <meta name="description" content="公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变得不连续了  9 3 8 2 7 1   思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两者都开始更新U">
+<meta name="keywords" content="TAP,Async&#x2F;await,lambda">
+<meta property="og:type" content="article">
+<meta property="og:title" content="闭包，变量捕获与重入">
+<meta property="og:url" content="https://verrickt.github.io/2018/03/08/Closure-and-re-entrance/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta property="og:description" content="公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变得不连续了  9 3 8 2 7 1   思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两者都开始更新U">
 <meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:updated_time" content="2018-03-08T12:39:43.619Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Melchior on CLR">
-<meta name="twitter:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta name="twitter:title" content="闭包，变量捕获与重入">
+<meta name="twitter:description" content="公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变得不连续了  9 3 8 2 7 1   思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两者都开始更新U">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -123,26 +124,26 @@
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
-        
-<section class="post-list">
+        <article id="post-Closure-and-re-entrance"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2018/03/08/Closure-and-re-entrance/">
+    	闭包，变量捕获与重入
+    </a>
+  </h2>
+	<time>
+	  Mar 8, 2018
+	</time>
 	
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/03/08/Closure-and-re-entrance/">
-        闭包，变量捕获与重入
-      </a>
-    </h2>
-    
-    <time>
-      Mar 8, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
+	</section>
+	
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#分析问题"><span class="toc-number">1.</span> <span class="toc-text">分析问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原因剖析"><span class="toc-number">2.</span> <span class="toc-text">原因剖析</span></a></li></ol></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
 <p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
 <p>联网-&gt;断网-&gt;联网-&gt;断网</p>
 <p>变化后，倒计时的秒数变得不连续了</p>
@@ -165,96 +166,51 @@
 <p>相信函数的名字已经告诉大家结果了。</p>
 <p>最后祝你身体健康，再见</p>
 
-
-    
-    
-    
-	  <div class="full-width auto-padding tags">
+  	</div>
+	  
+	  <div class="article-tags tags">
       
         <a href="/tags/TAP-Async-await-lambda/">TAP,Async/await,lambda</a>
       
 	  </div>
     
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
-        HTTPClient 踩坑记
-      </a>
-    </h2>
-    
-    <time>
-      Oct 24, 2017
-    </time>
 		
-  </section>
-  <section class="article typo">
-	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
-<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/HttpClient/">HttpClient</a>
-      
-        <a href="/tags/C/">C#</a>
-      
-	  </div>
-    
-  </section>
+	
+		<div class="art-item-footer">
+				
+				
+					<span class="art-item-right">next：<a href="/2017/10/24/httpclient-good-part-and-tipfalls/" rel="next"  title="HTTPClient 踩坑记">
+						HTTPClient 踩坑记
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
+	
+		<section id="comments">
+			<div id="gitment_thread"></div>
+			<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+			<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+			<script>
+					var gitment = new Gitment({
+							owner: 'verrickt',
+							repo: 'verrickt.github.io',
+							oauth: {
+									client_id: '9a5cc0fe7b4e920d91f3',
+									client_secret: 'ae774015efba47b603a7c6540c276f744e32e07d',
+							},
+					})
+					gitment.render('comments')
+			</script>
+		</section>
+	
 </article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2017/09/18/hello-world/">
-        Hello World
-      </a>
-    </h2>
-    
-    <time>
-      Sep 18, 2017
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-
-    
-    
-    
-  </section>
-</article>
-    </div>
-  
-</section>
-
+<script>
+	window.subData = {
+		title: '闭包，变量捕获与重入',
+		tools: true
+	}
+</script>
 
       </div>
       <aside class='l_side'>
