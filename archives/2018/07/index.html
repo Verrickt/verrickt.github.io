@@ -137,7 +137,7 @@
     
     <h2 class="title">
       <a href="/2018/07/31/self-contained-wpf-application/">
-        (Partial) Self contained WPF application
+        Build a (partial) self-contained WPF application
       </a>
     </h2>
     
@@ -149,67 +149,11 @@
   <section class="article typo">
 	  <h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
 <p>扯远了:)</p>
-<p>开发的时候有包管理工具帮我们管理依赖，而到了分发的时候，需要一个容器把我们的程序和它的依赖项一起分发。这就需要用到安装程序。最终用户只要拿到安装程序，运行安装，由安装程序去操心依赖项到底应该放在哪。</p>
-<p>人是懒惰的动物，从用户发现软件到真正用上软件之间，每多一个步骤都会让损失一批潜在用户。而现在随着手机的流行，用户已经不想安装了。他们只想下载「软件」，双击就能直接运行。至于什么安装路径，UAC权限之类的用户才不想操心呢。</p>
-<p>这就要求我们的程序要将安装这个过程隐藏起来。在用户看不到的情况下部署自己的依赖项。这样的程序在英文里被称为 self-contained</p>
-<blockquote>
-<p>self-contained<br><em>adjective</em></p>
-<ul>
-<li>(of a thing) complete, or having all that is needed, in itself.</li>
-<li>(of a person) quiet and independent; not depending on or influenced by others.</li>
-</ul>
-</blockquote>
-<p>这几天我们也有了将最终程序self-contain化的需求。终于可以合理的抛弃MFC写的Installer了😁</p>
-<h2 id="Self-contained-in-NET"><a href="#Self-contained-in-NET" class="headerlink" title="Self-contained in .NET"></a>Self-contained in .NET</h2><p>.NET在设计之初只是想提高Windows程序员的开发效率，顺便解决一下<a href="https://en.wikipedia.org/wiki/DLL_Hell" target="_blank" rel="external">DLL Hell</a>。至于应用分发根本就不再日程上。就算真的考虑过，也一定会采用动态链接的方式。因为<a href="https://en.wikipedia.org/wiki/.NET_Framework_version_history" target="_blank" rel="external">当时</a>的硬盘还是很贵滴。</p>
-<p>总之，.NET就这样决定采用动态链接了。.NET里的几个基本概念也都与动态链接脱不开关系：</p>
-<p><a href="https://en.wikipedia.org/wiki/Assembly_(CLI" target="_blank" rel="external">程序集</a>)是.NET世界里最常见的分发单元。程序集有独立的版本号。在引用其他程序集的时候，需要显式指明对应的版本。这样，相同名字不同版本的程序集就可以被区别开，以此为基础就解决Dll hell的问题。CLR在运行的时候以一套<a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/how-the-runtime-locates-assemblies" target="_blank" rel="external">复杂的规则</a>试图加载程序的依赖项。</p>
-<p>看起来似乎.NET与静态链接无缘了。不过也有好消息，在Build 2018开发者大会上，微软<a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">宣布</a>现有的桌面程序可以在明年推出的.Net core 3上选择与运行时静态链接在一起，将整个程序变为单一的可执行文件。</p>
-<blockquote>
-<p>Side-by-side and App-local Deployment</p>
-<p>For cases where the maximum isolation is required, you can deploy .NET Core with your  application. We’re working on new build tools that will bundle your app and .NET Core  together as in a single executable, as a new option.</p>
-<p><strong>We’ve had requests for deployment options like this for many years, but were never able to deliver those with the .NET Framework. The much more modular architecture used by .NET Core makes these flexible deployment options possible.</strong></p>
-</blockquote>
-<p>.Net Core 3.0的推出时间是明年，我们显然不能等到那个时候。为了实现需求，先向搜索引擎求助吧。</p>
-<h3 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h3><p>静态链接将依赖项打包进我们的程序，生成单一的二进制文件。这是个很直观的切入点。以<code>C# static link</code>为关键词，发现有几个同类型的工具。例如<a href="https://github.com/Microsoft/ILMerge" target="_blank" rel="external">ILMerge</a>。在.NET的世界中，源代码经过编译后产生的程序集里存储的并不是机器代码而是一种叫<a href="https://en.wikipedia.org/wiki/Common_Intermediate_Language" target="_blank" rel="external">MSIL</a>的中间代码。程序集由CLR加载后被JIT即时编译为机器码。</p>
-<p>ILMerge之类的工具工作在IL层面。它们将不同程序集的IL代码粘合起来，生成单一的程序集。</p>
-<p>听起来是不是很美好？如果你写个小demo的话会发现确实很好用。但是ILMerge无法对WPF中的XAML资源进行改写。程序挂在运行时。</p>
-<h3 id="内嵌资源"><a href="#内嵌资源" class="headerlink" title="内嵌资源"></a>内嵌资源</h3><p>.NET中的程序集有资源的概念。任何文件都能以资源的形式嵌入进程序集。另一个思路是是把依赖项当作资源嵌进我们的主程序。只要能在运行时把它们暴露给CLR，就能实现self-contain。<br>先来看看API：</p>
-<ul>
-<li><code>Assembly.GetManifestResourceStream(string name)</code>:</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Loads the specified manifest resource from this assembly.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">virtual</span> System.IO.<span class="function">Stream <span class="title">GetManifestResourceStream</span> (<span class="params">Type type, <span class="keyword">string</span> name</span>)</span></div></pre></td></tr></table></figure>
-<ul>
-<li><code>AppDomain.Load(Byte[])</code>:</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Loads the Assembly with a common object file format (COFF) based image containing an emitted Assembly.</span></div><div class="line"><span class="keyword">public</span> System.Reflection.<span class="function">Assembly <span class="title">Load</span> (<span class="params"><span class="keyword">byte</span>[] rawAssembly</span>)</span>;</div></pre></td></tr></table></figure>
-<ul>
-<li><code>AppDomain.AssemblyResolve</code></li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Occurs when the resolution of an assembly fails.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">event</span> ResolveEventHandler AssemblyResolve;</div></pre></td></tr></table></figure>
-<p>我们把依赖项嵌入到程序内部后，CLR找不到引用的程序集的时候就会触发<code>AppDomain.AssemblyResolve</code>事件。我们可以在这里拿到依赖的<code>AssemblyName</code>,<code>Assembly.GetManifestResourceStream(string name)</code>得到包含依赖项的的<code>stream</code>，把<code>stream</code>的内容读出来放到<code>byte[]</code>里，调用<code>AppDomain.Load(Byte[])</code>将程序集加载。</p>
-<p>大致过程走得通，不过有点麻烦。hardcode依赖的名字后，以后添加新依赖项还要更改hardcode的名字。毕竟程序员也是人，也想偷懒。这些活最好自动化。要是能和VS里的编译结合起来就更好了🤤</p>
-<p>你别说，还真有这样的工具。<a href="https://github.com/Fody/Fody" target="_blank" rel="external">Fody</a>可以对.NET程序集做多种操作。<a href="https://github.com/Fody/Costura/" target="_blank" rel="external">Costura</a>是Fody的一个扩展，专门用来将依赖嵌入成资源。Fody与VS的完美集成，编译完成后自动开始操作。<br>Nuget安装完Fody和Costura后，如果解决方案根路径下没有<code>FodyWeavers.xml</code>则新建它。把内容替换为</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">Weavers</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">Costura</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Weavers</span>&gt;</span>`</div></pre></td></tr></table></figure>
-<p>就完事了。太易用了。我做了测试，WPF和控制台应用都可以。看文档，它还支持.NET Core。</p>
-<h2 id="Dependencies-of-my-dependencies-is-not-my-dependencies"><a href="#Dependencies-of-my-dependencies-is-not-my-dependencies" class="headerlink" title="Dependencies of my dependencies, is not my dependencies"></a>Dependencies of my dependencies, is not my dependencies</h2><p>ILMerge也好，Fody也好，它们解决的都是应用程序所依赖库的问题。而我们的程序之所以叫.NET程序，是因为它依赖.NET Framework。如果要做到fully-self-contained的话，我们还需要把.NET Framework也塞进去。这就意味这我们需要一个不依赖.NET Framework的程序来释放.NET Framework和我们的应用程序。这其实就是重新发明安装程序了。退一步说，就算我们真的把.NET Framework打包进去了，因为.NET Framework的安装过程比较耗时，用户在点了按钮后几秒钟如果UI还没出来可能会认为我们的程序有问题。因此，把程序和.NET Framework一起分发的事情就交给愿意折腾的同学们了。我还是期待下.NET Core 3.0吧。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果你的程序是WPF程序，请使用Fody.Costura；</p>
-<p>如果你的程序不是WPF程序，那么可以任选ILMerge和Fody.Costura的一个。</p>
-<p>如果你的程序需要与.NET Framework一起分发，请在处理主程序后使用支持静默安装的Installer将主程序与.NET运行时一起打包。</p>
-<p>~或者等.Net Core 3.0发布~</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
-<li><p><a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">.Net Core 3.0 - blogs.msdn.microsoft.com</a></p>
-</li>
-<li><p><a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/how-the-runtime-locates-assemblies" target="_blank" rel="external">How the Runtime Locates Assemblies - docs.microsoft.com</a></p>
-</li>
-<li><p><a href="https://github.com/Fody/Fody" target="_blank" rel="external">Fody - github.com</a></p>
-</li>
-<li><p><a href="https://github.com/Fody/Costura/" target="_blank" rel="external">Costura - github.com</a></p>
-</li>
-<li><p><a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/deployment-guide-for-developers#chaining" target="_blank" rel="external">.NET Framework deployment guide for developers - docs.microsoft.com</a></p>
-</li>
-</ul>
 
-
+    
+	  <div class="readmore">
+      <a href="/2018/07/31/self-contained-wpf-application/">Read More</a>
+    </div>
     
     
     
@@ -243,101 +187,11 @@
   <section class="article typo">
 	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
 <h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
-<h2 id="特殊的类型-数组"><a href="#特殊的类型-数组" class="headerlink" title="特殊的类型-数组"></a>特殊的类型-数组</h2><p>C#中绝大部分类型的大小在编译期就可以确定，只要把对应的成员的大小相加即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SizeOf(T) = T.GetFields.Select(f=&gt;f.IsClass?WordSize:Sizeof(f)).Sum();</div></pre></td></tr></table></figure></p>
-<p>数组是个很特殊的存在，特殊在它的大小是与元素的类型和数量有关。数组的内存布局包含了所有的元素。(另一个这样的类型是<code>string</code>)。<code>byte[4]</code>和<code>byte[3]</code>的类型都是<code>byte[]</code>，然而它们的大小却不一样。我们这次就好仔细观察下数组</p>
-<h2 id="使用WinDBG"><a href="#使用WinDBG" class="headerlink" title="使用WinDBG"></a>使用WinDBG</h2><p>WinDBG是Windows下常用的Debugger。虽然是以调试非托管代码设计，但是加上相关的插件以后也可以用来调试托管代码。SOS.dll是一个提供托管代码调试支持的的插件。它同时支持CLR和CoreCLR。</p>
-<p>安装好WinDBG后，就可以开始调试了。简单起见，这里使用如下代码。<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">namespace</span> <span class="title">SOSFromEE</span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">class</span> <span class="title">Program</span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">const</span> <span class="keyword">int</span> Length = <span class="number">10</span>;</div><div class="line">        <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></div><div class="line"><span class="function">        </span>&#123;</div><div class="line">            <span class="keyword">var</span> ints = Enumerable.Range(<span class="number">1</span>, Length).ToArray();</div><div class="line">            <span class="keyword">var</span> strs = ints.Select(i =&gt; i.ToString()).ToArray();</div><div class="line">            Console.ReadLine();</div><div class="line">            GC.KeepAlive(ints);</div><div class="line">            GC.KeepAlive(strs);</div><div class="line">            Console.Read();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>在WinDBG中选择Launch对应的可执行程序即可。<br>在第一个断点时CLR还没有加载，我们继续让程序运行，等到不再出现ModLoad相关的提示时就可以让程序暂停了。<br>我们在这时加载SOS扩展。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">.loadby sos CLRNameHere</div></pre></td></tr></table></figure>
-<p>sos后跟的是CLR的名称</p>
-<ul>
-<li><p>CLR2.0(.Net framework 3.5及以前)是mscorwks</p>
-</li>
-<li><p>CLR4.0(.Net framework 4.0及以后)是clr</p>
-</li>
-<li><p>.net core是 coreclr</p>
-</li>
-</ul>
-<p>加载模块的过程中需要从微软的服务器上下载相关的pdb文件。由于你懂的原因需要很长时间</p>
-<h2 id="CLR2-0-下的数组"><a href="#CLR2-0-下的数组" class="headerlink" title="CLR2.0 下的数组"></a>CLR2.0 下的数组</h2><p>我们首先在32位的CLR2.0下观察。</p>
-<p>首先使用<code>.loadby sos mscorwks</code>加载<code>SOS</code>扩展模块。</p>
-<p><code>!dumpheap -type TypeNameHere</code>命令可以查看当前托管堆上类型名为<code>TypeNameHere</code>的对象。</p>
-<h3 id="System-String"><a href="#System-String" class="headerlink" title="System.String[]"></a><code>System.String[]</code></h3><p>我们先看看<code>String[]</code>都有哪些:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumpheap -type System.String[]</div><div class="line"></div><div class="line"> Address       MT     Size</div><div class="line">03591390 78ae46e4       80     </div><div class="line">..........................</div><div class="line">total 17 objects</div><div class="line">Statistics:</div><div class="line">      MT    Count    TotalSize Class Name</div><div class="line">78ae46e4       17          676 System.Object[]</div><div class="line">Total 17 objects</div></pre></td></tr></table></figure>
-<p><code>Address</code>显示的是对象在托管堆中的地址，<code>Method Table</code>就是上文中说的Type object pointer了。</p>
-<p>我们查看下位于地址<code>03591390</code>的<code>String[]</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumparray 03591390</div><div class="line"></div><div class="line">Name: System.String[]</div><div class="line">MethodTable: 78ae46e4</div><div class="line">EEClass: 788cda74</div><div class="line">Size: 80(0x50) bytes</div><div class="line">Array: Rank 1, Number of elements 16, Type CLASS</div><div class="line">Element Methodtable: 78b10f14</div><div class="line">[0] 035911c8</div><div class="line">[1] 03591250</div><div class="line">[2] null</div><div class="line">[3] null</div><div class="line">[4] null</div><div class="line">[5] null</div><div class="line">[6] null</div><div class="line">[7] null</div><div class="line">[8] null</div><div class="line">[9] null</div><div class="line">[10] null</div><div class="line">[11] null</div><div class="line">[12] null</div><div class="line">[13] null</div><div class="line">[14] null</div><div class="line">[15] null</div></pre></td></tr></table></figure></p>
-<p>可以看到这个数组一共有16个元素，元素的类型是<code>string</code>。</p>
-<p>我们再来看看<code>03591390</code>位置的内存布局</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">0:006&gt; dd 03591390 -0x4</div><div class="line"></div><div class="line">0359138c  00000000 78ae46e4 00000010 78b10f14</div><div class="line">0359139c  035911c8 03591250 00000000 00000000</div><div class="line">035913ac  00000000 00000000 00000000 00000000</div><div class="line">035913bc  00000000 00000000 00000000 00000000</div><div class="line">035913cc  00000000 00000000 00000000 00000000</div></pre></td></tr></table></figure>
-<p><code>dd 03591390 -0x4</code>告诉WinDBG从<code>03591390</code>向前偏移4个字节的位置开始展示内存。之所以向前偏移4个字节是为了展示引用类型的开销。<code>0359138c</code>位置的值<code>00000000</code>是Sync block index，位于<code>03591390</code>的<code>78ae46e4</code>看起来有点摸不着头脑，在WinDBG的输出中查找后发现是<code>System.String[]</code>的<code>MethodTable</code>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Name: System.String[]</div><div class="line">MethodTable: 78ae46e4</div></pre></td></tr></table></figure></p>
-<p><code>MethodTable</code>是CLR级别的概念，对应到这里就是Type Object Pointer。<br>GC堆上的对象往前偏４字节就能得到Sync block index，接下来是对象的Type object pointer。为了叙述方便，下文统称为对象头:)</p>
-<p>由此推测，对象头长度是两个字长。起始位置为当前指针的位置往前偏移一个字长。有兴趣的同学可以在64位CLR上自行验证。</p>
-<p>数组的长度是16(0x10)，地址<code>03591395</code>的值就是它。</p>
-<p>地址<code>03591388</code>的<code>78b10f14</code>不知道是什么。没关系，CTRF+F查找后发现它在上文出现过。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Element Methodtable: 78b10f14</div></pre></td></tr></table></figure>
-<p>应该是<code>String</code>的<code>Method table</code>。</p>
-<p><code>dump</code>一下<code>System.String</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumpheap -type System.String</div><div class="line"></div><div class="line">      MT    Count    TotalSize Class Name</div><div class="line">78b10f14      154         6224 System.String</div></pre></td></tr></table></figure></p>
-<p>看来猜得没错。总结一下，引用类型的数组有4字长的开销，分别是2字长的对象头，1字长的长度，1字长的元素类型指针</p>
-<p>接下来看看值类型数组的布局</p>
-<h3 id="System-Int32"><a href="#System-Int32" class="headerlink" title="System.Int32[]"></a><code>System.Int32[]</code></h3><p>老样子，首先先找到堆上的<code>Int32[]</code>.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumpheap -type System.Int32[]</div><div class="line"> Address       MT     Size</div><div class="line">03591e50 78b130b0      296     </div><div class="line">................................</div><div class="line">total 18 objects</div><div class="line">Statistics:</div><div class="line">      MT    Count    TotalSize Class Name</div><div class="line">78b130b0       18         1440 System.Int32[]</div><div class="line">Total 18 objects</div></pre></td></tr></table></figure>
-<p>dump一下相关属性</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">!dumparray 03591e50 </div><div class="line">Name: System.Int32[]</div><div class="line">MethodTable: 78b130b0</div><div class="line">EEClass: 788ce6a8</div><div class="line">Size: 296(0x128) bytes</div><div class="line">Array: Rank 1, Number of elements 71, Type Int32</div><div class="line">Element Methodtable: 78b13160</div></pre></td></tr></table></figure>
-<p>查看内存布局</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">0:006&gt; dd 03591e50 -0x4</div><div class="line">03591e4c  00000000 78b130b0 00000047 00000000</div><div class="line">03591e5c  00000000 00000000 00000000 00000000</div><div class="line">03591e6c  00000000 00000000 00000000 00000000</div><div class="line">03591e7c  00000000 00000000 00000000 00000000</div><div class="line">03591e8c  00000000 00000000 00000000 00000000</div><div class="line">03591e9c  00000000 00000000 00000000 00000000</div><div class="line">03591eac  00000000 00000000 00000000 00000000</div><div class="line">03591ebc  00000000 00000000 00000000 00000000</div></pre></td></tr></table></figure>
-<p>首先<code>Int32[]</code>也有对象头和长度的开销，但是却没有元素类型指针的开销。</p>
-<p>有心的同学可能已经发现了，<code>Int32[]</code>明确指出了元素的类型，而<code>String[]</code>却没有。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">!dumparray 03591390</div><div class="line">Name: System.String[]</div><div class="line">MethodTable: 78ae46e4</div><div class="line">EEClass: 788cda74</div><div class="line">Size: 80(0x50) bytes</div><div class="line">Array: Rank 1, Number of elements 16, Type *CLASS*</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">!dumparray 03591e50 </div><div class="line">Name: System.Int32[]</div><div class="line">MethodTable: 78b130b0</div><div class="line">EEClass: 788ce6a8</div><div class="line">Size: 296(0x128) bytes</div><div class="line">Array: Rank 1, Number of elements 71, Type *Int32*</div></pre></td></tr></table></figure>
-<p><code>String[]</code>的<code>Type</code>是个<code>CLASS</code>而不是<code>String</code>，难道说System.String[]是个’假的’的字符串数组？</p>
-<p>….</p>
-<p>….</p>
-<p>….</p>
-<p>恭喜你猜对了。<br>使用<code>!objsize</code>命令发现<code>String[]</code>是个带了层皮的<code>Object[]</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">!objsize 03591e50 </div><div class="line">sizeof(03591e50) =          296 (       0x128) bytes (System.Int32[])</div><div class="line">0:006&gt; !objsize 03591390 </div><div class="line">sizeof(03591390) =          392 (       0x188) bytes (System.Object[])</div></pre></td></tr></table></figure></p>
-<p>C# in depth中对泛型有这样的描述 </p>
-<blockquote>
-<p>对于一个泛型类<code>MyGeneric&lt;T&gt;</code>，对于<code>T</code>的是引用类型的情况，JIT只会为其生成一份代码;对于<code>T</code>是值类型的情况，则为每一个不同的<code>T</code>生成各自的代码。其中的原因是，在JIT运行时，指针的长度总是固定的，因而可以共用一套代码相同的代码。而值类型的长度是不确定的，因此需要为每个值类型单独生成代码。</p>
-</blockquote>
-<p>这里可能也是相同的原因吧。指针的长度相同，因而才需要储存元素的类型指针，实现类型检查。而值类型的代码不共用，所以不需要储存元素的类型指针。</p>
-<p>本来到已经可以结束了，可是我在32位的CLR4.0观察到的结果却不太一样。</p>
-<h2 id="CLR-4-0下的数组"><a href="#CLR-4-0下的数组" class="headerlink" title="CLR 4.0下的数组"></a>CLR 4.0下的数组</h2><p>与CLR 2.0不同，CLR 4.0下加载<code>SOS</code>的名字是clr</p>
-<p><code>.loadby sos clr</code></p>
-<h3 id="System-String-1"><a href="#System-String-1" class="headerlink" title="System.String[]"></a><code>System.String[]</code></h3><p>首先<code>dumpheap</code>：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumpheap -type System.String[]</div><div class="line"> Address       MT     Size</div><div class="line">02531590 6979dfe0       84     </div><div class="line">...........................</div><div class="line">Statistics:</div><div class="line">      MT    Count    TotalSize Class Name</div><div class="line">6979dfe0       24          912 System.String[]</div><div class="line">Total 24 objects</div></pre></td></tr></table></figure>
-<p>然后是<code>dumparray</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Name:        System.String[]</div><div class="line">MethodTable: 6979dfe0</div><div class="line">EEClass:     69374b80</div><div class="line">Size:        84(0x54) bytes</div><div class="line">Array:       Rank 1, Number of elements 18, Type CLASS</div><div class="line">Element Methodtable: 6979d488</div><div class="line">[0] 02531254</div></pre></td></tr></table></figure></p>
-<p>最后<code>dd</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">0:006&gt; dd 02531590 -0x4</div><div class="line">0253158c  00000000 6979dfe0 00000012 02531254</div><div class="line">0253159c  025312d8 00000000 00000000 02531568</div><div class="line">025315ac  00000000 00000000 00000000 00000000</div><div class="line">025315bc  00000000 00000000 00000000 00000000</div><div class="line">025315cc  00000000 00000000 00000000 00000000</div><div class="line">025315dc  00000000 00000000</div></pre></td></tr></table></figure></p>
-<p>位于<code>02531598</code>的值<code>02531254</code>是第一个元素的值而不是<code>String</code>的<code>Method Table</code>!<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">!dumpheap -type String</div><div class="line">Statistics:</div><div class="line">      MT    Count    TotalSize Class Name</div><div class="line">6979d488      193         5932 System.String</div><div class="line">Total 224 objects</div></pre></td></tr></table></figure></p>
-<p>CLR 4.0把<code>Method Table</code>去掉了？</p>
-<p>经过简单的算术，确实是这样的<br>18个元素，占据空间18*4=72。</p>
-<p>对象头和数组大小占据2*4+4=12</p>
-<p>84=72+12，跟<code>dumparray</code>出来的值一样。(有兴趣的同学根据上文中CLR2.0的数据计算下)</p>
-<p><code>!objsize</code>也确认了我们的猜测<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !objsize 02531590</div><div class="line">sizeof(02531590) = 428 (0x1ac) bytes (System.String[])</div></pre></td></tr></table></figure></p>
-<h3 id="System-Int32-1"><a href="#System-Int32-1" class="headerlink" title="System.Int32[]"></a><code>System.Int32[]</code></h3><p><code>!dumpheap</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumpheap -type System.Int32[]</div><div class="line"> Address       MT     Size</div><div class="line">02531f1c 6979f2a0      300     </div><div class="line">.............................. </div><div class="line">Statistics:</div><div class="line">      MT    Count    TotalSize Class Name</div><div class="line">6979f2a0       20          844 System.Int32[]</div><div class="line">Total 20 objects</div></pre></td></tr></table></figure></p>
-<p><code>!dumparray</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">0:006&gt; !dumparray 02531f1c </div><div class="line">Name:        System.Int32[]</div><div class="line">MethodTable: 6979f2a0</div><div class="line">EEClass:     693752d8</div><div class="line">Size:        300(0x12c) bytes</div><div class="line">Array:       Rank 1, Number of elements 72, Type Int32</div><div class="line">Element Methodtable: 6979f2dc</div><div class="line">[0] 02531f24</div><div class="line">[1] 02531f28</div></pre></td></tr></table></figure></p>
-<p><code>dd</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">0:006&gt; dd 02531f1c -0x4</div><div class="line">02531f18  00000000 6979f2a0 00000048 00000003</div><div class="line">02531f28  00000007 0000000b 00000011 00000017</div><div class="line">02531f38  0000001d 00000025 0000002f 0000003b</div><div class="line">02531f48  00000047 00000059 0000006b 00000083</div><div class="line">02531f58  000000a3 000000c5 000000ef 00000125</div><div class="line">02531f68  00000161 000001af 00000209 00000277</div><div class="line">02531f78  000002f9 00000397 0000044f 0000052f</div><div class="line">02531f88  0000063d 0000078b 0000091d 00000af1</div></pre></td></tr></table></figure></p>
-<p>值类型数组倒是没有什么变化。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>C#中引用类型有2个字长的对象头开销。分别是Sync block index和Type Object Pointer。数组是特殊的类型，它的大小与包含的元素相关，因此具有额外的开销。</p>
-<ul>
-<li><p>在CLR 2.0下</p>
-<ul>
-<li>引用类型的数组包含额外的2字长的开销。分别是长度和元素的类型指针</li>
-<li>值类型的数组包含长度的额外开销开销。大小是一个字长。</li>
-</ul>
-</li>
-<li><p>在CLR 4.0和CoreCLR中</p>
-<ul>
-<li>引用类型和值类型的数组包含长度的额外开销开销。大小是一个字长。</li>
-</ul>
-</li>
-</ul>
-<p>限于篇幅，CoreCLR的情况不再赘述，还请读者自行验证。</p>
-<p>/*其实本来看到Stackoverflow的回答只是想自己验证下的，但是自己动手的结果和答案里提到的不太一样，查了原因发现答案里用的是CLR2.0，我自己用的是CLR4.0。这就挖出来了CLR实现的更改。CoreCLR里使用的是CLR4.0里的规则。目前还不清楚MS为何要改实现*/</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a href="https://stackoverflow.com/questions/1589669/overhead-of-a-net-array" target="_blank" rel="external">Overhead of a .NET array?</a></li>
-<li><a href="https://docs.microsoft.com/en-us/dotnet/framework/tools/sos-dll-sos-debugging-extension" target="_blank" rel="external">SOS.dll (SOS Debugging Extension)</a></li>
-</ul>
 
-
+    
+	  <div class="readmore">
+      <a href="/2018/07/19/overhead-of-objects/">Read More</a>
+    </div>
     
     
     

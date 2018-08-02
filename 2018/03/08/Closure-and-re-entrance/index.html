@@ -12,18 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了  思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两">
+  <meta name="description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
 <meta name="keywords" content="TAP,Async&#x2F;await,lambda">
 <meta property="og:type" content="article">
 <meta property="og:title" content="闭包，变量捕获与重入问题">
 <meta property="og:url" content="https://verrickt.github.io/2018/03/08/Closure-and-re-entrance/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了  思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两">
+<meta property="og:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2018-03-08T14:36:12.552Z">
+<meta property="og:updated_time" content="2018-08-02T15:07:27.730Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="闭包，变量捕获与重入问题">
-<meta name="twitter:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了  思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两">
+<meta name="twitter:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -150,7 +150,8 @@
 <blockquote>
 <p>9 3 8 2 7 1</p>
 </blockquote>
-<p>变得不连续了 </p>
+<p>变得不连续了。</p>
+<a id="more"></a>
 <p>思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两者都开始更新UI。</p>
 <p>看了代码，果然是这样的</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">OnIPChanged</span>(<span class="params"></span>)</span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    ShowOfflineUI();</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">ShowOfflineUI</span>(<span class="params"></span>)</span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    Task.Factory.Start(<span class="keyword">delegate</span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">int</span> i = <span class="number">10</span>;</div><div class="line">        <span class="keyword">while</span>(<span class="literal">true</span>)</div><div class="line">        &#123;</div><div class="line">            i = (i<span class="number">-1</span>)%<span class="number">10</span>;</div><div class="line">            Invoke(UpdateCountDown(i))<span class="comment">//update UI on UI thread</span></div><div class="line">            <span class="keyword">try</span></div><div class="line">            &#123;</div><div class="line">                Thread.Sleep(TimeSpan.FromSeconds(<span class="number">1</span>))</div><div class="line">                <span class="keyword">if</span>(Connect())</div><div class="line">                &#123;</div><div class="line">                    <span class="keyword">break</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>

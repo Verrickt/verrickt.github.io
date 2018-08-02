@@ -20,7 +20,7 @@
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="废话缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。 问题公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2018-05-23T14:23:52.875Z">
+<meta property="og:updated_time" content="2018-08-02T15:05:44.223Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一次愉(dan)快(teng)的捉虫经历">
 <meta name="twitter:description" content="废话缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。 问题公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，">
@@ -145,6 +145,7 @@
   	<div class="article-entry" itemprop="articleBody">
     	<h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。</p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，得到了这样的调用栈：</p>
+<a id="more"></a>
 <blockquote>
 <p>System.OutOfMemoryException: Insufficient memory to continue the execution of the program.<br>   at System.Windows.Media.MediaContext.NotifyPartitionIsZombie(Int32 failureCode)<br>   at System.Windows.Media.MediaContext.NotifyChannelMessage()<br>   at System.Windows.Interop.HwndTarget.HandleMessage(Int32 msg, IntPtr wparam, IntPtr lparam)<br>   at System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)<br>   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)<br>   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)<br>   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Boolean isSingleParameter)<br>   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)<br>   at System.Windows.Threading.Dispatcher.WrappedInvoke(Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)<br>   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Boolean isSingleParameter)<br>   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)<br>   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)<br>   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG&amp; msg)<br>   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)<br>   at System.Windows.Threading.Dispatcher.PushFrame(DispatcherFrame frame)<br>   at System.Windows.Threading.Dispatcher.Run()</p>
 </blockquote>

@@ -148,23 +148,11 @@
   <section class="article typo">
 	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。</p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，得到了这样的调用栈：</p>
-<blockquote>
-<p>System.OutOfMemoryException: Insufficient memory to continue the execution of the program.<br>   at System.Windows.Media.MediaContext.NotifyPartitionIsZombie(Int32 failureCode)<br>   at System.Windows.Media.MediaContext.NotifyChannelMessage()<br>   at System.Windows.Interop.HwndTarget.HandleMessage(Int32 msg, IntPtr wparam, IntPtr lparam)<br>   at System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)<br>   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)<br>   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)<br>   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Boolean isSingleParameter)<br>   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)<br>   at System.Windows.Threading.Dispatcher.WrappedInvoke(Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)<br>   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Boolean isSingleParameter)<br>   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)<br>   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)<br>   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG&amp; msg)<br>   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)<br>   at System.Windows.Threading.Dispatcher.PushFrame(DispatcherFrame frame)<br>   at System.Windows.Threading.Dispatcher.Run()</p>
-</blockquote>
-<h2 id="第一次尝试"><a href="#第一次尝试" class="headerlink" title="第一次尝试"></a>第一次尝试</h2><p>看见Hwnd，初步怀疑是程序里自定义的消息循环的问题。心想以前的版本里消息循环也没搞出来过OOM，我把消息循环相关的代码注释掉。重新部署后问题依旧。经同事提醒，开始在内部发布的版本里寻找能正常的版本。二分很快就找到了能正常使用的版本A和A之后不能正常使用的版本B。我确实没记错。能稳定重现后打算从异常本身入手。一番搜索后找到了微软的一篇<a href="https://blogs.msdn.microsoft.com/dsui_team/2013/11/18/wpf-render-thread-failures/" target="_blank" rel="external">博客</a></p>
-<blockquote>
-<p>… WPF render thread encountered some fatal error … Most of the time, a failure occurs when calling into DirectX/D3D … When a failure is detected, The render thread will attempt to map the failure it receives to an appropriate managed exception. The render thread only synchronizes with the UI thread in a few locations …The most common locations when they synchronize are … or as a result of the UI thread handling a “channel” message from DirectX.</p>
-<p>If a render thread failure manifests as a System.OutOfMemoryException, then the likelihood is that the render thread was a victim of the process exhausting some resource .The exhausted resource is most often available/contiguous virtual address space … It might be a situation where sometimes the WPF render thread is the victim of the resource exhaustion …</p>
-</blockquote>
-<p>Hmm, 错误发生在DirectX渲染层面，这个BUG越来越有意思了。WPF里基本不会接触到直接跟渲染相关的东西。不过既然找到了版本A和B，那就从代码层面入手好了。打开版本控制软件，打算对比下改动过的代码。这是发现一个十分尴尬的问题：B版本没有打tag。按照公司的开发流程，每次出版本之前都需要在对应的提交上打tag。带着不按流程办事的负罪感，我在宇宙第一集成开发环境Visual Studio中打开了控制项目版本的文件，顺利找到了对应B版本的那个commit。根据diff，两个版本之间改的代码不算很多，排除掉无关的文件就只剩下UI了。这时忽然想起来程序起来时首先进入的是登陆页，还不确定是不是只有登陆页面才有问题。改下逻辑直接进入主界面发现问题消失了。运气不错，一下子就找到了根源。尝试把A版本登陆界面的代码直接覆盖到B版本，程序挂了。两次的结果互相冲突了，嗯，还是从登陆页面入手吧。我开始按照二分的原则开始删除代码，很快找到了问题的根源:ImageButton。</p>
-<p>ImageButton是个很简单的控件：在普通、鼠标悬停、按下三种不同状态时显示不同的图片的按钮。</p>
-<script src="https://gist.github.com/Verrickt/fc57f1e74e0837d5862410cfe7443055.js"></script>
 
-<p>登陆页面中是这样使用ImageButton的:<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">....</div><div class="line"><span class="tag">&lt;<span class="name">ImageButton</span> <span class="attr">Source</span>=<span class="string">"&#123;StaticResource SomeImage&#125;"</span> <span class="attr">MouseOverImage</span>=<span class="string">"&#123;StaticResouce SomeOtherImage&#125;"</span> <span class="attr">PressedImage</span>=<span class="string">"&#123;StaticResources AnotherImage&#125;"</span> /&gt;</span></div><div class="line">....</div></pre></td></tr></table></figure></p>
-<p>我发现把<code>Source=&quot;{StaticResource SomeImage}&quot;</code>这一句去掉后程序就正常了。看来它就是罪魁祸首。为了给甩锅找个充分的理由，我把代码和相关图片资源放到新项目后，想确认的确是ImageButton导致的问题。正如下面标题剧透地，命运这次给我开了个小小的玩笑：仅包含ImageButton的代码没有问题。从现象出发的我一无所获。</p>
-<h2 id="第二次尝试"><a href="#第二次尝试" class="headerlink" title="第二次尝试"></a>第二次尝试</h2><p>到这里时间已经过去一个多小时了，</p>
-
-
+    
+	  <div class="readmore">
+      <a href="/2018/05/21/an-awful-debugging/">Read More</a>
+    </div>
     
     
     

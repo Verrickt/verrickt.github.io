@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>(Partial) Self contained WPF application | Melchior on CLR</title>
+  <title>Build a (partial) self-contained WPF application | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -15,14 +15,14 @@
   <meta name="description" content="巨人的肩膀新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树">
 <meta name="keywords" content="WPF,.Net Framework">
 <meta property="og:type" content="article">
-<meta property="og:title" content="(Partial) Self contained WPF application">
+<meta property="og:title" content="Build a (partial) self-contained WPF application">
 <meta property="og:url" content="https://verrickt.github.io/2018/07/31/self-contained-wpf-application/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="巨人的肩膀新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2018-08-02T15:01:03.535Z">
+<meta property="og:updated_time" content="2018-08-02T15:04:55.513Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="(Partial) Self contained WPF application">
+<meta name="twitter:title" content="Build a (partial) self-contained WPF application">
 <meta name="twitter:description" content="巨人的肩膀新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
@@ -130,7 +130,7 @@
 	<section class='meta'>
 	<h2 class="title">
   	<a href="/2018/07/31/self-contained-wpf-application/">
-    	(Partial) Self contained WPF application
+    	Build a (partial) self-contained WPF application
     </a>
   </h2>
 	<time>
@@ -145,6 +145,7 @@
   	<div class="article-entry" itemprop="articleBody">
     	<h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
 <p>扯远了:)</p>
+<a id="more"></a>
 <p>开发的时候有包管理工具帮我们管理依赖，而到了分发的时候，需要一个容器把我们的程序和它的依赖项一起分发。这就需要用到安装程序。最终用户只要拿到安装程序，运行安装，由安装程序去操心依赖项到底应该放在哪。</p>
 <p>人是懒惰的动物，从用户发现软件到真正用上软件之间，每多一个步骤都会让损失一批潜在用户。而现在随着手机的流行，用户已经不想安装了。他们只想下载「软件」，双击就能直接运行。至于什么安装路径，UAC权限之类的用户才不想操心呢。</p>
 <p>这就要求我们的程序要将安装这个过程隐藏起来。在用户看不到的情况下部署自己的依赖项。这样的程序在英文里被称为 self-contained</p>
@@ -191,7 +192,7 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果你的程序是WPF程序，请使用Fody.Costura；</p>
 <p>如果你的程序不是WPF程序，那么可以任选ILMerge和Fody.Costura的一个。</p>
 <p>如果你的程序需要与.NET Framework一起分发，请在处理主程序后使用支持静默安装的Installer将主程序与.NET运行时一起打包。</p>
-<p>~或者等.Net Core 3.0发布~</p>
+<p><del>或者等.Net Core 3.0发布</del></p>
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
 <li><p><a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">.Net Core 3.0 - blogs.msdn.microsoft.com</a></p>
 </li>
@@ -248,7 +249,7 @@
 </article>
 <script>
 	window.subData = {
-		title: '(Partial) Self contained WPF application',
+		title: 'Build a (partial) self-contained WPF application',
 		tools: true
 	}
 </script>

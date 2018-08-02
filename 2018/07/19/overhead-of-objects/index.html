@@ -20,7 +20,7 @@
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="值类型与引用类型C#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。 Sync bloc">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2018-07-21T17:09:55.910Z">
+<meta property="og:updated_time" content="2018-08-02T15:04:16.447Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="引用类型的开销">
 <meta name="twitter:description" content="值类型与引用类型C#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。 Sync bloc">
@@ -145,6 +145,7 @@
   	<div class="article-entry" itemprop="articleBody">
     	<h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
 <h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
+<a id="more"></a>
 <h2 id="特殊的类型-数组"><a href="#特殊的类型-数组" class="headerlink" title="特殊的类型-数组"></a>特殊的类型-数组</h2><p>C#中绝大部分类型的大小在编译期就可以确定，只要把对应的成员的大小相加即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SizeOf(T) = T.GetFields.Select(f=&gt;f.IsClass?WordSize:Sizeof(f)).Sum();</div></pre></td></tr></table></figure></p>
 <p>数组是个很特殊的存在，特殊在它的大小是与元素的类型和数量有关。数组的内存布局包含了所有的元素。(另一个这样的类型是<code>string</code>)。<code>byte[4]</code>和<code>byte[3]</code>的类型都是<code>byte[]</code>，然而它们的大小却不一样。我们这次就好仔细观察下数组</p>
 <h2 id="使用WinDBG"><a href="#使用WinDBG" class="headerlink" title="使用WinDBG"></a>使用WinDBG</h2><p>WinDBG是Windows下常用的Debugger。虽然是以调试非托管代码设计，但是加上相关的插件以后也可以用来调试托管代码。SOS.dll是一个提供托管代码调试支持的的插件。它同时支持CLR和CoreCLR。</p>
@@ -255,8 +256,8 @@
 	
 		<div class="art-item-footer">
 				
-					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2018/07/31/self-contained-wpf-application/" rel="prev"  title="(Partial) Self contained WPF application">
-						(Partial) Self contained WPF application 
+					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2018/07/31/self-contained-wpf-application/" rel="prev"  title="Build a (partial) self-contained WPF application">
+						Build a (partial) self-contained WPF application 
 					</a></span>
 				
 				

@@ -3,10 +3,11 @@
   
     
     <entry>
-      <title><![CDATA[(Partial) Self contained WPF application]]></title>
+      <title><![CDATA[Build a (partial) self-contained WPF application]]></title>
       <url>/2018/07/31/self-contained-wpf-application/</url>
       <content type="html"><![CDATA[<h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
 <p>扯远了:)</p>
+<a id="more"></a>
 <p>开发的时候有包管理工具帮我们管理依赖，而到了分发的时候，需要一个容器把我们的程序和它的依赖项一起分发。这就需要用到安装程序。最终用户只要拿到安装程序，运行安装，由安装程序去操心依赖项到底应该放在哪。</p>
 <p>人是懒惰的动物，从用户发现软件到真正用上软件之间，每多一个步骤都会让损失一批潜在用户。而现在随着手机的流行，用户已经不想安装了。他们只想下载「软件」，双击就能直接运行。至于什么安装路径，UAC权限之类的用户才不想操心呢。</p>
 <p>这就要求我们的程序要将安装这个过程隐藏起来。在用户看不到的情况下部署自己的依赖项。这样的程序在英文里被称为 self-contained</p>
@@ -53,7 +54,7 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果你的程序是WPF程序，请使用Fody.Costura；</p>
 <p>如果你的程序不是WPF程序，那么可以任选ILMerge和Fody.Costura的一个。</p>
 <p>如果你的程序需要与.NET Framework一起分发，请在处理主程序后使用支持静默安装的Installer将主程序与.NET运行时一起打包。</p>
-<p>~或者等.Net Core 3.0发布~</p>
+<p><del>或者等.Net Core 3.0发布</del></p>
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
 <li><p><a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">.Net Core 3.0 - blogs.msdn.microsoft.com</a></p>
 </li>
@@ -84,6 +85,7 @@
       <url>/2018/07/19/overhead-of-objects/</url>
       <content type="html"><![CDATA[<h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
 <h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
+<a id="more"></a>
 <h2 id="特殊的类型-数组"><a href="#特殊的类型-数组" class="headerlink" title="特殊的类型-数组"></a>特殊的类型-数组</h2><p>C#中绝大部分类型的大小在编译期就可以确定，只要把对应的成员的大小相加即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SizeOf(T) = T.GetFields.Select(f=&gt;f.IsClass?WordSize:Sizeof(f)).Sum();</div></pre></td></tr></table></figure></p>
 <p>数组是个很特殊的存在，特殊在它的大小是与元素的类型和数量有关。数组的内存布局包含了所有的元素。(另一个这样的类型是<code>string</code>)。<code>byte[4]</code>和<code>byte[3]</code>的类型都是<code>byte[]</code>，然而它们的大小却不一样。我们这次就好仔细观察下数组</p>
 <h2 id="使用WinDBG"><a href="#使用WinDBG" class="headerlink" title="使用WinDBG"></a>使用WinDBG</h2><p>WinDBG是Windows下常用的Debugger。虽然是以调试非托管代码设计，但是加上相关的插件以后也可以用来调试托管代码。SOS.dll是一个提供托管代码调试支持的的插件。它同时支持CLR和CoreCLR。</p>
@@ -231,6 +233,7 @@
       <url>/2018/05/21/an-awful-debugging/</url>
       <content type="html"><![CDATA[<h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。</p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，得到了这样的调用栈：</p>
+<a id="more"></a>
 <blockquote>
 <p>System.OutOfMemoryException: Insufficient memory to continue the execution of the program.<br>   at System.Windows.Media.MediaContext.NotifyPartitionIsZombie(Int32 failureCode)<br>   at System.Windows.Media.MediaContext.NotifyChannelMessage()<br>   at System.Windows.Interop.HwndTarget.HandleMessage(Int32 msg, IntPtr wparam, IntPtr lparam)<br>   at System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)<br>   at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp; handled)<br>   at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)<br>   at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Boolean isSingleParameter)<br>   at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)<br>   at System.Windows.Threading.Dispatcher.WrappedInvoke(Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)<br>   at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Boolean isSingleParameter)<br>   at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)<br>   at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)<br>   at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG&amp; msg)<br>   at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)<br>   at System.Windows.Threading.Dispatcher.PushFrame(DispatcherFrame frame)<br>   at System.Windows.Threading.Dispatcher.Run()</p>
 </blockquote>
@@ -267,7 +270,8 @@
 <blockquote>
 <p>9 3 8 2 7 1</p>
 </blockquote>
-<p>变得不连续了 </p>
+<p>变得不连续了。</p>
+<a id="more"></a>
 <p>思考了一下，觉得应该是第一次倒计时的没有退出，第二次倒计时开始后两者都开始更新UI。</p>
 <p>看了代码，果然是这样的</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">OnIPChanged</span>(<span class="params"></span>)</span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    ShowOfflineUI();</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">ShowOfflineUI</span>(<span class="params"></span>)</span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">    Task.Factory.Start(<span class="keyword">delegate</span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">int</span> i = <span class="number">10</span>;</div><div class="line">        <span class="keyword">while</span>(<span class="literal">true</span>)</div><div class="line">        &#123;</div><div class="line">            i = (i<span class="number">-1</span>)%<span class="number">10</span>;</div><div class="line">            Invoke(UpdateCountDown(i))<span class="comment">//update UI on UI thread</span></div><div class="line">            <span class="keyword">try</span></div><div class="line">            &#123;</div><div class="line">                Thread.Sleep(TimeSpan.FromSeconds(<span class="number">1</span>))</div><div class="line">                <span class="keyword">if</span>(Connect())</div><div class="line">                &#123;</div><div class="line">                    <span class="keyword">break</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>

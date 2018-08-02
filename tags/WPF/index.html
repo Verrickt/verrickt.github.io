@@ -136,7 +136,7 @@
     
     <h2 class="title">
       <a href="/2018/07/31/self-contained-wpf-application/">
-        (Partial) Self contained WPF application
+        Build a (partial) self-contained WPF application
       </a>
     </h2>
     
@@ -148,67 +148,11 @@
   <section class="article typo">
 	  <h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
 <p>扯远了:)</p>
-<p>开发的时候有包管理工具帮我们管理依赖，而到了分发的时候，需要一个容器把我们的程序和它的依赖项一起分发。这就需要用到安装程序。最终用户只要拿到安装程序，运行安装，由安装程序去操心依赖项到底应该放在哪。</p>
-<p>人是懒惰的动物，从用户发现软件到真正用上软件之间，每多一个步骤都会让损失一批潜在用户。而现在随着手机的流行，用户已经不想安装了。他们只想下载「软件」，双击就能直接运行。至于什么安装路径，UAC权限之类的用户才不想操心呢。</p>
-<p>这就要求我们的程序要将安装这个过程隐藏起来。在用户看不到的情况下部署自己的依赖项。这样的程序在英文里被称为 self-contained</p>
-<blockquote>
-<p>self-contained<br><em>adjective</em></p>
-<ul>
-<li>(of a thing) complete, or having all that is needed, in itself.</li>
-<li>(of a person) quiet and independent; not depending on or influenced by others.</li>
-</ul>
-</blockquote>
-<p>这几天我们也有了将最终程序self-contain化的需求。终于可以合理的抛弃MFC写的Installer了😁</p>
-<h2 id="Self-contained-in-NET"><a href="#Self-contained-in-NET" class="headerlink" title="Self-contained in .NET"></a>Self-contained in .NET</h2><p>.NET在设计之初只是想提高Windows程序员的开发效率，顺便解决一下<a href="https://en.wikipedia.org/wiki/DLL_Hell" target="_blank" rel="external">DLL Hell</a>。至于应用分发根本就不再日程上。就算真的考虑过，也一定会采用动态链接的方式。因为<a href="https://en.wikipedia.org/wiki/.NET_Framework_version_history" target="_blank" rel="external">当时</a>的硬盘还是很贵滴。</p>
-<p>总之，.NET就这样决定采用动态链接了。.NET里的几个基本概念也都与动态链接脱不开关系：</p>
-<p><a href="https://en.wikipedia.org/wiki/Assembly_(CLI" target="_blank" rel="external">程序集</a>)是.NET世界里最常见的分发单元。程序集有独立的版本号。在引用其他程序集的时候，需要显式指明对应的版本。这样，相同名字不同版本的程序集就可以被区别开，以此为基础就解决Dll hell的问题。CLR在运行的时候以一套<a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/how-the-runtime-locates-assemblies" target="_blank" rel="external">复杂的规则</a>试图加载程序的依赖项。</p>
-<p>看起来似乎.NET与静态链接无缘了。不过也有好消息，在Build 2018开发者大会上，微软<a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">宣布</a>现有的桌面程序可以在明年推出的.Net core 3上选择与运行时静态链接在一起，将整个程序变为单一的可执行文件。</p>
-<blockquote>
-<p>Side-by-side and App-local Deployment</p>
-<p>For cases where the maximum isolation is required, you can deploy .NET Core with your  application. We’re working on new build tools that will bundle your app and .NET Core  together as in a single executable, as a new option.</p>
-<p><strong>We’ve had requests for deployment options like this for many years, but were never able to deliver those with the .NET Framework. The much more modular architecture used by .NET Core makes these flexible deployment options possible.</strong></p>
-</blockquote>
-<p>.Net Core 3.0的推出时间是明年，我们显然不能等到那个时候。为了实现需求，先向搜索引擎求助吧。</p>
-<h3 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h3><p>静态链接将依赖项打包进我们的程序，生成单一的二进制文件。这是个很直观的切入点。以<code>C# static link</code>为关键词，发现有几个同类型的工具。例如<a href="https://github.com/Microsoft/ILMerge" target="_blank" rel="external">ILMerge</a>。在.NET的世界中，源代码经过编译后产生的程序集里存储的并不是机器代码而是一种叫<a href="https://en.wikipedia.org/wiki/Common_Intermediate_Language" target="_blank" rel="external">MSIL</a>的中间代码。程序集由CLR加载后被JIT即时编译为机器码。</p>
-<p>ILMerge之类的工具工作在IL层面。它们将不同程序集的IL代码粘合起来，生成单一的程序集。</p>
-<p>听起来是不是很美好？如果你写个小demo的话会发现确实很好用。但是ILMerge无法对WPF中的XAML资源进行改写。程序挂在运行时。</p>
-<h3 id="内嵌资源"><a href="#内嵌资源" class="headerlink" title="内嵌资源"></a>内嵌资源</h3><p>.NET中的程序集有资源的概念。任何文件都能以资源的形式嵌入进程序集。另一个思路是是把依赖项当作资源嵌进我们的主程序。只要能在运行时把它们暴露给CLR，就能实现self-contain。<br>先来看看API：</p>
-<ul>
-<li><code>Assembly.GetManifestResourceStream(string name)</code>:</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Loads the specified manifest resource from this assembly.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">virtual</span> System.IO.<span class="function">Stream <span class="title">GetManifestResourceStream</span> (<span class="params">Type type, <span class="keyword">string</span> name</span>)</span></div></pre></td></tr></table></figure>
-<ul>
-<li><code>AppDomain.Load(Byte[])</code>:</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Loads the Assembly with a common object file format (COFF) based image containing an emitted Assembly.</span></div><div class="line"><span class="keyword">public</span> System.Reflection.<span class="function">Assembly <span class="title">Load</span> (<span class="params"><span class="keyword">byte</span>[] rawAssembly</span>)</span>;</div></pre></td></tr></table></figure>
-<ul>
-<li><code>AppDomain.AssemblyResolve</code></li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Occurs when the resolution of an assembly fails.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">event</span> ResolveEventHandler AssemblyResolve;</div></pre></td></tr></table></figure>
-<p>我们把依赖项嵌入到程序内部后，CLR找不到引用的程序集的时候就会触发<code>AppDomain.AssemblyResolve</code>事件。我们可以在这里拿到依赖的<code>AssemblyName</code>,<code>Assembly.GetManifestResourceStream(string name)</code>得到包含依赖项的的<code>stream</code>，把<code>stream</code>的内容读出来放到<code>byte[]</code>里，调用<code>AppDomain.Load(Byte[])</code>将程序集加载。</p>
-<p>大致过程走得通，不过有点麻烦。hardcode依赖的名字后，以后添加新依赖项还要更改hardcode的名字。毕竟程序员也是人，也想偷懒。这些活最好自动化。要是能和VS里的编译结合起来就更好了🤤</p>
-<p>你别说，还真有这样的工具。<a href="https://github.com/Fody/Fody" target="_blank" rel="external">Fody</a>可以对.NET程序集做多种操作。<a href="https://github.com/Fody/Costura/" target="_blank" rel="external">Costura</a>是Fody的一个扩展，专门用来将依赖嵌入成资源。Fody与VS的完美集成，编译完成后自动开始操作。<br>Nuget安装完Fody和Costura后，如果解决方案根路径下没有<code>FodyWeavers.xml</code>则新建它。把内容替换为</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">Weavers</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">Costura</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Weavers</span>&gt;</span>`</div></pre></td></tr></table></figure>
-<p>就完事了。太易用了。我做了测试，WPF和控制台应用都可以。看文档，它还支持.NET Core。</p>
-<h2 id="Dependencies-of-my-dependencies-is-not-my-dependencies"><a href="#Dependencies-of-my-dependencies-is-not-my-dependencies" class="headerlink" title="Dependencies of my dependencies, is not my dependencies"></a>Dependencies of my dependencies, is not my dependencies</h2><p>ILMerge也好，Fody也好，它们解决的都是应用程序所依赖库的问题。而我们的程序之所以叫.NET程序，是因为它依赖.NET Framework。如果要做到fully-self-contained的话，我们还需要把.NET Framework也塞进去。这就意味这我们需要一个不依赖.NET Framework的程序来释放.NET Framework和我们的应用程序。这其实就是重新发明安装程序了。退一步说，就算我们真的把.NET Framework打包进去了，因为.NET Framework的安装过程比较耗时，用户在点了按钮后几秒钟如果UI还没出来可能会认为我们的程序有问题。因此，把程序和.NET Framework一起分发的事情就交给愿意折腾的同学们了。我还是期待下.NET Core 3.0吧。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果你的程序是WPF程序，请使用Fody.Costura；</p>
-<p>如果你的程序不是WPF程序，那么可以任选ILMerge和Fody.Costura的一个。</p>
-<p>如果你的程序需要与.NET Framework一起分发，请在处理主程序后使用支持静默安装的Installer将主程序与.NET运行时一起打包。</p>
-<p>~或者等.Net Core 3.0发布~</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
-<li><p><a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">.Net Core 3.0 - blogs.msdn.microsoft.com</a></p>
-</li>
-<li><p><a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/how-the-runtime-locates-assemblies" target="_blank" rel="external">How the Runtime Locates Assemblies - docs.microsoft.com</a></p>
-</li>
-<li><p><a href="https://github.com/Fody/Fody" target="_blank" rel="external">Fody - github.com</a></p>
-</li>
-<li><p><a href="https://github.com/Fody/Costura/" target="_blank" rel="external">Costura - github.com</a></p>
-</li>
-<li><p><a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/deployment-guide-for-developers#chaining" target="_blank" rel="external">.NET Framework deployment guide for developers - docs.microsoft.com</a></p>
-</li>
-</ul>
 
-
+    
+	  <div class="readmore">
+      <a href="/2018/07/31/self-contained-wpf-application/">Read More</a>
+    </div>
     
     
     
