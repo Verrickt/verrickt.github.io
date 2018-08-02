@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Archives: 2017/9 | Melchior on CLR</title>
+  <title>Tag: SOLID | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/archives/2017/09/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/SOLID/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -124,9 +124,8 @@
     <div class='container clearfix'>
       <div class='l_main'>
         
-	
   <script>
-    window.subData= { title:'Year : 2017.9'}
+    window.subData= { title:'Tag : SOLID'}
   </script>
 
 <section class="post-list">
@@ -136,37 +135,44 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2017/09/18/hello-world/">
-        Hello World
+      <a href="/2018/07/12/program-towards-abstractions/">
+        面向抽象编程
       </a>
     </h2>
     
     <time>
-      Sep 18, 2017
+      Jul 12, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
+	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
+<blockquote>
+<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
+</blockquote>
+<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
+<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br>
 
     
+	  <div class="readmore">
+      <a href="/2018/07/12/program-towards-abstractions/">Read More</a>
+    </div>
     
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/面向对象编程/">面向对象编程</a>
+      
+        <a href="/tags/SOLID/">SOLID</a>
+      
+	  </div>
     
   </section>
 </article>
     </div>
   
 </section>
-
 
 
       </div>
@@ -206,7 +212,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/C/" style="font-size: 14px; color: #808080">C#</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/TAP-Async-await-lambda/" style="font-size: 14px; color: #808080">TAP,Async/await,lambda</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/C-Debugging-WPF/" style="font-size: 14px; color: #808080">C#,Debugging,WPF</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/TAP-Async-await-lambda/" style="font-size: 14px; color: #808080">TAP,Async/await,lambda</a> <a href="/tags/WPF/" style="font-size: 14px; color: #808080">WPF</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a> <a href="/tags/面向对象编程/" style="font-size: 14px; color: #808080">面向对象编程</a>
     </div>
 </div>
 

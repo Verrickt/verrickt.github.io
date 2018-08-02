@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: C# | Melchior on CLR</title>
+  <title>引用类型的开销 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -12,17 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="A programmer focus mainly on Microsoft Technologies">
-<meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/C/index.html">
+  <meta name="description" content="值类型与引用类型C#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。 Sync bloc">
+<meta name="keywords" content="C#,reference type,overhead">
+<meta property="og:type" content="article">
+<meta property="og:title" content="引用类型的开销">
+<meta property="og:url" content="https://verrickt.github.io/2018/07/19/overhead-of-objects/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta property="og:description" content="值类型与引用类型C#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。 Sync bloc">
 <meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:updated_time" content="2018-07-21T17:09:55.910Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Melchior on CLR">
-<meta name="twitter:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta name="twitter:title" content="引用类型的开销">
+<meta name="twitter:description" content="值类型与引用类型C#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。 Sync bloc">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -123,30 +124,26 @@
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
-        
-  <script>
-    window.subData= { title:'Tag : C#'}
-  </script>
-
-<section class="post-list">
+        <article id="post-overhead-of-objects"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2018/07/19/overhead-of-objects/">
+    	引用类型的开销
+    </a>
+  </h2>
+	<time>
+	  Jul 19, 2018
+	</time>
 	
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/19/overhead-of-objects/">
-        引用类型的开销
-      </a>
-    </h2>
-    
-    <time>
-      Jul 19, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
+	</section>
+	
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#值类型与引用类型"><span class="toc-number">1.</span> <span class="toc-text">值类型与引用类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sync-block-index-与-Type-object-pointer"><span class="toc-number">2.</span> <span class="toc-text">Sync block index 与 Type object pointer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#特殊的类型-数组"><span class="toc-number">3.</span> <span class="toc-text">特殊的类型-数组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用WinDBG"><span class="toc-number">4.</span> <span class="toc-text">使用WinDBG</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLR2-0-下的数组"><span class="toc-number">5.</span> <span class="toc-text">CLR2.0 下的数组</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#System-String"><span class="toc-number">5.1.</span> <span class="toc-text">System.String[]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#System-Int32"><span class="toc-number">5.2.</span> <span class="toc-text">System.Int32[]</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CLR-4-0下的数组"><span class="toc-number">6.</span> <span class="toc-text">CLR 4.0下的数组</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#System-String-1"><span class="toc-number">6.1.</span> <span class="toc-text">System.String[]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#System-Int32-1"><span class="toc-number">6.2.</span> <span class="toc-text">System.Int32[]</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">8.</span> <span class="toc-text">参考</span></a></li></ol></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
 <h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
 <h2 id="特殊的类型-数组"><a href="#特殊的类型-数组" class="headerlink" title="特殊的类型-数组"></a>特殊的类型-数组</h2><p>C#中绝大部分类型的大小在编译期就可以确定，只要把对应的成员的大小相加即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SizeOf(T) = T.GetFields.Select(f=&gt;f.IsClass?WordSize:Sizeof(f)).Sum();</div></pre></td></tr></table></figure></p>
 <p>数组是个很特殊的存在，特殊在它的大小是与元素的类型和数量有关。数组的内存布局包含了所有的元素。(另一个这样的类型是<code>string</code>)。<code>byte[4]</code>和<code>byte[3]</code>的类型都是<code>byte[]</code>，然而它们的大小却不一样。我们这次就好仔细观察下数组</p>
@@ -242,11 +239,9 @@
 <li><a href="https://docs.microsoft.com/en-us/dotnet/framework/tools/sos-dll-sos-debugging-extension" target="_blank" rel="external">SOS.dll (SOS Debugging Extension)</a></li>
 </ul>
 
-
-    
-    
-    
-	  <div class="full-width auto-padding tags">
+  	</div>
+	  
+	  <div class="article-tags tags">
       
         <a href="/tags/C/">C#</a>
       
@@ -256,52 +251,47 @@
       
 	  </div>
     
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
-        HTTPClient 踩坑记
-      </a>
-    </h2>
-    
-    <time>
-      Oct 24, 2017
-    </time>
 		
-  </section>
-  <section class="article typo">
-	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
-<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/HttpClient/">HttpClient</a>
-      
-        <a href="/tags/C/">C#</a>
-      
-	  </div>
-    
-  </section>
+	
+		<div class="art-item-footer">
+				
+					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2018/07/31/self-contained-wpf-application/" rel="prev"  title="(Partial) Self contained WPF application">
+						(Partial) Self contained WPF application 
+					</a></span>
+				
+				
+					<span class="art-item-right">next：<a href="/2018/07/12/program-towards-abstractions/" rel="next"  title="面向抽象编程">
+						面向抽象编程
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
+	
+		<section id="comments">
+			<div id="gitment_thread"></div>
+			<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+			<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+			<script>
+					var gitment = new Gitment({
+							owner: 'verrickt',
+							repo: 'verrickt.github.io',
+							oauth: {
+									client_id: '9a5cc0fe7b4e920d91f3',
+									client_secret: 'ae774015efba47b603a7c6540c276f744e32e07d',
+							},
+					})
+					gitment.render('comments')
+			</script>
+		</section>
+	
 </article>
-    </div>
-  
-</section>
-
+<script>
+	window.subData = {
+		title: '引用类型的开销',
+		tools: true
+	}
+</script>
 
       </div>
       <aside class='l_side'>

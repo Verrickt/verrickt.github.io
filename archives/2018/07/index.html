@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: C# | Melchior on CLR</title>
+  <title>Archives: 2018/7 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/C/index.html">
+<meta property="og:url" content="https://verrickt.github.io/archives/2018/07/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -124,12 +124,107 @@
     <div class='container clearfix'>
       <div class='l_main'>
         
+	
   <script>
-    window.subData= { title:'Tag : C#'}
+    window.subData= { title:'Year : 2018.7'}
   </script>
 
 <section class="post-list">
 	
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2018/07/31/self-contained-wpf-application/">
+        (Partial) Self contained WPF application
+      </a>
+    </h2>
+    
+    <time>
+      Jul 31, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
+<p>扯远了:)</p>
+<p>开发的时候有包管理工具帮我们管理依赖，而到了分发的时候，需要一个容器把我们的程序和它的依赖项一起分发。这就需要用到安装程序。最终用户只要拿到安装程序，运行安装，由安装程序去操心依赖项到底应该放在哪。</p>
+<p>人是懒惰的动物，从用户发现软件到真正用上软件之间，每多一个步骤都会让损失一批潜在用户。而现在随着手机的流行，用户已经不想安装了。他们只想下载「软件」，双击就能直接运行。至于什么安装路径，UAC权限之类的用户才不想操心呢。</p>
+<p>这就要求我们的程序要将安装这个过程隐藏起来。在用户看不到的情况下部署自己的依赖项。这样的程序在英文里被称为 self-contained</p>
+<blockquote>
+<p>self-contained<br><em>adjective</em></p>
+<ul>
+<li>(of a thing) complete, or having all that is needed, in itself.</li>
+<li>(of a person) quiet and independent; not depending on or influenced by others.</li>
+</ul>
+</blockquote>
+<p>这几天我们也有了将最终程序self-contain化的需求。终于可以合理的抛弃MFC写的Installer了😁</p>
+<h2 id="Self-contained-in-NET"><a href="#Self-contained-in-NET" class="headerlink" title="Self-contained in .NET"></a>Self-contained in .NET</h2><p>.NET在设计之初只是想提高Windows程序员的开发效率，顺便解决一下<a href="https://en.wikipedia.org/wiki/DLL_Hell" target="_blank" rel="external">DLL Hell</a>。至于应用分发根本就不再日程上。就算真的考虑过，也一定会采用动态链接的方式。因为<a href="https://en.wikipedia.org/wiki/.NET_Framework_version_history" target="_blank" rel="external">当时</a>的硬盘还是很贵滴。</p>
+<p>总之，.NET就这样决定采用动态链接了。.NET里的几个基本概念也都与动态链接脱不开关系：</p>
+<p><a href="https://en.wikipedia.org/wiki/Assembly_(CLI" target="_blank" rel="external">程序集</a>)是.NET世界里最常见的分发单元。程序集有独立的版本号。在引用其他程序集的时候，需要显式指明对应的版本。这样，相同名字不同版本的程序集就可以被区别开，以此为基础就解决Dll hell的问题。CLR在运行的时候以一套<a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/how-the-runtime-locates-assemblies" target="_blank" rel="external">复杂的规则</a>试图加载程序的依赖项。</p>
+<p>看起来似乎.NET与静态链接无缘了。不过也有好消息，在Build 2018开发者大会上，微软<a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">宣布</a>现有的桌面程序可以在明年推出的.Net core 3上选择与运行时静态链接在一起，将整个程序变为单一的可执行文件。</p>
+<blockquote>
+<p>Side-by-side and App-local Deployment</p>
+<p>For cases where the maximum isolation is required, you can deploy .NET Core with your  application. We’re working on new build tools that will bundle your app and .NET Core  together as in a single executable, as a new option.</p>
+<p><strong>We’ve had requests for deployment options like this for many years, but were never able to deliver those with the .NET Framework. The much more modular architecture used by .NET Core makes these flexible deployment options possible.</strong></p>
+</blockquote>
+<p>.Net Core 3.0的推出时间是明年，我们显然不能等到那个时候。为了实现需求，先向搜索引擎求助吧。</p>
+<h3 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h3><p>静态链接将依赖项打包进我们的程序，生成单一的二进制文件。这是个很直观的切入点。以<code>C# static link</code>为关键词，发现有几个同类型的工具。例如<a href="https://github.com/Microsoft/ILMerge" target="_blank" rel="external">ILMerge</a>。在.NET的世界中，源代码经过编译后产生的程序集里存储的并不是机器代码而是一种叫<a href="https://en.wikipedia.org/wiki/Common_Intermediate_Language" target="_blank" rel="external">MSIL</a>的中间代码。程序集由CLR加载后被JIT即时编译为机器码。</p>
+<p>ILMerge之类的工具工作在IL层面。它们将不同程序集的IL代码粘合起来，生成单一的程序集。</p>
+<p>听起来是不是很美好？如果你写个小demo的话会发现确实很好用。但是ILMerge无法对WPF中的XAML资源进行改写。程序挂在运行时。</p>
+<h3 id="内嵌资源"><a href="#内嵌资源" class="headerlink" title="内嵌资源"></a>内嵌资源</h3><p>.NET中的程序集有资源的概念。任何文件都能以资源的形式嵌入进程序集。另一个思路是是把依赖项当作资源嵌进我们的主程序。只要能在运行时把它们暴露给CLR，就能实现self-contain。<br>先来看看API：</p>
+<ul>
+<li><code>Assembly.GetManifestResourceStream(string name)</code>:</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Loads the specified manifest resource from this assembly.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">virtual</span> System.IO.<span class="function">Stream <span class="title">GetManifestResourceStream</span> (<span class="params">Type type, <span class="keyword">string</span> name</span>)</span></div></pre></td></tr></table></figure>
+<ul>
+<li><code>AppDomain.Load(Byte[])</code>:</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Loads the Assembly with a common object file format (COFF) based image containing an emitted Assembly.</span></div><div class="line"><span class="keyword">public</span> System.Reflection.<span class="function">Assembly <span class="title">Load</span> (<span class="params"><span class="keyword">byte</span>[] rawAssembly</span>)</span>;</div></pre></td></tr></table></figure>
+<ul>
+<li><code>AppDomain.AssemblyResolve</code></li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Occurs when the resolution of an assembly fails.</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">event</span> ResolveEventHandler AssemblyResolve;</div></pre></td></tr></table></figure>
+<p>我们把依赖项嵌入到程序内部后，CLR找不到引用的程序集的时候就会触发<code>AppDomain.AssemblyResolve</code>事件。我们可以在这里拿到依赖的<code>AssemblyName</code>,<code>Assembly.GetManifestResourceStream(string name)</code>得到包含依赖项的的<code>stream</code>，把<code>stream</code>的内容读出来放到<code>byte[]</code>里，调用<code>AppDomain.Load(Byte[])</code>将程序集加载。</p>
+<p>大致过程走得通，不过有点麻烦。hardcode依赖的名字后，以后添加新依赖项还要更改hardcode的名字。毕竟程序员也是人，也想偷懒。这些活最好自动化。要是能和VS里的编译结合起来就更好了🤤</p>
+<p>你别说，还真有这样的工具。<a href="https://github.com/Fody/Fody" target="_blank" rel="external">Fody</a>可以对.NET程序集做多种操作。<a href="https://github.com/Fody/Costura/" target="_blank" rel="external">Costura</a>是Fody的一个扩展，专门用来将依赖嵌入成资源。Fody与VS的完美集成，编译完成后自动开始操作。<br>Nuget安装完Fody和Costura后，如果解决方案根路径下没有<code>FodyWeavers.xml</code>则新建它。把内容替换为</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">Weavers</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">Costura</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">Weavers</span>&gt;</span>`</div></pre></td></tr></table></figure>
+<p>就完事了。太易用了。我做了测试，WPF和控制台应用都可以。看文档，它还支持.NET Core。</p>
+<h2 id="Dependencies-of-my-dependencies-is-not-my-dependencies"><a href="#Dependencies-of-my-dependencies-is-not-my-dependencies" class="headerlink" title="Dependencies of my dependencies, is not my dependencies"></a>Dependencies of my dependencies, is not my dependencies</h2><p>ILMerge也好，Fody也好，它们解决的都是应用程序所依赖库的问题。而我们的程序之所以叫.NET程序，是因为它依赖.NET Framework。如果要做到fully-self-contained的话，我们还需要把.NET Framework也塞进去。这就意味这我们需要一个不依赖.NET Framework的程序来释放.NET Framework和我们的应用程序。这其实就是重新发明安装程序了。退一步说，就算我们真的把.NET Framework打包进去了，因为.NET Framework的安装过程比较耗时，用户在点了按钮后几秒钟如果UI还没出来可能会认为我们的程序有问题。因此，把程序和.NET Framework一起分发的事情就交给愿意折腾的同学们了。我还是期待下.NET Core 3.0吧。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果你的程序是WPF程序，请使用Fody.Costura；</p>
+<p>如果你的程序不是WPF程序，那么可以任选ILMerge和Fody.Costura的一个。</p>
+<p>如果你的程序需要与.NET Framework一起分发，请在处理主程序后使用支持静默安装的Installer将主程序与.NET运行时一起打包。</p>
+<p>~或者等.Net Core 3.0发布~</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><p><a href="https://blogs.msdn.microsoft.com/dotnet/2018/05/07/net-core-3-and-support-for-windows-desktop-applications/" target="_blank" rel="external">.Net Core 3.0 - blogs.msdn.microsoft.com</a></p>
+</li>
+<li><p><a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/how-the-runtime-locates-assemblies" target="_blank" rel="external">How the Runtime Locates Assemblies - docs.microsoft.com</a></p>
+</li>
+<li><p><a href="https://github.com/Fody/Fody" target="_blank" rel="external">Fody - github.com</a></p>
+</li>
+<li><p><a href="https://github.com/Fody/Costura/" target="_blank" rel="external">Costura - github.com</a></p>
+</li>
+<li><p><a href="https://docs.microsoft.com/en-us/dotnet/framework/deployment/deployment-guide-for-developers#chaining" target="_blank" rel="external">.NET Framework deployment guide for developers - docs.microsoft.com</a></p>
+</li>
+</ul>
+
+
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/WPF/">WPF</a>
+      
+        <a href="/tags/Net-Framework/">.Net Framework</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
     <div class='post-wrapper'>
       <article class="post reveal">
   <section class="meta">
@@ -265,34 +360,36 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
-        HTTPClient 踩坑记
+      <a href="/2018/07/12/program-towards-abstractions/">
+        面向抽象编程
       </a>
     </h2>
     
     <time>
-      Oct 24, 2017
+      Jul 12, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
-<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
+	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
+<blockquote>
+<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
+</blockquote>
+<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
+<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br>
 
     
 	  <div class="readmore">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
+      <a href="/2018/07/12/program-towards-abstractions/">Read More</a>
     </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/HttpClient/">HttpClient</a>
+        <a href="/tags/面向对象编程/">面向对象编程</a>
       
-        <a href="/tags/C/">C#</a>
+        <a href="/tags/SOLID/">SOLID</a>
       
 	  </div>
     
@@ -301,6 +398,7 @@
     </div>
   
 </section>
+
 
 
       </div>
