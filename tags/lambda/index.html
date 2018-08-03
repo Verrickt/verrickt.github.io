@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: 面向对象编程 | Melchior on CLR</title>
+  <title>Tag: lambda | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/面向对象编程/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/lambda/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -125,7 +125,7 @@
       <div class='l_main'>
         
   <script>
-    window.subData= { title:'Tag : 面向对象编程'}
+    window.subData= { title:'Tag : lambda'}
   </script>
 
 <section class="post-list">
@@ -135,36 +135,40 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2018/07/12/program-towards-abstractions/">
-        面向抽象编程
+      <a href="/2018/03/08/Closure-and-re-entrance/">
+        闭包，变量捕获与重入问题
       </a>
     </h2>
     
     <time>
-      Jul 12, 2018
+      Mar 8, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
+	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
+<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
+<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
+<p>变化后，倒计时的秒数变为</p>
 <blockquote>
-<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
+<p>9 3 8 2 7 1</p>
 </blockquote>
-<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
-<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br>
+<p>变得不连续了。</p>
 
     
 	  <div class="readmore">
-      <a href="/2018/07/12/program-towards-abstractions/">Read More</a>
+      <a href="/2018/03/08/Closure-and-re-entrance/">Read More</a>
     </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/面向对象编程/">面向对象编程</a>
+        <a href="/tags/Reentrance/">Reentrance</a>
       
-        <a href="/tags/SOLID/">SOLID</a>
+        <a href="/tags/async-await/">async/await</a>
+      
+        <a href="/tags/lambda/">lambda</a>
       
 	  </div>
     
@@ -212,7 +216,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/C-Debugging-WPF/" style="font-size: 14px; color: #808080">C#,Debugging,WPF</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/TAP-Async-await-lambda/" style="font-size: 14px; color: #808080">TAP,Async/await,lambda</a> <a href="/tags/WPF/" style="font-size: 14px; color: #808080">WPF</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a> <a href="/tags/面向对象编程/" style="font-size: 14px; color: #808080">面向对象编程</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 

@@ -82,7 +82,7 @@
     
     <entry>
       <title><![CDATA[引用类型的开销]]></title>
-      <url>/2018/07/19/overhead-of-objects/</url>
+      <url>/2018/07/19/overhead-of-reference-types/</url>
       <content type="html"><![CDATA[<h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
 <h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
 <a id="more"></a>
@@ -196,7 +196,7 @@
     
     <entry>
       <title><![CDATA[面向抽象编程]]></title>
-      <url>/2018/07/12/program-towards-abstractions/</url>
+      <url>/2018/07/12/program-upon-abstractions/</url>
       <content type="html"><![CDATA[<h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
 <blockquote>
 <p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
@@ -220,7 +220,7 @@
         
         <tags>
             
-            <tag> 面向对象编程 </tag>
+            <tag> OOP </tag>
             
             <tag> SOLID </tag>
             
@@ -254,7 +254,11 @@
         
         <tags>
             
-            <tag> C#,Debugging,WPF </tag>
+            <tag> C# </tag>
+            
+            <tag> Debugging </tag>
+            
+            <tag> WPF </tag>
             
         </tags>
         
@@ -293,7 +297,11 @@
         
         <tags>
             
-            <tag> TAP,Async/await,lambda </tag>
+            <tag> Reentrance </tag>
+            
+            <tag> async/await </tag>
+            
+            <tag> lambda </tag>
             
         </tags>
         

@@ -13,14 +13,14 @@
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
-<meta name="keywords" content="TAP,Async&#x2F;await,lambda">
+<meta name="keywords" content="Reentrance,async&#x2F;await,lambda">
 <meta property="og:type" content="article">
 <meta property="og:title" content="闭包，变量捕获与重入问题">
 <meta property="og:url" content="https://verrickt.github.io/2018/03/08/Closure-and-re-entrance/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2018-08-02T15:07:27.730Z">
+<meta property="og:updated_time" content="2018-08-03T03:14:02.614Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="闭包，变量捕获与重入问题">
 <meta name="twitter:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
@@ -173,7 +173,11 @@
 	  
 	  <div class="article-tags tags">
       
-        <a href="/tags/TAP-Async-await-lambda/">TAP,Async/await,lambda</a>
+        <a href="/tags/Reentrance/">Reentrance</a>
+      
+        <a href="/tags/async-await/">async/await</a>
+      
+        <a href="/tags/lambda/">lambda</a>
       
 	  </div>
     
@@ -257,7 +261,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/C-Debugging-WPF/" style="font-size: 14px; color: #808080">C#,Debugging,WPF</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/TAP-Async-await-lambda/" style="font-size: 14px; color: #808080">TAP,Async/await,lambda</a> <a href="/tags/WPF/" style="font-size: 14px; color: #808080">WPF</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a> <a href="/tags/面向对象编程/" style="font-size: 14px; color: #808080">面向对象编程</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 

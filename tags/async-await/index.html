@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: HttpClient | Melchior on CLR</title>
+  <title>Tag: async/await | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/HttpClient/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/async-await/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -125,7 +125,7 @@
       <div class='l_main'>
         
   <script>
-    window.subData= { title:'Tag : HttpClient'}
+    window.subData= { title:'Tag : async/await'}
   </script>
 
 <section class="post-list">
@@ -135,34 +135,40 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
-        HTTPClient 踩坑记
+      <a href="/2018/03/08/Closure-and-re-entrance/">
+        闭包，变量捕获与重入问题
       </a>
     </h2>
     
     <time>
-      Oct 24, 2017
+      Mar 8, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
-<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
+	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
+<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
+<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
+<p>变化后，倒计时的秒数变为</p>
+<blockquote>
+<p>9 3 8 2 7 1</p>
+</blockquote>
+<p>变得不连续了。</p>
 
     
 	  <div class="readmore">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
+      <a href="/2018/03/08/Closure-and-re-entrance/">Read More</a>
     </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/HttpClient/">HttpClient</a>
+        <a href="/tags/Reentrance/">Reentrance</a>
       
-        <a href="/tags/C/">C#</a>
+        <a href="/tags/async-await/">async/await</a>
+      
+        <a href="/tags/lambda/">lambda</a>
       
 	  </div>
     

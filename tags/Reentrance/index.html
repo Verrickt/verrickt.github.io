@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: C#,Debugging,WPF | Melchior on CLR</title>
+  <title>Tag: Reentrance | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/C-Debugging-WPF/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/Reentrance/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -125,7 +125,7 @@
       <div class='l_main'>
         
   <script>
-    window.subData= { title:'Tag : C#,Debugging,WPF'}
+    window.subData= { title:'Tag : Reentrance'}
   </script>
 
 <section class="post-list">
@@ -135,30 +135,40 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2018/05/21/an-awful-debugging/">
-        一次愉(dan)快(teng)的捉虫经历
+      <a href="/2018/03/08/Closure-and-re-entrance/">
+        闭包，变量捕获与重入问题
       </a>
     </h2>
     
     <time>
-      May 21, 2018
+      Mar 8, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，得到了这样的调用栈：</p>
+	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
+<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
+<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
+<p>变化后，倒计时的秒数变为</p>
+<blockquote>
+<p>9 3 8 2 7 1</p>
+</blockquote>
+<p>变得不连续了。</p>
 
     
 	  <div class="readmore">
-      <a href="/2018/05/21/an-awful-debugging/">Read More</a>
+      <a href="/2018/03/08/Closure-and-re-entrance/">Read More</a>
     </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/C-Debugging-WPF/">C#,Debugging,WPF</a>
+        <a href="/tags/Reentrance/">Reentrance</a>
+      
+        <a href="/tags/async-await/">async/await</a>
+      
+        <a href="/tags/lambda/">lambda</a>
       
 	  </div>
     
@@ -206,7 +216,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/C-Debugging-WPF/" style="font-size: 14px; color: #808080">C#,Debugging,WPF</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/TAP-Async-await-lambda/" style="font-size: 14px; color: #808080">TAP,Async/await,lambda</a> <a href="/tags/WPF/" style="font-size: 14px; color: #808080">WPF</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a> <a href="/tags/面向对象编程/" style="font-size: 14px; color: #808080">面向对象编程</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
