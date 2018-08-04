@@ -136,8 +136,8 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2018/05/21/an-awful-debugging/">
-        一次愉(dan)快(teng)的捉虫经历
+      <a href="/2018/05/21/hell-mode-debugging/">
+        记一次愉(dan)快(teng)的捉虫
       </a>
     </h2>
     
@@ -147,12 +147,17 @@
 		
   </section>
   <section class="article typo">
-	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>缺陷是是在软件开发过程中经常遇到的问题。它是如此常见以在开发者的圈子中衍生出“It’s not a bug,it’s a feature”这样的段子。快速定位、解决问题是优秀开发者必备的素质。</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>公司有个基于WPF的项目，上线在即。几个开发在deadline之前总算把功能赶完了，这是接到QA报了一个BUG，说程序在Win8.1上Out of memory崩溃了。得到消息后立刻跑过去尝试重现，得到了这样的调用栈：</p>
+	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>BUG是任何软件都会遇到的问题。它通常是开发人员考虑问题不全面而埋下的隐形炸弹，在条件合适的时候就会爆炸；开发自己埋BUG往往比较容易除错，因为代码都是自己写的，定位问题后<code>git blame</code>一下就可以甩锅了；而程序依赖项里的BUG则排查起来则让人一筹莫展，尤其是在没有足够多信息的情况。</p>
+<p>面对来自客户和QA的压力，绞尽脑汁仍无法定位问题开发们只能找借口了🤣</p>
+<ul>
+<li>It’s a feature,not a bug.</li>
+<li>That’s the design decision, so not a bug</li>
+</ul>
+<p>我以前也遇到框架出问题的情况，不过都是自己改代码改出来的，倒也不是很难排查。但这次挖出来的BUG就完全不一样了</p>
 
     
 	  <div class="readmore">
-      <a href="/2018/05/21/an-awful-debugging/">Read More</a>
+      <a href="/2018/05/21/hell-mode-debugging/">Read More</a>
     </div>
     
     

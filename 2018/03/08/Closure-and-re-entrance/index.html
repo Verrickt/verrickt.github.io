@@ -16,11 +16,11 @@
 <meta name="keywords" content="Reentrance,async&#x2F;await,lambda">
 <meta property="og:type" content="article">
 <meta property="og:title" content="闭包，变量捕获与重入问题">
-<meta property="og:url" content="https://verrickt.github.io/2018/03/08/Closure-and-re-entrance/index.html">
+<meta property="og:url" content="https://verrickt.github.io/2018/03/08/closure-and-re-entrance/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2018-08-03T03:14:02.614Z">
+<meta property="og:updated_time" content="2018-08-04T08:26:21.220Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="闭包，变量捕获与重入问题">
 <meta name="twitter:description" content="问题描述公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。 按理说是个很简单的Case。QA却报过来个BUG，说APP状态由 联网-&amp;gt;断网-&amp;gt;联网-&amp;gt;断网 变化后，倒计时的秒数变为  9 3 8 2 7 1  变得不连续了。">
@@ -124,12 +124,12 @@
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
-        <article id="post-Closure-and-re-entrance"
+        <article id="post-closure-and-re-entrance"
   class="post white-box article-type-post"
   itemscope itemprop="blogPost">
 	<section class='meta'>
 	<h2 class="title">
-  	<a href="/2018/03/08/Closure-and-re-entrance/">
+  	<a href="/2018/03/08/closure-and-re-entrance/">
     	闭包，变量捕获与重入问题
     </a>
   </h2>
@@ -185,8 +185,8 @@
 	
 		<div class="art-item-footer">
 				
-					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2018/05/21/an-awful-debugging/" rel="prev"  title="一次愉(dan)快(teng)的捉虫经历">
-						一次愉(dan)快(teng)的捉虫经历 
+					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2018/05/21/hell-mode-debugging/" rel="prev"  title="记一次愉(dan)快(teng)的捉虫">
+						记一次愉(dan)快(teng)的捉虫 
 					</a></span>
 				
 				
