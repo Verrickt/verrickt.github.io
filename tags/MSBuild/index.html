@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: reference type | Melchior on CLR</title>
+  <title>Tag: MSBuild | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/reference-type/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/MSBuild/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -125,7 +125,7 @@
       <div class='l_main'>
         
   <script>
-    window.subData= { title:'Tag : reference type'}
+    window.subData= { title:'Tag : MSBuild'}
   </script>
 
 <section class="post-list">
@@ -135,34 +135,29 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2018/07/19/overhead-of-reference-types/">
-        引用类型的开销
+      <a href="/2018/08/30/build-script-with-msbuild/">
+        使用MSBuild编写构建脚本
       </a>
     </h2>
     
     <time>
-      Jul 19, 2018
+      Aug 30, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
-<h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
+	  <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。<br></p>
 
     
 	  <div class="readmore">
-      <a href="/2018/07/19/overhead-of-reference-types/">Read More</a>
+      <a href="/2018/08/30/build-script-with-msbuild/">Read More</a>
     </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/reference-type/">reference type</a>
-      
-        <a href="/tags/overhead/">overhead</a>
+        <a href="/tags/MSBuild/">MSBuild</a>
       
 	  </div>
     
