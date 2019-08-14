@@ -135,6 +135,58 @@
   <section class="meta">
     
     <h2 class="title">
+      <a href="/2019/08/08/molecule-to-atoms/">
+        Molecule to atoms
+      </a>
+    </h2>
+    
+    <time>
+      Aug 8, 2019
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <p>同学发过来一道有意思的题</p>
+<p>For a given chemical formula represented by a string, count the number of atoms of each element contained in the molecule and return an object (<code>associative array</code> in PHP, <code>Dictionary&lt;string, int&gt;</code> in C#, <code>Map&lt;String,Integer&gt;</code> in Java).</p>
+<p>For example:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> water = <span class="string">'H2O'</span>;</div><div class="line">parseMolecule(water); <span class="comment">// return &#123;H: 2, O: 1&#125;</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> magnesiumHydroxide = <span class="string">'Mg(OH)2'</span>;</div><div class="line">parseMolecule(magnesiumHydroxide); <span class="comment">// return &#123;Mg: 1, O: 2, H: 2&#125;</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> fremySalt = <span class="string">'K4[ON(SO3)2]2'</span>;</div><div class="line">parseMolecule(fremySalt); <span class="comment">// return &#123;K: 4, O: 14, N: 2, S: 4&#125;</span></div></pre></td></tr></table></figure>
+<p>As you can see, some formulas have brackets in them. The index outside the brackets tells you that you have to multiply count of each atom inside the bracket on this index. For example, in Fe(NO3)2 you have one iron atom, two nitrogen atoms and six oxygen atoms.</p>
+<p>Note that brackets may be round, square or curly and can also be nested. Index after the braces is optional.</p>
+<p>一句话描述:统计化学式中出现各个原子的个数.</p>
+<p>不含括号的化学式很好解析,带上括号只要依次处理括号里的部分,乘以括号后的倍数就完成了.而括号里的部分又可以是一个完整的化学式.完美的分治.</p>
+<p>以<code>K4[ON(SO3)2]2</code>为例.首先解析<code>K4</code>,接着解析<code>[ON(SO3)2]2</code>,碰到括号解析字串<code>ON(SO3)2</code>,对应个数乘2再合并即可.<code>ON(SO3)2</code>也一样,解析出<code>O</code>,<code>N</code>后继续解析括号里的<code>(SO3)2</code>即可.</p>
+<p>解析字符串一般可以转化成解析上下文无关文法,答案就在生成的AST中.</p>
+<p>所有的括号<code>{}</code>,<code>[]</code>替换为<code>()</code>后均不影响结果.这里就偷个懒</p>
+<p>生成式:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Number: [1-9][0-9]*</div><div class="line">Atom:[A-Z][a-z]*</div><div class="line">Term: Atom Number</div><div class="line">Molscule: TermTerm*</div><div class="line">        | Term*(Molscule)Number?Term*</div></pre></td></tr></table></figure></p>
+<ul>
+<li>原子以大写字母开头,后跟任意个小写字母</li>
+<li>化学式的一项是一个原子后跟一个分子.</li>
+<li>分子式可以由至少一个项构成</li>
+<li>分子式可以由任意项中间插入左括号(,另一个分子式右括号)和一个可选的数字构成.</li>
+</ul>
+<p>由生成式就可以动手写解析器啦.首先对每一个可能的分支都写出一个完整的解析函数,在无法确定接下来是哪个分支的时候使用超前查看来实现分支预测.</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">class</span> <span class="title">Program</span></div><div class="line">   &#123;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           Console.WriteLine(<span class="string">"Please enter a chemical"</span>);</div><div class="line">           Console.WriteLine(<span class="string">"Default: K4(ON(SO3)2)2"</span>);</div><div class="line"></div><div class="line">           <span class="keyword">string</span> source = <span class="string">"K4(ON(SO3)2)2"</span>;</div><div class="line">           <span class="keyword">var</span> str = Console.ReadLine();</div><div class="line">           str = <span class="keyword">string</span>.IsNullOrWhiteSpace(str) ? source : str;</div><div class="line">           <span class="keyword">var</span> dict = Parse(str, <span class="number">0</span>, <span class="number">1</span>);</div><div class="line">           dict.ToList().ForEach(p =&gt; Console.WriteLine(<span class="string">$"<span class="subst">&#123;p.Key&#125;</span>:<span class="subst">&#123;p.Value&#125;</span>"</span>));</div><div class="line">           Console.WriteLine(<span class="string">"Press any key to continue"</span>);</div><div class="line">           Console.ReadLine();</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">IsUpper</span>(<span class="params"><span class="keyword">char</span> c</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           <span class="keyword">return</span> c &gt;= <span class="string">'A'</span> &amp;&amp; c &lt;= <span class="string">'Z'</span>;</div><div class="line">       &#125;</div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">IsLower</span>(<span class="params"><span class="keyword">char</span> c</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           <span class="keyword">return</span> c &gt;= <span class="string">'a'</span> &amp;&amp; c &lt;= <span class="string">'z'</span>;</div><div class="line">       &#125;</div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">IsNumber</span>(<span class="params"><span class="keyword">char</span> c</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           <span class="keyword">return</span> c &gt;= <span class="string">'0'</span> &amp;&amp; c &lt;= <span class="string">'9'</span>;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">GetNextElemIndex</span>(<span class="params"><span class="keyword">string</span> str, <span class="keyword">int</span> start</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           <span class="keyword">if</span> (start &gt;= str.Length) <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">           <span class="keyword">if</span> (!IsUpper(str[start]))</div><div class="line">           &#123;</div><div class="line">               <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">           &#125;</div><div class="line">           <span class="keyword">for</span> (<span class="keyword">int</span> i = start + <span class="number">1</span>; i &lt; str.Length; i++)</div><div class="line">           &#123;</div><div class="line">               <span class="keyword">if</span> (!IsLower(str[i]) &amp;&amp; !IsUpper(str[i])) <span class="keyword">return</span> i - <span class="number">1</span>;</div><div class="line">               <span class="keyword">if</span> (IsLower(str[i]))</div><div class="line">               &#123;</div><div class="line">                   <span class="keyword">continue</span>;</div><div class="line">               &#125;</div><div class="line">               <span class="keyword">if</span>(IsUpper(str[i]))</div><div class="line">               &#123;</div><div class="line">                   <span class="keyword">return</span> i - <span class="number">1</span>;</div><div class="line">               &#125;</div><div class="line">           &#125;</div><div class="line">            <span class="keyword">return</span> str.Length - <span class="number">1</span>;</div><div class="line">       &#125;</div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">GetNextNumber</span>(<span class="params"><span class="keyword">string</span> str,<span class="keyword">int</span> start</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           <span class="keyword">if</span> (start &gt;= str.Length) <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">           <span class="keyword">if</span> (!IsNumber(str[start])) <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">           <span class="keyword">for</span>(<span class="keyword">int</span> i=start;i&lt;str.Length;i++)</div><div class="line">           &#123;</div><div class="line">               <span class="keyword">if</span> (!IsNumber(str[i]))</div><div class="line">                   <span class="keyword">return</span> i - <span class="number">1</span>;</div><div class="line">           &#125;</div><div class="line">           <span class="keyword">if</span> (IsNumber(str.Last())) <span class="keyword">return</span> str.Length - <span class="number">1</span>;</div><div class="line">           <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">       &#125;</div><div class="line">       <span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">GetRightParin</span>(<span class="params"><span class="keyword">string</span> str,<span class="keyword">int</span> start</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           <span class="keyword">for</span>(<span class="keyword">int</span> i=start;i&lt;str.Length;i++)</div><div class="line">           &#123;</div><div class="line">               <span class="keyword">if</span> (str[i] == <span class="string">')'</span>) <span class="keyword">return</span> i;</div><div class="line">           &#125;</div><div class="line">           <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">       &#125;</div><div class="line">       <span class="function"><span class="keyword">static</span> Dictionary&lt;<span class="keyword">string</span>, <span class="keyword">int</span>&gt; <span class="title">Parse</span>(<span class="params"><span class="keyword">string</span> str,<span class="keyword">int</span> startIndex,<span class="keyword">int</span> multiplex</span>)</span></div><div class="line"><span class="function">       </span>&#123;</div><div class="line">           Dictionary&lt;<span class="keyword">string</span>, <span class="keyword">int</span>&gt; dict = <span class="keyword">new</span> Dictionary&lt;<span class="keyword">string</span>, <span class="keyword">int</span>&gt;();</div><div class="line">           <span class="keyword">while</span> (<span class="literal">true</span>)</div><div class="line">           &#123;</div><div class="line">               <span class="keyword">if</span> (startIndex == str.Length)</div><div class="line">               &#123;</div><div class="line">                   <span class="keyword">return</span> dict;</div><div class="line">               &#125;</div><div class="line">               <span class="keyword">var</span> elem = GetNextElemIndex(str, startIndex);</div><div class="line">               <span class="keyword">if</span> (elem!=<span class="number">-1</span>)</div><div class="line">               &#123;</div><div class="line">                   <span class="comment">// N个微元的情况,直接解析</span></div><div class="line">                   <span class="keyword">var</span> name = str.Substring(startIndex, elem - startIndex + <span class="number">1</span>);</div><div class="line">                   <span class="keyword">int</span> <span class="keyword">value</span> = <span class="number">1</span>;</div><div class="line">                   startIndex = elem + <span class="number">1</span>;</div><div class="line">                   <span class="keyword">var</span> num = GetNextNumber(str, startIndex);</div><div class="line">                   <span class="keyword">if</span>(num!=<span class="number">-1</span>)</div><div class="line">                   &#123;</div><div class="line">                       <span class="keyword">value</span> = <span class="keyword">int</span>.Parse(str.Substring(startIndex, num - startIndex + <span class="number">1</span>));</div><div class="line">                       startIndex = num + <span class="number">1</span>;</div><div class="line">                   &#125;</div><div class="line">                   <span class="keyword">if</span> (!dict.ContainsKey(name)) dict[name] = <span class="number">0</span>;</div><div class="line">                   dict[name] += <span class="keyword">value</span>;</div><div class="line">               &#125;</div><div class="line">               <span class="keyword">else</span> <span class="keyword">if</span>(str[startIndex]==<span class="string">'('</span>)</div><div class="line">               &#123;</div><div class="line">                   <span class="comment">// 碰到括号,解析子化学式</span></div><div class="line">                   <span class="keyword">var</span> right = GetRightParin(str, startIndex + <span class="number">1</span>)+<span class="number">1</span>;</div><div class="line">                   <span class="keyword">var</span> nextNum = GetNextNumber(str, right);</div><div class="line">                   <span class="comment">//子化学式的倍数</span></div><div class="line">                   <span class="keyword">int</span> mul = <span class="keyword">int</span>.Parse(str.Substring(nextNum, nextNum - right + <span class="number">1</span>));</div><div class="line">                   <span class="keyword">var</span> recursion = Parse(str, startIndex + <span class="number">1</span>, mul);</div><div class="line">                   startIndex = nextNum + <span class="number">1</span>;</div><div class="line">                   <span class="comment">//合并字典</span></div><div class="line">                   recursion.Keys.ToList().ForEach(k =&gt; &#123; <span class="keyword">if</span> (!dict.ContainsKey(k)) dict[k] = <span class="number">0</span>; &#125;);</div><div class="line">                   recursion.ToList().ForEach(p =&gt; dict[p.Key] += p.Value);</div><div class="line">                   </div><div class="line">               &#125; <span class="keyword">else</span> <span class="keyword">if</span>(str[startIndex]==<span class="string">')'</span>)</div><div class="line">               &#123;</div><div class="line">                   <span class="comment">// 返回</span></div><div class="line">                   <span class="keyword">return</span> dict.ToDictionary(i =&gt; i.Key, i =&gt; i.Value * multiplex);</div><div class="line">               &#125; </div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/C/">C#</a>
+      
+        <a href="/tags/Parser/">Parser</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
       <a href="/2018/10/22/get-link-time-from-csharp/">
         获取程序的编译时间
       </a>
@@ -250,48 +302,19 @@
 </article>
     </div>
   
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
-        HTTPClient 踩坑记
-      </a>
-    </h2>
-    
-    <time>
-      Oct 24, 2017
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
-<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/HttpClient/">HttpClient</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
 </section>
 
+
+  <nav id="page-nav">
+    
+    
+    <a class="next" rel="next" href="/tags/C/page/2/">
+      <span class="text">Next</span>
+      <span class="icon icon-chevron-right"></span>
+    </a>
+    
+  </nav>
+  
 
       </div>
       <aside class='l_side'>
@@ -336,7 +359,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 18px; color: #2b2b2b">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
