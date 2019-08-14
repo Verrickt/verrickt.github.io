@@ -20,7 +20,7 @@
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="同学发过来一道有意思的题 For a given chemical formula represented by a string, count the number of atoms of each element contained in the molecule and return an object (associative array in PHP, Dictionary&amp;lt;str">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2019-08-14T12:55:28.653Z">
+<meta property="og:updated_time" content="2019-08-14T13:24:51.924Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Molecule to atoms">
 <meta name="twitter:description" content="同学发过来一道有意思的题 For a given chemical formula represented by a string, count the number of atoms of each element contained in the molecule and return an object (associative array in PHP, Dictionary&amp;lt;str">
@@ -145,6 +145,7 @@
   	<div class="article-entry" itemprop="articleBody">
     	<p>同学发过来一道有意思的题</p>
 <p>For a given chemical formula represented by a string, count the number of atoms of each element contained in the molecule and return an object (<code>associative array</code> in PHP, <code>Dictionary&lt;string, int&gt;</code> in C#, <code>Map&lt;String,Integer&gt;</code> in Java).</p>
+<a id="more"></a>
 <p>For example:</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> water = <span class="string">'H2O'</span>;</div><div class="line">parseMolecule(water); <span class="comment">// return &#123;H: 2, O: 1&#125;</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> magnesiumHydroxide = <span class="string">'Mg(OH)2'</span>;</div><div class="line">parseMolecule(magnesiumHydroxide); <span class="comment">// return &#123;Mg: 1, O: 2, H: 2&#125;</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> fremySalt = <span class="string">'K4[ON(SO3)2]2'</span>;</div><div class="line">parseMolecule(fremySalt); <span class="comment">// return &#123;K: 4, O: 14, N: 2, S: 4&#125;</span></div></pre></td></tr></table></figure>
 <p>As you can see, some formulas have brackets in them. The index outside the brackets tells you that you have to multiply count of each atom inside the bracket on this index. For example, in Fe(NO3)2 you have one iron atom, two nitrogen atoms and six oxygen atoms.</p>
