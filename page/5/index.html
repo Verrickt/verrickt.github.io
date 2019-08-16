@@ -131,6 +131,93 @@
   <section class="meta">
     
     <h2 class="title">
+      <a href="/2018/07/12/program-upon-abstractions/">
+        面向抽象编程
+      </a>
+    </h2>
+    
+    <time>
+      Jul 12, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
+<blockquote>
+<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
+</blockquote>
+<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
+<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br></p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/07/12/program-upon-abstractions/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/OOP/">OOP</a>
+      
+        <a href="/tags/SOLID/">SOLID</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2018/05/21/hell-mode-debugging/">
+        记一次愉(dan)快(teng)的捉虫
+      </a>
+    </h2>
+    
+    <time>
+      May 21, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>BUG是任何软件都会遇到的问题。它通常是开发人员考虑问题不全面而埋下的隐形炸弹，在条件合适的时候就会爆炸；开发自己埋BUG往往比较容易除错，因为代码都是自己写的，定位问题后<code>git blame</code>一下就可以甩锅了；而程序依赖项里的BUG则排查起来则让人一筹莫展，尤其是在没有足够多信息的情况。</p>
+<p>面对来自客户和QA的压力，绞尽脑汁仍无法定位问题开发们只能找借口了🤣</p>
+<ul>
+<li>It’s a feature,not a bug.</li>
+<li>That’s the design decision, so not a bug</li>
+</ul>
+<p>我以前也遇到框架出问题的情况，不过都是自己改代码改出来的，倒也不是很难排查。但这次挖出来的BUG就完全不一样了</p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/05/21/hell-mode-debugging/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/C/">C#</a>
+      
+        <a href="/tags/WPF/">WPF</a>
+      
+        <a href="/tags/Debugging/">Debugging</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
       <a href="/2018/03/08/closure-and-re-entrance/">
         闭包，变量捕获与重入问题
       </a>
@@ -269,7 +356,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 18px; color: #2b2b2b">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 

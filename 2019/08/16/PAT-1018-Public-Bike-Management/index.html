@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  <title>1018 Public Bike Management | Melchior on CLR</title>
+  <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
+  <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="shortcut icon" href="/">
+  <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Public Bike Management1018 Public Bike Management There is a public bike service in Hangzhou City which provides great convenience to the tourists from all over the world. One may rent a bike at any s">
+<meta name="keywords" content="PAT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1018 Public Bike Management">
+<meta property="og:url" content="https://verrickt.github.io/2019/08/16/PAT-1018-Public-Bike-Management/index.html">
+<meta property="og:site_name" content="Melchior on CLR">
+<meta property="og:description" content="Public Bike Management1018 Public Bike Management There is a public bike service in Hangzhou City which provides great convenience to the tourists from all over the world. One may rent a bike at any s">
+<meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:updated_time" content="2019-08-16T15:45:29.121Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="1018 Public Bike Management">
+<meta name="twitter:description" content="Public Bike Management1018 Public Bike Management There is a public bike service in Hangzhou City which provides great convenience to the tourists from all over the world. One may rent a bike at any s">
+    
+  <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <link href='//cdn.bootcss.com/node-waves/0.7.5/waves.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script>
+</head>
+
+<body>
+  <div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+
+  <script>setLoadingBarProgress(20)</script> 
+  <header class="l_header">
+	<div class='wrapper'>
+		<div class="nav-main container container--flex">
+			<a class="logo flat-box" href='/' >
+				Melchior on CLR
+			</a>
+			<div class='menu'>
+				<ul class='h-list'>
+					
+						<li>
+							<a class='flat-box nav-home' href='/'>
+								Home
+							</a>
+						</li>
+					
+						<li>
+							<a class='flat-box nav-archives' href='/archives'>
+								Archives
+							</a>
+						</li>
+					
+						<li>
+							<a class='flat-box nav-about' href='/about'>
+								About
+							</a>
+						</li>
+					
+				</ul>
+				<div class='underline'></div>
+			</div>
+			
+				<div class="m_search">
+					<form name="searchform" class="form u-search-form">
+						<input type="text" class="input u-search-input" placeholder="Search" />
+						<span class="icon icon-search"></span>
+					</form>
+				</div>
+			
+			<ul class='switcher h-list'>
+				
+					<li class='s-search'><a href='javascript:void(0)'><span class="icon icon-search flat-box"></span></a></li>
+				
+				<li class='s-menu'><a href='javascript:void(0)'><span class="icon icon-menu flat-box"></span></a></li>
+			</ul>
+		</div>
+		
+		<div class='nav-sub container container--flex'>
+			<a class="logo" class="flat-box" href='javascript:void(0)'>
+				Word of Forks
+			</a>
+
+			<ul class='switcher h-list'>
+				<li class='s-comment'><a href='javascript:void(0)'><span class="icon icon-chat_bubble_outline flat-box"></span></a></li>
+				<li class='s-top'><a href='javascript:void(0)'><span class="icon icon-arrow_upward flat-box"></span></a></li>
+				<li class='s-toc'><a href='javascript:void(0)'><span class="icon icon-format_list_numbered flat-box"></span></a></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<aside class="menu-phone">
+	<nav>
+		
+			<a href="/" class="nav-home nav">
+				Home
+			</a>
+		
+			<a href="/archives" class="nav-archives nav">
+				Archives
+			</a>
+		
+			<a href="/about" class="nav-about nav">
+				About
+			</a>
+		
+	</nav>
+</aside>
+
+    <script>setLoadingBarProgress(40);</script>
+  <div class="l_body">
+    <div class='container clearfix'>
+      <div class='l_main'>
+        <article id="post-PAT-1018-Public-Bike-Management"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2019/08/16/PAT-1018-Public-Bike-Management/">
+    	1018 Public Bike Management
+    </a>
+  </h2>
+	<time>
+	  Aug 16, 2019
+	</time>
+	
+	</section>
+	
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Public-Bike-Management"><span class="toc-number">1.</span> <span class="toc-text">Public Bike Management</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#思路"><span class="toc-number">2.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一点小想法"><span class="toc-number">3.</span> <span class="toc-text">一点小想法</span></a></li></ol></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<h2 id="Public-Bike-Management"><a href="#Public-Bike-Management" class="headerlink" title="Public Bike Management"></a>Public Bike Management</h2><p><a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805489282433024" target="_blank" rel="external">1018 Public Bike Management</a></p>
+<p>There is a public bike service in Hangzhou City which provides great convenience to the tourists from all over the world. One may rent a bike at any station and return it to any other stations in the city.<br><a id="more"></a><br>The Public Bike Management Center (PBMC) keeps monitoring the real-time capacity of all the stations. A station is said to be in perfect condition if it is exactly half-full. If a station is full or empty, PBMC will collect or send bikes to adjust the condition of that station to perfect. And more, all the stations on the way will be adjusted as well.</p>
+<p>When a problem station is reported, PBMC will always choose the shortest path to reach that station. If there are more than one shortest path, the one that requires the least number of bikes sent from PBMC will be chosen.</p>
+<p>The above figure illustrates an example. The stations are represented by vertices and the roads correspond to the edges. The number on an edge is the time taken to reach one end station from another. The number written inside a vertex S is the current number of bikes stored at S. Given that the maximum capacity of each station is 10. To solve the problem at S​3​​, we have 2 different shortest paths:</p>
+<ol>
+<li><p>PBMC -&gt; S​1​​ -&gt; S​3​​. In this case, 4 bikes must be sent from PBMC, because we can collect 1 bike from S​1​​ and then take 5 bikes to S​3​​, so that both stations will be in perfect conditions.</p>
+</li>
+<li><p>PBMC -&gt; S​2​​ -&gt; S​3​​. This path requires the same time as path 1, but only 3 bikes sent from PBMC and hence is the one that will be chosen.</p>
+</li>
+</ol>
+<p><strong>Input Specification:</strong></p>
+<p>Each input file contains one test case. For each case, the first line contains 4 numbers: C​max​​ (≤100), always an even number, is the maximum capacity of each station; N (≤500), the total number of stations; S​p​​, the index of the problem station (the stations are numbered from 1 to N, and PBMC is represented by the vertex 0); and M, the number of roads. The second line contains N non-negative numbers C​i​​ (i=1,⋯,N) where each C​i​​ is the current number of bikes at S​i​​ respectively. Then M lines follow, each contains 3 numbers: S​i​​, S​j​​, and T​ij​​ which describe the time T​ij​​ taken to move betwen stations S​i​​ and S​j​​. All the numbers in a line are separated by a space.</p>
+<p><strong>Output Specification:</strong></p>
+<p>For each test case, print your results in one line. First output the number of bikes that PBMC must send. Then after one space, output the path in the format: 0−&gt;S​1​​−&gt;⋯−&gt;S​p​​. Finally after another space, output the number of bikes that we must take back to PBMC after the condition of S​p​​ is adjusted to perfect.</p>
+<p>Note that if such a path is not unique, output the one that requires minimum number of bikes that we must take back to PBMC. The judge’s data guarantee that such a path is unique.</p>
+<p><strong>Sample Input:</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">10 3 3 5</div><div class="line">6 7 0</div><div class="line">0 1 1</div><div class="line">0 2 1</div><div class="line">0 3 3</div><div class="line">1 3 1</div><div class="line">2 3 1</div></pre></td></tr></table></figure></p>
+<p><strong>Sample Output:</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">3 0-&gt;2-&gt;3 0</div></pre></td></tr></table></figure></p>
+<p>题目大意:<br>公共自行车站点的自行车数量是半满的时候称为完美.不完美的站点就需要调度.给定起点和终点,找到最短的一条路线,并把沿途经过的站点全部调度为完美.如果有多条路线存在,选择从起点带出自行车最小的那一条.最后输出从起点带出的自行车数,路线,从终点带回的自行车数.</p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>单源最短路径问题<code>dijkstra</code>是跑不掉了.问题的关键在于,当松弛的对象v的最短路径预期<code>dist[v]</code>和当前最短路径于权值的和<code>dist[min]+edge(min,v)</code>相等时候的取舍.<br>一个简单的想法是,出现一致时,计算最短路上平均节点的点权,取最大的那一条.很不幸的是,<code>dijkstra</code>执行过程中并不知道所要比较的两条最短路的长度.</p>
+<p>参考了其他人的思路,与其在还未生成最短路径时想办法取舍,不如等到所有的最短路径都求出来以后再去选最优的那一条.原版算法中记录前驱结点的<code>int path[]</code>就要改成<code>vector&lt;int&gt; pre[]</code>了.松弛成功时,清空<code>path[i]</code>,放入<code>min</code>.权值相同时,放入<code>min</code>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dijkstra</span><span class="params">()</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">	<span class="keyword">bool</span> visited[<span class="number">504</span>];</div><div class="line">	fill(visited,visited+n+<span class="number">1</span>,<span class="literal">false</span>);</div><div class="line"></div><div class="line">	fill(estimate,estimate+n+<span class="number">1</span>,inf);</div><div class="line">	estimate[<span class="number">0</span>]=<span class="number">0</span>;</div><div class="line">	<span class="keyword">while</span>(<span class="literal">true</span>)</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">int</span> min=<span class="number">-1</span>;</div><div class="line">		<span class="keyword">int</span> minn=inf;</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;=n;i++)</div><div class="line">		&#123;</div><div class="line">			<span class="keyword">if</span>(estimate[i]&lt;minn&amp;&amp;visited[i]==<span class="literal">false</span>)</div><div class="line">			&#123;</div><div class="line">				minn=estimate[i];</div><div class="line">				min=i;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span>(minn==inf) <span class="keyword">break</span>;</div><div class="line">		visited[min]=<span class="literal">true</span>;</div><div class="line">	</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;=n;i++)</div><div class="line">		&#123;</div><div class="line">			<span class="keyword">if</span>(t[min][i]!=<span class="number">-1</span>&amp;&amp;visited[i]==<span class="literal">false</span>)</div><div class="line">			&#123;</div><div class="line">				<span class="keyword">if</span>(estimate[i]&gt;estimate[min]+t[min][i])</div><div class="line">				&#123;</div><div class="line">					estimate[i]=estimate[min]+t[min][i];</div><div class="line">					path[i].clear();</div><div class="line">					path[i].push_back(min);</div><div class="line">				</div><div class="line">				&#125; <span class="keyword">else</span> <span class="keyword">if</span>(estimate[i]==estimate[min]+t[min][i])</div><div class="line">				&#123;</div><div class="line">					path[i].push_back(min);</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>跑完<code>dijkstra</code>,<code>path[i]</code>的笛卡尔积就是所有的最短路径.</p>
+<p>现在问题转化为,给定好几条路径,如何选出最优的那一条.<code>dfs</code>帮了大忙.<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> v)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">	temp_path.push_back(v);</div><div class="line">	<span class="keyword">if</span>(v==<span class="number">0</span>)</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">int</span> need=<span class="number">0</span>;</div><div class="line">		<span class="keyword">int</span> back=<span class="number">0</span>;</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=temp_path.size()<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)</div><div class="line">		&#123;</div><div class="line">			<span class="keyword">int</span> id=temp_path[i];</div><div class="line">			<span class="keyword">if</span>(bycicle[id]&gt;<span class="number">0</span>)</div><div class="line">			&#123;</div><div class="line">				back+=bycicle[id];</div><div class="line">			&#125; <span class="keyword">else</span></div><div class="line">			&#123;</div><div class="line">				<span class="keyword">if</span>(back&gt;(<span class="number">0</span>-bycicle[id]))</div><div class="line">				&#123;</div><div class="line">					back+=bycicle[id];</div><div class="line">				&#125; <span class="keyword">else</span></div><div class="line">				&#123;</div><div class="line">					need+=((<span class="number">0</span>-bycicle[id])-back);</div><div class="line">					back=<span class="number">0</span>;</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span>(need&lt;min_need)</div><div class="line">		&#123;</div><div class="line">			min_need=need;</div><div class="line">			min_back=back;</div><div class="line">			min_path=temp_path;</div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span>(need==min_need&amp;&amp;back&lt;min_back)</div><div class="line">		&#123;</div><div class="line">			min_back=back;</div><div class="line">			min_path=temp_path;</div><div class="line">		&#125;</div><div class="line">		temp_path.pop_back();</div><div class="line">		<span class="keyword">return</span>;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">else</span>&#123;</div><div class="line">				</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">auto</span> i:path[v])</div><div class="line">		&#123;</div><div class="line">			dfs(i);</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	temp_path.pop_back();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>进入<code>dfs</code>后二话不说先将当前节点放入<code>temp_path</code>,在返回之前再将其弹出.这保证了,调用<code>dfs(sp)后</code>,只要<code>v</code>是起点,<code>temp_path</code>就是一条完整的路径(倒序).倒过来就能推出带出和带回的自行车数.</p>
+<ul>
+<li>当节点的自行车数与完美状态的差值<code>bicycle[i]=s[i]-cmax/2</code>为正时,在离开该节点时需要带走这么多车子.<code>back+=bicycle[i]</code>. </li>
+<li>当<code>bicycle[i]</code>为负时,考虑两种情况.<ul>
+<li><code>back</code>比<code>bicycle[i]</code>的绝对值大时,表示携带的自行车比当前节点要多.只需分给该节点<code>|bibycle[i]|</code>这么多的自行车即可达成完美.<code>back+=bicycle[i]</code></li>
+<li>当<code>back</code>比<code>bicycle[i]</code>的绝对值要小时,表示携带的自行车不够分,需要从起点携带.两者的差值就是所需的车辆数.<code>need+=(0-bicycle[i])-back</code>,携带的车辆数置零<code>back=0</code></li>
+</ul>
+</li>
+</ul>
+<p>选出<code>need</code>和<code>back</code>最小的路线即可.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cstdio"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"vector"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"iostream"</span></span></div><div class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</div><div class="line"><span class="keyword">int</span> cmax;</div><div class="line"><span class="keyword">int</span> n;</div><div class="line"><span class="keyword">int</span> sp;</div><div class="line"><span class="keyword">int</span> m;</div><div class="line"><span class="keyword">int</span> bycicle[<span class="number">504</span>];</div><div class="line"><span class="keyword">int</span> t[<span class="number">504</span>][<span class="number">504</span>];</div><div class="line"><span class="keyword">const</span> <span class="keyword">int</span> inf = <span class="number">0xFFFFFFF</span>;</div><div class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; path[<span class="number">504</span>];</div><div class="line"><span class="keyword">int</span> estimate[<span class="number">504</span>];</div><div class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; min_path;</div><div class="line"><span class="keyword">int</span> min_need=inf;</div><div class="line"><span class="keyword">int</span> min_back=inf;</div><div class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; temp_path;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> v)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">	temp_path.push_back(v);</div><div class="line">	<span class="keyword">if</span>(v==<span class="number">0</span>)</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">int</span> need=<span class="number">0</span>;</div><div class="line">		<span class="keyword">int</span> back=<span class="number">0</span>;</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=temp_path.size()<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)</div><div class="line">		&#123;</div><div class="line">			<span class="keyword">int</span> id=temp_path[i];</div><div class="line">			<span class="keyword">if</span>(bycicle[id]&gt;<span class="number">0</span>)</div><div class="line">			&#123;</div><div class="line">				back+=bycicle[id];</div><div class="line">			&#125; <span class="keyword">else</span></div><div class="line">			&#123;</div><div class="line">				<span class="keyword">if</span>(back&gt;(<span class="number">0</span>-bycicle[id]))</div><div class="line">				&#123;</div><div class="line">					back+=bycicle[id];</div><div class="line">				&#125; <span class="keyword">else</span></div><div class="line">				&#123;</div><div class="line">					need+=((<span class="number">0</span>-bycicle[id])-back);</div><div class="line">					back=<span class="number">0</span>;</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span>(need&lt;min_need)</div><div class="line">		&#123;</div><div class="line">			min_need=need;</div><div class="line">			min_back=back;</div><div class="line">			min_path=temp_path;</div><div class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span>(need==min_need&amp;&amp;back&lt;min_back)</div><div class="line">		&#123;</div><div class="line">			min_back=back;</div><div class="line">			min_path=temp_path;</div><div class="line">		&#125;</div><div class="line">		temp_path.pop_back();</div><div class="line">		<span class="keyword">return</span>;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">else</span>&#123;</div><div class="line">				</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">auto</span> i:path[v])</div><div class="line">		&#123;</div><div class="line">			dfs(i);</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	temp_path.pop_back();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dijkstra</span><span class="params">()</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">	<span class="keyword">bool</span> visited[<span class="number">504</span>];</div><div class="line">	fill(visited,visited+n+<span class="number">1</span>,<span class="literal">false</span>);</div><div class="line"></div><div class="line">	fill(estimate,estimate+n+<span class="number">1</span>,inf);</div><div class="line">	estimate[<span class="number">0</span>]=<span class="number">0</span>;</div><div class="line">	<span class="keyword">while</span>(<span class="literal">true</span>)</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">int</span> min=<span class="number">-1</span>;</div><div class="line">		<span class="keyword">int</span> minn=inf;</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;=n;i++)</div><div class="line">		&#123;</div><div class="line">			<span class="keyword">if</span>(estimate[i]&lt;minn&amp;&amp;visited[i]==<span class="literal">false</span>)</div><div class="line">			&#123;</div><div class="line">				minn=estimate[i];</div><div class="line">				min=i;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span>(minn==inf) <span class="keyword">break</span>;</div><div class="line">		visited[min]=<span class="literal">true</span>;</div><div class="line">	</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;=n;i++)</div><div class="line">		&#123;</div><div class="line">			<span class="keyword">if</span>(t[min][i]!=<span class="number">-1</span>&amp;&amp;visited[i]==<span class="literal">false</span>)</div><div class="line">			&#123;</div><div class="line">				<span class="keyword">if</span>(estimate[i]&gt;estimate[min]+t[min][i])</div><div class="line">				&#123;</div><div class="line">					estimate[i]=estimate[min]+t[min][i];</div><div class="line">					path[i].clear();</div><div class="line">					path[i].push_back(min);</div><div class="line">				</div><div class="line">				&#125; <span class="keyword">else</span> <span class="keyword">if</span>(estimate[i]==estimate[min]+t[min][i])</div><div class="line">				&#123;</div><div class="line">					path[i].push_back(min);</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line">	<span class="built_in">cin</span>&gt;&gt;cmax&gt;&gt;n&gt;&gt;sp&gt;&gt;m;</div><div class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;=n;i++)</div><div class="line">	&#123;</div><div class="line">		<span class="built_in">scanf</span>(<span class="string">"%d"</span>,bycicle+i);</div><div class="line">		bycicle[i]-=cmax/<span class="number">2</span>;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;=n;i++)</div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>;j&lt;=n;j++) t[i][j]=<span class="number">-1</span>;</div><div class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;m;i++)</div><div class="line">	&#123;</div><div class="line">		<span class="keyword">int</span> si,sj,tij;</div><div class="line">		<span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>,&amp;si,&amp;sj,&amp;tij);</div><div class="line">		t[si][sj]=tij;</div><div class="line">		t[sj][si]=tij;</div><div class="line">	&#125;</div><div class="line">	dijkstra();</div><div class="line">	dfs(sp);</div><div class="line">	<span class="built_in">printf</span>(<span class="string">"%d 0"</span>,min_need);</div><div class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=min_path.size()<span class="number">-2</span>;i&gt;=<span class="number">0</span>;i--)</div><div class="line">	&#123;</div><div class="line">		<span class="built_in">printf</span>(<span class="string">"-&gt;%d"</span>,min_path[i]);</div><div class="line">	&#125;</div><div class="line">	<span class="built_in">printf</span>(<span class="string">" %d\n"</span>,min_back);</div><div class="line">	</div><div class="line">	</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="一点小想法"><a href="#一点小想法" class="headerlink" title="一点小想法"></a>一点小想法</h2><ul>
+<li>用<code>dfs</code>外加辅助存储可以实现类似笛卡尔积的效果.比排列组合要方便不少</li>
+<li>经典算法之所以经典的原因在于,很多问题可以用经典算法的变体解决.适用面大,所以经典.</li>
+<li>在计算<code>back</code>和<code>need</code>时又用到了递推.给递推打个星⭐</li>
+</ul>
+
+  	</div>
+	  
+	  <div class="article-tags tags">
+      
+        <a href="/tags/PAT/">PAT</a>
+      
+	  </div>
+    
+		
+	
+		<div class="art-item-footer">
+				
+				
+					<span class="art-item-right">next：<a href="/2019/08/16/Queueing-Problem-Revisited/" rel="next"  title="回顾排队问题">
+						回顾排队问题
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
+	
+		<section id="comments">
+			<div id="gitment_thread"></div>
+			<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+			<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+			<script>
+					var gitment = new Gitment({
+							id: '1018 Public Bike Management',
+							owner: 'verrickt',
+							repo: 'verrickt.github.io',
+							oauth: {
+									client_id: '9a5cc0fe7b4e920d91f3',
+									client_secret: 'ae774015efba47b603a7c6540c276f744e32e07d',
+							},
+					})
+					gitment.render('comments')
+			</script>
+		</section>
+	
+</article>
+<script>
+	window.subData = {
+		title: '1018 Public Bike Management',
+		tools: true
+	}
+</script>
+
+      </div>
+      <aside class='l_side'>
+        
+  <section class='m_widget about'>
+
+<img class='avatar waves-image' src='https://avatars0.githubusercontent.com/u/11483783' />
+
+<div class='header'>Verrickt</div>
+<div class='content'>
+<div class='desc'>Von as a programmer</div>
+</div>
+</section>
+
+  <section class='m_widget links'>
+<div class='header'>Links</div>
+<div class='content'>
+    <ul class="entry">
+    
+        <li><a class="flat-box" target="_blank" href="https://sjx1995.github.io">
+            <div class='name'>Sunly</div>
+        </a></li>
+    
+    </ul>
+</div>
+</section>
+
+  <section class='m_widget categories'>
+<div class='header'>Categories</div>
+<div class='content'>
+    
+    <ul class="entry">
+    
+        <li><a class="flat-box" href="/categories/FluentTreeView/"><div class='name'>FluentTreeView</div><div class='badget'>5</div></a></li>
+    
+    </ul>
+    
+</div>
+</section>
+
+  
+<div class="m_widget tagcloud">
+    <div class="header">Tags</div>
+    <div class='content'>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+    </div>
+</div>
+
+
+
+      </aside>
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+  </div>
+  <footer id="footer" class="clearfix">
+
+  <div class="social-wrapper">
+    
+      
+        <a href="https://github.com/verrickt" class="social github" target="_blank" rel="external">
+          <span class="icon icon-github"></span>
+        </a>
+        
+        <a href="https://twitter.com/verrickt" class="social twitter" target="_blank" rel="external">
+          <span class="icon icon-twitter"></span>
+        </a>
+        
+        <a href="/atom.xml" class="social rss" target="_blank" rel="external">
+          <span class="icon icon-rss"></span>
+        </a>
+        
+          
+  </div>
+
+  <div>(c) 2017-2018 by verrickt, all right reserved. Powered by
+    <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
+    <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
+    <div>
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+        <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
+          height="24.75" width="66">
+      </a>
+      <span>
+        Unless explicitly stated, contents of this blog are licensed under
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
+      </span>
+    </div>
+</footer>
+  <script>setLoadingBarProgress(80);</script>
+  
+
+<script src="//apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src='//cdn.bootcss.com/node-waves/0.7.5/waves.min.js'></script>
+<script src="//cdn.bootcss.com/scrollReveal.js/3.3.2/scrollreveal.min.js"></script>
+<script src="/js/jquery.fitvids.js"></script>
+<script>
+	var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+	var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+	var ALGOLIA_API_KEY = "";
+	var ALGOLIA_APP_ID = "";
+	var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var BAIDU_API_ID = "";
+  var SEARCH_SERVICE = "hexo";
+  var ROOT = "/"||"/";
+  if(!ROOT.endsWith('/'))ROOT += '/';
+</script>
+<script src="/js/search.js"></script>
+<script src="/js/app.js"></script>
+
+
+  <script>setLoadingBarProgress(100);</script>
+</body>
+</html>
