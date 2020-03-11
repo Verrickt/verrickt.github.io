@@ -131,6 +131,119 @@
   <section class="meta">
     
     <h2 class="title">
+      <a href="/2018/08/30/build-script-with-msbuild/">
+        使用MSBuild编写构建脚本
+      </a>
+    </h2>
+    
+    <time>
+      Aug 30, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。<br></p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/08/30/build-script-with-msbuild/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/MSBuild/">MSBuild</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2018/07/31/self-contained-wpf-application/">
+        Build a (partial) self-contained WPF application
+      </a>
+    </h2>
+    
+    <time>
+      Jul 31, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
+<p>扯远了:)</p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/07/31/self-contained-wpf-application/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/WPF/">WPF</a>
+      
+        <a href="/tags/Net-Framework/">.Net Framework</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2018/07/19/overhead-of-reference-types/">
+        引用类型的开销
+      </a>
+    </h2>
+    
+    <time>
+      Jul 19, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
+<h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/07/19/overhead-of-reference-types/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/C/">C#</a>
+      
+        <a href="/tags/reference-type/">reference type</a>
+      
+        <a href="/tags/overhead/">overhead</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
       <a href="/2018/07/12/program-upon-abstractions/">
         面向抽象编程
       </a>
@@ -168,137 +281,6 @@
 </article>
     </div>
   
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/05/21/hell-mode-debugging/">
-        记一次愉(dan)快(teng)的捉虫
-      </a>
-    </h2>
-    
-    <time>
-      May 21, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>BUG是任何软件都会遇到的问题。它通常是开发人员考虑问题不全面而埋下的隐形炸弹，在条件合适的时候就会爆炸；开发自己埋BUG往往比较容易除错，因为代码都是自己写的，定位问题后<code>git blame</code>一下就可以甩锅了；而程序依赖项里的BUG则排查起来则让人一筹莫展，尤其是在没有足够多信息的情况。</p>
-<p>面对来自客户和QA的压力，绞尽脑汁仍无法定位问题开发们只能找借口了🤣</p>
-<ul>
-<li>It’s a feature,not a bug.</li>
-<li>That’s the design decision, so not a bug</li>
-</ul>
-<p>我以前也遇到框架出问题的情况，不过都是自己改代码改出来的，倒也不是很难排查。但这次挖出来的BUG就完全不一样了</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/05/21/hell-mode-debugging/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/WPF/">WPF</a>
-      
-        <a href="/tags/Debugging/">Debugging</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/03/08/closure-and-re-entrance/">
-        闭包，变量捕获与重入问题
-      </a>
-    </h2>
-    
-    <time>
-      Mar 8, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
-<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
-<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
-<p>变化后，倒计时的秒数变为</p>
-<blockquote>
-<p>9 3 8 2 7 1</p>
-</blockquote>
-<p>变得不连续了。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/03/08/closure-and-re-entrance/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/Reentrance/">Reentrance</a>
-      
-        <a href="/tags/async-await/">async/await</a>
-      
-        <a href="/tags/lambda/">lambda</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
-        HTTPClient 踩坑记
-      </a>
-    </h2>
-    
-    <time>
-      Oct 24, 2017
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
-<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/HttpClient/">HttpClient</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
 </section>
 
 
@@ -309,6 +291,11 @@
       <span class="text">Previous</span>
     </a>
     
+    
+    <a class="next" rel="next" href="/page/6/">
+      <span class="text">Next</span>
+      <span class="icon icon-chevron-right"></span>
+    </a>
     
   </nav>
   
@@ -356,7 +343,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 20px; color: #000">C#</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 17px; color: #404040">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
