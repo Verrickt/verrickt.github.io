@@ -131,6 +131,75 @@
   <section class="meta">
     
     <h2 class="title">
+      <a href="/2019/04/19/fluent-treeview-part1/">
+        FluentTreeView Part.1
+      </a>
+    </h2>
+    
+    <time>
+      Apr 19, 2019
+    </time>
+		
+    
+    <div class='cats'>
+        <a href="/categories/FluentTreeView/">FluentTreeView</a>
+    </div>
+
+  </section>
+  <section class="article typo">
+	  <h2 id="ItemsControl"><a href="#ItemsControl" class="headerlink" title="ItemsControl"></a>ItemsControl</h2><p>有时需要呈现一组逻辑上<strong>平级</strong>的控件，他们可以是一个列表，也可以是一个网格；可以横向排列，也可以纵向排列；数量可以固定，也可以按需加载；普通控件的组合无能为力。所以，我们需要新的工具。<code>ItemsControl</code>应运而生。</p>
+
+    
+	  <div class="readmore">
+      <a href="/2019/04/19/fluent-treeview-part1/">Read More</a>
+    </div>
+    
+    
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2018/10/22/get-link-time-from-csharp/">
+        获取程序的编译时间
+      </a>
+    </h2>
+    
+    <time>
+      Oct 22, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="日常新需求"><a href="#日常新需求" class="headerlink" title="日常新需求"></a>日常新需求</h2><p>新的需求又来了。这次是程序在编译后6个月拒绝启动。BETA性质的软件都有类似的需求。但大部分软件要么是启动时检查更新，要么是联网判断是否过期。对于我们现在做的这个小工具太小题大做了。根据编译时间判断过期的需求看似奇葩，也是有点道理的。<br></p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/10/22/get-link-time-from-csharp/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/C/">C#</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
       <a href="/2018/08/30/build-script-with-msbuild/">
         使用MSBuild编写构建脚本
       </a>
@@ -192,88 +261,6 @@
         <a href="/tags/WPF/">WPF</a>
       
         <a href="/tags/Net-Framework/">.Net Framework</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/19/overhead-of-reference-types/">
-        引用类型的开销
-      </a>
-    </h2>
-    
-    <time>
-      Jul 19, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
-<h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/07/19/overhead-of-reference-types/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/reference-type/">reference type</a>
-      
-        <a href="/tags/overhead/">overhead</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/12/program-upon-abstractions/">
-        面向抽象编程
-      </a>
-    </h2>
-    
-    <time>
-      Jul 12, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
-<blockquote>
-<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
-</blockquote>
-<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
-<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/07/12/program-upon-abstractions/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/OOP/">OOP</a>
-      
-        <a href="/tags/SOLID/">SOLID</a>
       
 	  </div>
     
