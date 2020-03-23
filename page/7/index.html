@@ -131,6 +131,52 @@
   <section class="meta">
     
     <h2 class="title">
+      <a href="/2018/03/08/closure-and-re-entrance/">
+        闭包，变量捕获与重入问题
+      </a>
+    </h2>
+    
+    <time>
+      Mar 8, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
+<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
+<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
+<p>变化后，倒计时的秒数变为</p>
+<blockquote>
+<p>9 3 8 2 7 1</p>
+</blockquote>
+<p>变得不连续了。</p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/03/08/closure-and-re-entrance/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/Reentrance/">Reentrance</a>
+      
+        <a href="/tags/async-await/">async/await</a>
+      
+        <a href="/tags/lambda/">lambda</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
       <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
         HTTPClient 踩坑记
       </a>

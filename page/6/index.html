@@ -131,6 +131,44 @@
   <section class="meta">
     
     <h2 class="title">
+      <a href="/2018/07/31/self-contained-wpf-application/">
+        Build a (partial) self-contained WPF application
+      </a>
+    </h2>
+    
+    <time>
+      Jul 31, 2018
+    </time>
+		
+  </section>
+  <section class="article typo">
+	  <h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
+<p>扯远了:)</p>
+
+    
+	  <div class="readmore">
+      <a href="/2018/07/31/self-contained-wpf-application/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/WPF/">WPF</a>
+      
+        <a href="/tags/Net-Framework/">.Net Framework</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
       <a href="/2018/07/19/overhead-of-reference-types/">
         引用类型的开销
       </a>
@@ -246,52 +284,6 @@
         <a href="/tags/Debugging/">Debugging</a>
       
         <a href="/tags/WPF/">WPF</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/03/08/closure-and-re-entrance/">
-        闭包，变量捕获与重入问题
-      </a>
-    </h2>
-    
-    <time>
-      Mar 8, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
-<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
-<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
-<p>变化后，倒计时的秒数变为</p>
-<blockquote>
-<p>9 3 8 2 7 1</p>
-</blockquote>
-<p>变得不连续了。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/03/08/closure-and-re-entrance/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/Reentrance/">Reentrance</a>
-      
-        <a href="/tags/async-await/">async/await</a>
-      
-        <a href="/tags/lambda/">lambda</a>
       
 	  </div>
     
