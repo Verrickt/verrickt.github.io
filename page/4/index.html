@@ -131,25 +131,41 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2019/07/08/exception-the-abnormal-control-flow/">
-        异常-控制流的突变
+      <a href="/2018/05/21/hell-mode-debugging/">
+        记一次愉(dan)快(teng)的捉虫
       </a>
     </h2>
     
     <time>
-      Jul 8, 2019
+      May 21, 2018
     </time>
 		
   </section>
   <section class="article typo">
-	  <h1 id="什么是异常"><a href="#什么是异常" class="headerlink" title="什么是异常"></a>什么是异常</h1><p>「现代操作系统」和国内的教材都没有讲清楚「中断、异常」这一组概念，再加上自己懒，一直没弄出个所以然，今天看了CSAPP上的解释，醍醐灌顶。<br></p>
+	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>BUG是任何软件都会遇到的问题。它通常是开发人员考虑问题不全面而埋下的隐形炸弹，在条件合适的时候就会爆炸；开发自己埋BUG往往比较容易除错，因为代码都是自己写的，定位问题后<code>git blame</code>一下就可以甩锅了；而程序依赖项里的BUG则排查起来则让人一筹莫展，尤其是在没有足够多信息的情况。</p>
+<p>面对来自客户和QA的压力，绞尽脑汁仍无法定位问题开发们只能找借口了🤣</p>
+<ul>
+<li>It’s a feature,not a bug.</li>
+<li>That’s the design decision, so not a bug</li>
+</ul>
+<p>我以前也遇到框架出问题的情况，不过都是自己改代码改出来的，倒也不是很难排查。但这次挖出来的BUG就完全不一样了</p>
 
     
 	  <div class="readmore">
-      <a href="/2019/07/08/exception-the-abnormal-control-flow/">Read More</a>
+      <a href="/2018/05/21/hell-mode-debugging/">Read More</a>
     </div>
     
     
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/C/">C#</a>
+      
+        <a href="/tags/Debugging/">Debugging</a>
+      
+        <a href="/tags/WPF/">WPF</a>
+      
+	  </div>
     
   </section>
 </article>
@@ -160,30 +176,42 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2019/04/19/fluent-treeview-part5/">
-        FluentTreeView Part.5
+      <a href="/2018/03/08/closure-and-re-entrance/">
+        闭包，变量捕获与重入问题
       </a>
     </h2>
     
     <time>
-      Apr 19, 2019
+      Mar 8, 2018
     </time>
 		
-    
-    <div class='cats'>
-        <a href="/categories/FluentTreeView/">FluentTreeView</a>
-    </div>
-
   </section>
   <section class="article typo">
-	  <h2 id="递归高亮"><a href="#递归高亮" class="headerlink" title="递归高亮"></a>递归高亮</h2><p>先来修正选择高亮的问题吧。我更愿意图片中的效果称为递归高亮。递归高亮可以看作是子节点都处于非递归高亮状态。这么想的话实现起来应该非常容易。但我希望FluentTreeView能够更灵活一些。最好通过属性来切换高亮模式。</p>
+	  <h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>公司的APP，在断网后进行一个10秒的倒计时操作，每秒钟都会尝试重新联网。当秒数到0时又重新开始计时，倒计时在用户退出程序或者连上网络结束。</p>
+<p>按理说是个很简单的Case。QA却报过来个BUG，说APP状态由</p>
+<p>联网-&gt;断网-&gt;联网-&gt;断网</p>
+<p>变化后，倒计时的秒数变为</p>
+<blockquote>
+<p>9 3 8 2 7 1</p>
+</blockquote>
+<p>变得不连续了。</p>
 
     
 	  <div class="readmore">
-      <a href="/2019/04/19/fluent-treeview-part5/">Read More</a>
+      <a href="/2018/03/08/closure-and-re-entrance/">Read More</a>
     </div>
     
     
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/Reentrance/">Reentrance</a>
+      
+        <a href="/tags/async-await/">async/await</a>
+      
+        <a href="/tags/lambda/">lambda</a>
+      
+	  </div>
     
   </section>
 </article>
@@ -194,65 +222,36 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2019/04/19/fluent-treeview-part4/">
-        FluentTreeView Part.4
+      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">
+        HTTPClient 踩坑记
       </a>
     </h2>
     
     <time>
-      Apr 19, 2019
+      Oct 24, 2017
     </time>
 		
-    
-    <div class='cats'>
-        <a href="/categories/FluentTreeView/">FluentTreeView</a>
-    </div>
-
   </section>
   <section class="article typo">
-	  <p>这篇起我们正式开始实现FluentTreeView。先看看图片<br><img src="/2019/04/19/fluent-treeview-part4/fluent-tree-view.jpg" alt="FluentTreeView"></p>
-<p>TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。<br>再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？</p>
+	  <p>HttpClient是随着.Net framework 4.5一起发布的现代Http库。比起WebClient，HttpClient最大的优点就是<br>加入了C#5中的async/await异步方法的支持。async/await的坑暂且不表，今天就来说一说这个HttpClient</p>
+<h2 id="HttpClient的坑"><a href="#HttpClient的坑" class="headerlink" title="HttpClient的坑"></a>HttpClient的坑</h2><p>HttpClient实现了IDisposable接口，很多小伙伴一看到IDisposeable接口就纷纷把HttpClient套在了using里边</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//bad httpclient usage</span></div><div class="line"><span class="keyword">using</span>(<span class="keyword">var</span> client = <span class="keyword">new</span> HttpClient())</div><div class="line">&#123;</div><div class="line">    <span class="comment">//do stuffs</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这种用法是<strong>错误</strong>的.HttpClient在设计之初被设计为一个可重用的对象，它的生命周期应该与应用程序相一致.上述错误的用法每发起一个请求就会创建一个新的HttpClient，并且在收到回复之后立即把HttpClient dispose掉。众所周知TCP连接在真正断开之前会有几分钟处于CLOSE_WAIT状态。这个状态下TCP链接并没有真正断开。短时间内大量发出Http请求会使系统可用的端口急剧消耗。</p>
 
     
 	  <div class="readmore">
-      <a href="/2019/04/19/fluent-treeview-part4/">Read More</a>
+      <a href="/2017/10/24/httpclient-good-part-and-tipfalls/">Read More</a>
     </div>
     
     
     
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/04/19/fluent-treeview-part3/">
-        FluentTreeView Part.3
-      </a>
-    </h2>
-    
-    <time>
-      Apr 19, 2019
-    </time>
-		
-    
-    <div class='cats'>
-        <a href="/categories/FluentTreeView/">FluentTreeView</a>
-    </div>
-
-  </section>
-  <section class="article typo">
-	  <p>上一篇中我们用数据驱动界面的方式使用了TreeView。这一篇我们稍稍改一改TreeView的样式。把TreeView表示节点可以展开的小三角替换成Expander是个不错的开始。既能复习TreeView的可视化树，又避免步子太大扯到蛋。<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/04/19/fluent-treeview-part3/">Read More</a>
-    </div>
-    
-    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/C/">C#</a>
+      
+        <a href="/tags/HttpClient/">HttpClient</a>
+      
+	  </div>
     
   </section>
 </article>
@@ -268,11 +267,6 @@
       <span class="text">Previous</span>
     </a>
     
-    
-    <a class="next" rel="next" href="/page/5/">
-      <span class="text">Next</span>
-      <span class="icon icon-chevron-right"></span>
-    </a>
     
   </nav>
   

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Melchior on CLR</title>
+  <title>Archives: 2020/4 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/page/6/index.html">
+<meta property="og:url" content="https://verrickt.github.io/archives/2020/04/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -124,6 +124,11 @@
     <div class='container clearfix'>
       <div class='l_main'>
         
+	
+  <script>
+    window.subData= { title:'Year : 2020.4'}
+  </script>
+
 <section class="post-list">
 	
     <div class='post-wrapper'>
@@ -131,159 +136,29 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2018/07/31/self-contained-wpf-application/">
-        Build a (partial) self-contained WPF application
+      <a href="/2020/04/03/PAT-1097-Deduplication-on-a-Linked-List/">
+        PAT 1097 Deduplication on a Linked List
       </a>
     </h2>
     
     <time>
-      Jul 31, 2018
+      Apr 3, 2020
     </time>
 		
   </section>
   <section class="article typo">
-	  <h2 id="巨人的肩膀"><a href="#巨人的肩膀" class="headerlink" title="巨人的肩膀"></a>巨人的肩膀</h2><p>新事物的产生总是与老事物有千丝万缕的联系。或是从中得到启发，或是对其全面改良。新事物的源头通常可以追溯到很久远的一些概念上。因此有了「站在巨人的肩膀上」 这样的说法。在程序设计里面，「巨人们的肩膀」 就是我们的应用程序使用的库了。踩在这些「巨人」们的肩膀上我们的程序才得以重见天日；为了实现一个库，有时候会使用到其他的库。我们所依赖的「巨人」又踩在了其他「巨人」的肩膀上，把依赖关系变成了树状结构，我们的程序处在根节点。</p>
-<p>扯远了:)</p>
+	  <h2 id="Deduplication-on-a-Linked-List"><a href="#Deduplication-on-a-Linked-List" class="headerlink" title="Deduplication on a Linked List"></a>Deduplication on a Linked List</h2><p>Given a singly linked list L with integer keys, you are supposed to remove the nodes with duplicated absolute values of the keys. That is, for each value K, only the first node of which the value or absolute value of its key equals K will be kept. At the mean time, all the removed nodes must be kept in a separate list. For example, given L being <code>21→-15→-15→-7→15</code>, you must output <code>21→-15→-7</code>, and the removed list <code>-15→15</code>.</p>
 
     
 	  <div class="readmore">
-      <a href="/2018/07/31/self-contained-wpf-application/">Read More</a>
+      <a href="/2020/04/03/PAT-1097-Deduplication-on-a-Linked-List/">Read More</a>
     </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/WPF/">WPF</a>
-      
-        <a href="/tags/Net-Framework/">.Net Framework</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/19/overhead-of-reference-types/">
-        引用类型的开销
-      </a>
-    </h2>
-    
-    <time>
-      Jul 19, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
-<h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/07/19/overhead-of-reference-types/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/reference-type/">reference type</a>
-      
-        <a href="/tags/overhead/">overhead</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/12/program-upon-abstractions/">
-        面向抽象编程
-      </a>
-    </h2>
-    
-    <time>
-      Jul 12, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
-<blockquote>
-<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
-</blockquote>
-<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
-<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/07/12/program-upon-abstractions/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/OOP/">OOP</a>
-      
-        <a href="/tags/SOLID/">SOLID</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/05/21/hell-mode-debugging/">
-        记一次愉(dan)快(teng)的捉虫
-      </a>
-    </h2>
-    
-    <time>
-      May 21, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="废话"><a href="#废话" class="headerlink" title="废话"></a>废话</h2><p>BUG是任何软件都会遇到的问题。它通常是开发人员考虑问题不全面而埋下的隐形炸弹，在条件合适的时候就会爆炸；开发自己埋BUG往往比较容易除错，因为代码都是自己写的，定位问题后<code>git blame</code>一下就可以甩锅了；而程序依赖项里的BUG则排查起来则让人一筹莫展，尤其是在没有足够多信息的情况。</p>
-<p>面对来自客户和QA的压力，绞尽脑汁仍无法定位问题开发们只能找借口了🤣</p>
-<ul>
-<li>It’s a feature,not a bug.</li>
-<li>That’s the design decision, so not a bug</li>
-</ul>
-<p>我以前也遇到框架出问题的情况，不过都是自己改代码改出来的，倒也不是很难排查。但这次挖出来的BUG就完全不一样了</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/05/21/hell-mode-debugging/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/Debugging/">Debugging</a>
-      
-        <a href="/tags/WPF/">WPF</a>
+        <a href="/tags/PAT/">PAT</a>
       
 	  </div>
     
@@ -294,21 +169,6 @@
 </section>
 
 
-  <nav id="page-nav">
-    
-    <a class="prev" rel="prev" href="/page/5/">
-      <span class="icon icon-chevron-left"></span>
-      <span class="text">Previous</span>
-    </a>
-    
-    
-    <a class="next" rel="next" href="/page/7/">
-      <span class="text">Next</span>
-      <span class="icon icon-chevron-right"></span>
-    </a>
-    
-  </nav>
-  
 
       </div>
       <aside class='l_side'>
