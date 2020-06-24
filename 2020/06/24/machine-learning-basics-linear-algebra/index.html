@@ -4,7 +4,7 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Melchior on CLR</title>
+  <title>机器学习基础——线性代数 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -12,17 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="A programmer focus mainly on Microsoft Technologies">
-<meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/index.html">
+  <meta name="description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。 ConceptsTensor矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 A_{i,j,k}表示张量A的一个分量 Identify matrixIdentity matrix为单位矩阵">
+<meta name="keywords" content="Machine learning,Linear algebra,The flower book">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习基础——线性代数">
+<meta property="og:url" content="https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta property="og:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。 ConceptsTensor矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 A_{i,j,k}表示张量A的一个分量 Identify matrixIdentity matrix为单位矩阵">
 <meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:updated_time" content="2020-06-24T10:20:25.131Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Melchior on CLR">
-<meta name="twitter:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta name="twitter:title" content="机器学习基础——线性代数">
+<meta name="twitter:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。 ConceptsTensor矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 A_{i,j,k}表示张量A的一个分量 Identify matrixIdentity matrix为单位矩阵">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -123,26 +124,26 @@
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
-        
-<section class="post-list">
+        <article id="post-machine-learning-basics-linear-algebra"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2020/06/24/machine-learning-basics-linear-algebra/">
+    	机器学习基础——线性代数
+    </a>
+  </h2>
+	<time>
+	  Jun 24, 2020
+	</time>
 	
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/06/24/machine-learning-basics-linear-algebra/">
-        机器学习基础——线性代数
-      </a>
-    </h2>
-    
-    <time>
-      Jun 24, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
+	</section>
+	
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Concepts"><span class="toc-number">2.</span> <span class="toc-text">Concepts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tensor"><span class="toc-number">2.1.</span> <span class="toc-text">Tensor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Identify-matrix"><span class="toc-number">2.2.</span> <span class="toc-text">Identify matrix</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#matrix-inversion"><span class="toc-number">2.3.</span> <span class="toc-text">matrix inversion</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Singular-matrix"><span class="toc-number">2.4.</span> <span class="toc-text">Singular matrix</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Norms"><span class="toc-number">2.5.</span> <span class="toc-text">Norms</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operations"><span class="toc-number">3.</span> <span class="toc-text">Operations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Decomposition"><span class="toc-number">3.1.</span> <span class="toc-text">Decomposition</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Eigendecomposition"><span class="toc-number">3.1.1.</span> <span class="toc-text">Eigendecomposition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Singular-value-decomposition-SVD"><span class="toc-number">3.1.2.</span> <span class="toc-text">Singular value decomposition(SVD)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#The-Moore-Penrose-Pseudoinverse"><span class="toc-number">3.2.</span> <span class="toc-text">The Moore-Penrose Pseudoinverse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Trace"><span class="toc-number">3.3.</span> <span class="toc-text">Trace</span></a></li></ol></li></ol></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
 <h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><h3 id="Tensor"><a href="#Tensor" class="headerlink" title="Tensor"></a>Tensor</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。<br>向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。</p>
 <script type="math/tex; mode=display">A_{i,j,k}</script><p>表示张量A的一个分量</p>
@@ -207,11 +208,9 @@
 <script type="math/tex; mode=display">||A||_F=\sqrt{\mathrm{Tr(AA^T)}}</script><p>矩阵的迹具有循环不变性：</p>
 <script type="math/tex; mode=display">\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}</script><p>更通用来说，</p>
 <script type="math/tex; mode=display">\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})</script>
-
-    
-    
-    
-	  <div class="full-width auto-padding tags">
+  	</div>
+	  
+	  <div class="article-tags tags">
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
@@ -221,271 +220,44 @@
       
 	  </div>
     
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/04/21/render-html-natively-in-uwp/">
-        HTML渲染为UWP的原生控件
-      </a>
-    </h2>
-    
-    <time>
-      Apr 21, 2020
-    </time>
 		
-  </section>
-  <section class="article typo">
-	  <h3 id="没啥用的前言"><a href="#没啥用的前言" class="headerlink" title="没啥用的前言"></a>没啥用的前言</h3><p>说着再做UWP就剁手，我还是开了一个新坑🤣<br>这次是<a href="http://bog.ac" target="_blank" rel="external">B岛</a>的<a href="https://github.com/Verrickt/BogNMB.UWP" target="_blank" rel="external">UWP端</a><br>论坛客户端的一个老大难问题是内容的呈现。论坛一般以网页端为主，网页做好，论坛活跃起来后之后才会开发客户端/有开发者愿意做第三方的客户端。因此，API绝大多数情况是为网页端为一等公民的。此外，各个UI框架展示内容的格式也各有不同。以上两个原因导致HTML被选做富文本展示的通用语言。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/04/21/render-html-natively-in-uwp/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/UWP/">UWP</a>
-      
-        <a href="/tags/HTML/">HTML</a>
-      
-	  </div>
-    
-  </section>
+	
+		<div class="art-item-footer">
+				
+				
+					<span class="art-item-right">next：<a href="/2020/04/21/render-html-natively-in-uwp/" rel="next"  title="HTML渲染为UWP的原生控件">
+						HTML渲染为UWP的原生控件
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
+	
+		<section id="comments">
+			<div id="gitment_thread"></div>
+			<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+			<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+			<script>
+					var gitment = new Gitment({
+							id: '机器学习基础——线性代数',
+							owner: 'verrickt',
+							repo: 'verrickt.github.io',
+							oauth: {
+									client_id: '9a5cc0fe7b4e920d91f3',
+									client_secret: 'ae774015efba47b603a7c6540c276f744e32e07d',
+							},
+					})
+					gitment.render('comments')
+			</script>
+		</section>
+	
 </article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/04/03/PAT-1097-Deduplication-on-a-Linked-List/">
-        PAT 1097 Deduplication on a Linked List
-      </a>
-    </h2>
-    
-    <time>
-      Apr 3, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Deduplication-on-a-Linked-List"><a href="#Deduplication-on-a-Linked-List" class="headerlink" title="Deduplication on a Linked List"></a>Deduplication on a Linked List</h2><p>Given a singly linked list L with integer keys, you are supposed to remove the nodes with duplicated absolute values of the keys. That is, for each value K, only the first node of which the value or absolute value of its key equals K will be kept. At the mean time, all the removed nodes must be kept in a separate list. For example, given L being <code>21→-15→-15→-7→15</code>, you must output <code>21→-15→-7</code>, and the removed list <code>-15→15</code>.</p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/04/03/PAT-1097-Deduplication-on-a-Linked-List/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/03/23/PAT-1021-Deepest-Root/">
-        PAT 1021 Deepest Root
-      </a>
-    </h2>
-    
-    <time>
-      Mar 23, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Deepest-Root"><a href="#Deepest-Root" class="headerlink" title="Deepest Root"></a>Deepest Root</h2><p>A graph which is connected and acyclic can be considered a tree. The height of the tree depends on the selected root. Now you are supposed to find the root that results in a highest tree. Such a root is called <strong>the deepest root.</strong></p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/03/23/PAT-1021-Deepest-Root/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/03/17/yeah-that-naive-bubble-sort/">
-        重学「冒泡排序」
-      </a>
-    </h2>
-    
-    <time>
-      Mar 17, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>PAT里链表题有各式各样的<a href="https://www.liuchuo.net/archives/2116" target="_blank" rel="external">骚操作</a>。这些非常规操作易学易用，但是习惯了这些后，反而对题目真正想考察的知识生疏了。今天就碰到一道这样的题，想用正经的算法写却写不出来。希望大家以我为戒，不要过多的学习这些「奇技淫巧」<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/03/17/yeah-that-naive-bubble-sort/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/03/16/PAT-1038-Recover-the-Smallest-Number/">
-        PAT-1038 Recover the Smallest Number
-      </a>
-    </h2>
-    
-    <time>
-      Mar 16, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h1 id="Recover-the-Smallest-Number"><a href="#Recover-the-Smallest-Number" class="headerlink" title="Recover the Smallest Number"></a>Recover the Smallest Number</h1><p>Given a collection of number segments, you are supposed to recover the smallest number from them. For example, given <code>{ 32, 321, 3214, 0229, 87 }</code>, we can recover many numbers such like <code>32-321-3214-0229-87</code> or <code>0229-32-87-321-3214</code> with respect to different orders of combinations of these segments, and the smallest number is <code>0229-321-3214-32-87</code>.<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/03/16/PAT-1038-Recover-the-Smallest-Number/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/03/11/PAT-1007-Maximum-Subsequence-Sum/">
-        PAT 1007 Maximum Subsequence Sum
-      </a>
-    </h2>
-    
-    <time>
-      Mar 11, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Maximum-Subsequence-Sum"><a href="#Maximum-Subsequence-Sum" class="headerlink" title="Maximum Subsequence Sum"></a>Maximum Subsequence Sum</h2><p>Given a sequence of K integers { N​1​​, N​2​​, …, N​K​​ }. A continuous subsequence is defined to be { N​i​​, N​i+1​​, …, N​j​​ } where 1≤i≤j≤K. The Maximum Subsequence is the continuous subsequence which has the largest sum of its elements. For example, given sequence { -2, 11, -4, 13, -5, -2 }, its maximum subsequence is { 11, -4, 13 } with the largest sum being 20.</p>
-<p>Now you are supposed to find the largest sum, together with the first and the last numbers of the maximum subsequence.</p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/03/11/PAT-1007-Maximum-Subsequence-Sum/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/21/cpp-the-double-edged-sword/">
-        「C++」踩坑
-      </a>
-    </h2>
-    
-    <time>
-      Aug 21, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>因为PAT刷题的缘故,开始再次接触C++.用过OOP语言再回来用C十分不习惯,C++就顺手多了.C没有泛型,字符串也不好用,C++就好多了,STL的容器和模板完美结合,字符串类也堪用.</p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/21/cpp-the-double-edged-sword/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/CPP/">CPP</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-</section>
-
-
-  <nav id="page-nav">
-    
-    
-    <a class="next" rel="next" href="/page/2/">
-      <span class="text">Next</span>
-      <span class="icon icon-chevron-right"></span>
-    </a>
-    
-  </nav>
-  
+<script>
+	window.subData = {
+		title: '机器学习基础——线性代数',
+		tools: true
+	}
+</script>
 
       </div>
       <aside class='l_side'>

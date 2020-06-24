@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
   <title>Melchior on CLR</title>
@@ -32,11 +32,11 @@
     function setLoadingBarProgress(num) {
       document.getElementById('loading-bar').style.width=num+"%";
     }
-  </script>
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </head>
 
 <body>
-  <div id="loading-bar-wrapper">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="loading-bar-wrapper">
   <div id="loading-bar"></div>
 </div>
 
@@ -126,6 +126,40 @@
         
 <section class="post-list">
 	
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2019/04/19/fluent-treeview-part5/">
+        FluentTreeView Part.5
+      </a>
+    </h2>
+    
+    <time>
+      Apr 19, 2019
+    </time>
+		
+    
+    <div class='cats'>
+        <a href="/categories/FluentTreeView/">FluentTreeView</a>
+    </div>
+
+  </section>
+  <section class="article typo">
+	  <h2 id="递归高亮"><a href="#递归高亮" class="headerlink" title="递归高亮"></a>递归高亮</h2><p>先来修正选择高亮的问题吧。我更愿意图片中的效果称为递归高亮。递归高亮可以看作是子节点都处于非递归高亮状态。这么想的话实现起来应该非常容易。但我希望FluentTreeView能够更灵活一些。最好通过属性来切换高亮模式。</p>
+
+    
+	  <div class="readmore">
+      <a href="/2019/04/19/fluent-treeview-part5/">Read More</a>
+    </div>
+    
+    
+    
+  </section>
+</article>
+    </div>
+  
     <div class='post-wrapper'>
       <article class="post reveal">
   <section class="meta">
@@ -371,46 +405,6 @@
 </article>
     </div>
   
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/19/overhead-of-reference-types/">
-        引用类型的开销
-      </a>
-    </h2>
-    
-    <time>
-      Jul 19, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="值类型与引用类型"><a href="#值类型与引用类型" class="headerlink" title="值类型与引用类型"></a>值类型与引用类型</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
-<h2 id="Sync-block-index-与-Type-object-pointer"><a href="#Sync-block-index-与-Type-object-pointer" class="headerlink" title="Sync block index 与 Type object pointer"></a>Sync block index 与 Type object pointer</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/07/19/overhead-of-reference-types/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/reference-type/">reference type</a>
-      
-        <a href="/tags/overhead/">overhead</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
 </section>
 
 
@@ -477,7 +471,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 14px; color: #808080">Machine learning</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/The-flower-book/" style="font-size: 14px; color: #808080">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
@@ -507,17 +501,17 @@
           
   </div>
 
-  <div>(c) 2017-2018 by verrickt, all right reserved. Powered by
+  <div> 2017-2020 by verrickt. Powered by
     <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
     <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
     <div>
-      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
-        <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
-          height="24.75" width="66">
-      </a>
       <span>
         Unless explicitly stated, contents of this blog are licensed under
         <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
+            height="24.75" width="66">
+        </a>
       </span>
     </div>
 </footer>
@@ -546,6 +540,6 @@
 <script src="/js/app.js"></script>
 
 
-  <script>setLoadingBarProgress(100);</script>
+  <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

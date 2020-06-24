@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
   <title>FluentTreeView Part.4 | Melchior on CLR</title>
@@ -38,11 +38,11 @@
     function setLoadingBarProgress(num) {
       document.getElementById('loading-bar').style.width=num+"%";
     }
-  </script>
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </head>
 
 <body>
-  <div id="loading-bar-wrapper">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="loading-bar-wrapper">
   <div id="loading-bar"></div>
 </div>
 
@@ -156,6 +156,7 @@
     	<p>这篇起我们正式开始实现FluentTreeView。先看看图片<br><img src="/2019/04/19/fluent-treeview-part4/fluent-tree-view.jpg" alt="FluentTreeView"></p>
 <p>TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。<br>再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？</p>
 <a id="more"></a>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -177,6 +178,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <p>ItemsPreserenter将会被展开为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">ItemsPanel</div><div class="line">    TreeViewItem</div><div class="line">    TreeViewItem</div><div class="line">    TreeViewItem</div></pre></td></tr></table></figure></p>
 <p>这就意味着，下一级的TreeViewItem永远处于上一级TreeViewItem的第二列里。将第一列的列宽设置为定值，就实现了各个层级的缩进。</p>
 <p>进一步思考，如果我们在这样的结构里去修改TreeViewItem的面板的背景色当作高亮的话，那这个面板自身也是被缩进的。<br>我们试一试，把Style改成这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">&lt;Style TargetType=&quot;TreeViewItem&quot;&gt;</div><div class="line">    &lt;Setter Property=&quot;Template&quot;&gt;</div><div class="line">        &lt;Setter.Value&gt;</div><div class="line">            &lt;ControlTemplate TargetType=&quot;TreeViewItem&quot;&gt;</div><div class="line">                &lt;Grid x:Name=&quot;root&quot;&gt;</div><div class="line">                    &lt;Grid.ColumnDefinitions&gt;</div><div class="line">                        &lt;ColumnDefinition Width=&quot;24&quot;&gt;&lt;/ColumnDefinition&gt;</div><div class="line">                        &lt;ColumnDefinition&gt;&lt;/ColumnDefinition&gt;</div><div class="line">                    &lt;/Grid.ColumnDefinitions&gt;</div><div class="line">                    &lt;Grid.RowDefinitions&gt;</div><div class="line">                        &lt;RowDefinition Height=&quot;Auto&quot;&gt;&lt;/RowDefinition&gt;</div><div class="line">                        &lt;RowDefinition Height=&quot;*&quot;&gt;&lt;/RowDefinition&gt;</div><div class="line">                    &lt;/Grid.RowDefinitions&gt;</div><div class="line">                    &lt;Expander IsExpanded=&quot;&#123;Binding RelativeSource=&#123;RelativeSource TemplatedParent&#125;,Path=IsExpanded,Mode=TwoWay&#125;&quot; x:Name=&quot;expander&quot;&gt;&lt;/Expander&gt;</div><div class="line">                    &lt;ContentPresenter VerticalAlignment=&quot;Center&quot; Grid.Column=&quot;1&quot; ContentSource=&quot;Header&quot;&gt;&lt;/ContentPresenter&gt;</div><div class="line">                    &lt;ItemsPresenter Visibility=&quot;&#123;Binding RelativeSource=&#123;RelativeSource TemplatedParent&#125;,Path=IsExpanded,Converter=&#123;StaticResource BoolToVisibilityConverter&#125;&#125;&quot; Grid.Row=&quot;1&quot; Grid.Column=&quot;1&quot;&gt;&lt;/ItemsPresenter&gt;</div><div class="line">                &lt;/Grid&gt;</div><div class="line">                &lt;ControlTemplate.Triggers&gt;</div><div class="line">                    &lt;Trigger Property=&quot;HasItems&quot; Value=&quot;False&quot;&gt;</div><div class="line">                        &lt;Setter TargetName=&quot;expander&quot; Property=&quot;Visibility&quot; Value=&quot;Collapsed&quot;&gt;&lt;/Setter&gt;</div><div class="line">                    &lt;/Trigger&gt;</div><div class="line">                    &lt;Trigger Property=&quot;IsSelected&quot; Value=&quot;True&quot;&gt;</div><div class="line">                        &lt;Setter TargetName=&quot;root&quot; Property=&quot;Background&quot; Value=&quot;Red&quot;&gt;&lt;/Setter&gt;</div><div class="line">                    &lt;/Trigger&gt;</div><div class="line">                &lt;/ControlTemplate.Triggers&gt;</div><div class="line">            &lt;/ControlTemplate&gt;</div><div class="line">        &lt;/Setter.Value&gt;</div><div class="line">    &lt;/Setter&gt;</div><div class="line">&lt;/Style&gt;</div></pre></td></tr></table></figure></p>
@@ -291,7 +293,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 14px; color: #808080">Machine learning</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/The-flower-book/" style="font-size: 14px; color: #808080">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
@@ -321,17 +323,17 @@
           
   </div>
 
-  <div>(c) 2017-2018 by verrickt, all right reserved. Powered by
+  <div> 2017-2020 by verrickt. Powered by
     <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
     <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
     <div>
-      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
-        <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
-          height="24.75" width="66">
-      </a>
       <span>
         Unless explicitly stated, contents of this blog are licensed under
         <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
+            height="24.75" width="66">
+        </a>
       </span>
     </div>
 </footer>
@@ -360,6 +362,6 @@
 <script src="/js/app.js"></script>
 
 
-  <script>setLoadingBarProgress(100);</script>
+  <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

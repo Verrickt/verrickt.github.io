@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
   <title>「C++」踩坑 | Melchior on CLR</title>
@@ -33,11 +33,11 @@
     function setLoadingBarProgress(num) {
       document.getElementById('loading-bar').style.width=num+"%";
     }
-  </script>
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </head>
 
 <body>
-  <div id="loading-bar-wrapper">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="loading-bar-wrapper">
   <div id="loading-bar"></div>
 </div>
 
@@ -150,7 +150,11 @@
 <p>自己的机器上跑一直没问题,一提交就错.抓瞎搞了一个多小时,又被devcpp的智能提示搞得心态爆炸,切换回了Visual Studio开始调试.结果依旧,不过编译的输出里多了一行Warning<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">warning C4715: &apos;insert&apos;: not all control paths return a value</div></pre></td></tr></table></figure></p>
 <p>把掉了的<code>return</code>语句加回去,AC了.</p>
 <p><a href="https://softwareengineering.stackexchange.com/questions/153372/function-works-fine-without-return-value-in-c" target="_blank" rel="external">StackExchange</a>上有人问了同样的问题</p>
-<quote> I forgot to write return ‘a’; in function and return 0; in main function but its works fine in Code::Blocks.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#include &lt;iostream&gt;</div><div class="line">using namespace std;</div><div class="line">char show()</div><div class="line">&#123;</div><div class="line">    cout&lt;&lt;&quot;this is show function&quot;&lt;&lt;endl;</div><div class="line">&#125;</div><div class="line">int main()</div><div class="line">&#123;</div><div class="line">    show();</div><div class="line">&#125;</div></pre></td></tr></table></figure><br><br> i am using Code::Blocks 10.05 in Ubuntu 12.04. Why this happen and why does the same thing cause an error in TURBO C++?<br></quote>
+<quote> I forgot to write return 'a'; in function and return 0; in main function but its works fine in Code::Blocks.
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">#include &lt;iostream&gt;</div><div class="line">using namespace std;</div><div class="line">char show()</div><div class="line">&#123;</div><div class="line">    cout&lt;&lt;&quot;this is show function&quot;&lt;&lt;endl;</div><div class="line">&#125;</div><div class="line">int main()</div><div class="line">&#123;</div><div class="line">    show();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+ i am using Code::Blocks 10.05 in Ubuntu 12.04. Why this happen and why does the same thing cause an error in TURBO C++?
+</quote>
 
 <p>Answer:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">If a function is declared to return a value, and fails to do so, the result is undefined behavior (in C++). One possible result is seeming to work, which is pretty much what you&apos;re seeing here.</div><div class="line"></div><div class="line">As an aside, in C, you wouldn&apos;t actually have undefined behavior -- in C, you get undefined behavior only if you try to use the return value, and the function didn&apos;t specify a value to return.</div></pre></td></tr></table></figure>
@@ -262,7 +266,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 14px; color: #808080">Machine learning</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/The-flower-book/" style="font-size: 14px; color: #808080">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
@@ -292,17 +296,17 @@
           
   </div>
 
-  <div>(c) 2017-2018 by verrickt, all right reserved. Powered by
+  <div> 2017-2020 by verrickt. Powered by
     <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
     <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
     <div>
-      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
-        <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
-          height="24.75" width="66">
-      </a>
       <span>
         Unless explicitly stated, contents of this blog are licensed under
         <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
+            height="24.75" width="66">
+        </a>
       </span>
     </div>
 </footer>
@@ -331,6 +335,6 @@
 <script src="/js/app.js"></script>
 
 
-  <script>setLoadingBarProgress(100);</script>
+  <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

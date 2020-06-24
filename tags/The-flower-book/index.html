@@ -4,7 +4,7 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Melchior on CLR</title>
+  <title>Tag: The flower book | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/page/2/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/The-flower-book/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -124,6 +124,10 @@
     <div class='container clearfix'>
       <div class='l_main'>
         
+  <script>
+    window.subData= { title:'Tag : The flower book'}
+  </script>
+
 <section class="post-list">
 	
     <div class='post-wrapper'>
@@ -131,282 +135,95 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2019/08/20/PAT-1034-Head-of-a-Gang/">
-        Head of a Gang
+      <a href="/2020/06/24/machine-learning-basics-linear-algebra/">
+        机器学习基础——线性代数
       </a>
     </h2>
     
     <time>
-      Aug 20, 2019
+      Jun 24, 2020
     </time>
 		
   </section>
   <section class="article typo">
-	  <h2 id="Head-of-a-gang"><a href="#Head-of-a-gang" class="headerlink" title="Head of a gang"></a>Head of a gang</h2><p><a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805456881434624" target="_blank" rel="external">Head of a Gang</a></p>
-<p>One way that the police finds the head of a gang is to check people’s phone calls. If there is a phone call between A and B, we say that A and B is related. The weight of a relation is defined to be the total time length of all the phone calls made between the two persons. A “Gang” is a cluster of more than 2 persons who are related to each other with total relation weight being greater than a given threthold K. In each gang, the one with maximum total weight is the head. Now given a list of phone calls, you are supposed to find the gangs and the heads.</p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/20/PAT-1034-Head-of-a-Gang/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/16/PAT-1018-Public-Bike-Management/">
-        1018 Public Bike Management
-      </a>
-    </h2>
-    
-    <time>
-      Aug 16, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Public-Bike-Management"><a href="#Public-Bike-Management" class="headerlink" title="Public Bike Management"></a>Public Bike Management</h2><p><a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805489282433024" target="_blank" rel="external">1018 Public Bike Management</a></p>
-<p>There is a public bike service in Hangzhou City which provides great convenience to the tourists from all over the world. One may rent a bike at any station and return it to any other stations in the city.<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/16/PAT-1018-Public-Bike-Management/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/16/Queueing-Problem-Revisited/">
-        回顾排队问题
-      </a>
-    </h2>
-    
-    <time>
-      Aug 16, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>刷PAT的过程中遇到了两类排队问题,这里总结一下</p>
+	  <p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
+<h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><h3 id="Tensor"><a href="#Tensor" class="headerlink" title="Tensor"></a>Tensor</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。<br>向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。</p>
+<script type="math/tex; mode=display">A_{i,j,k}</script><p>表示张量A的一个分量</p>
+<h3 id="Identify-matrix"><a href="#Identify-matrix" class="headerlink" title="Identify matrix"></a>Identify matrix</h3><p>Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。</p>
+<h3 id="matrix-inversion"><a href="#matrix-inversion" class="headerlink" title="matrix inversion"></a>matrix inversion</h3><p>花书定义：A−1A I= n.</p>
+<p>并<strong>未限定</strong>A为方阵</p>
+<p>花书也定义了右逆</p>
+<script type="math/tex; mode=display">A^{-1}A=I</script><p>同样<strong>未限定</strong>A为方阵</p>
+<p>而后说明，<strong>方阵</strong>的左逆和右逆是相同的</p>
+<blockquote>
+<p>For square matrices, the left inverse and right inverse are equal</p>
+</blockquote>
+<p>而课本认为<strong>非方阵</strong>没有逆矩阵。对左逆和右逆也不做显式区分。</p>
+<p>在花书接下来提到逆矩阵时，这可能是一个坑点</p>
+<h3 id="Singular-matrix"><a href="#Singular-matrix" class="headerlink" title="Singular matrix"></a>Singular matrix</h3><p>非<strong>满秩</strong>的<strong>方阵</strong>称为奇异矩阵。</p>
+<h3 id="Norms"><a href="#Norms" class="headerlink" title="Norms"></a>Norms</h3><p>又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。</p>
+<p>正式定义：</p>
 <ul>
-<li>所有人在同一时刻到达,如<a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805498207911936" target="_blank" rel="external">1014 Waiting in Line</a></li>
-<li>每个人到达的时刻不同,如<a href="(https://pintia.cn/problem-sets/994805342720868352/problems/994805491530579968">1017 Queueing at Bank</a>)</li>
+<li>f(x) = 0 ⇒ x = 0</li>
+<li>f(x+y) ≤ f(x) + f(y)(三角不等式)</li>
+<li>∀α∈R,f(αx) = |α|f(x)</li>
 </ul>
+<p>常用的范式:</p>
+<ul>
+<li>L2 norm<br>向量与原点的距离</li>
+</ul>
+<script type="math/tex; mode=display">||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}</script><ul>
+<li><p>Squared L2 norm<br>L2 norm的平方形式，某些情况下易于分析和计算</p>
+</li>
+<li><p>L1 norm</p>
+<script type="math/tex; mode=display">||x||_1=\sum_{i} |x_i|</script></li>
+<li><p>max norm</p>
+<script type="math/tex; mode=display">||x||_{\infty }={\max} |x_i|</script></li>
+<li><p>Frobenius norm<br>计算矩阵的“大小”</p>
+</li>
+</ul>
+<script type="math/tex; mode=display">||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}</script><h2 id="Operations"><a href="#Operations" class="headerlink" title="Operations"></a>Operations</h2><h3 id="Decomposition"><a href="#Decomposition" class="headerlink" title="Decomposition"></a>Decomposition</h3><p>将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。</p>
+<h4 id="Eigendecomposition"><a href="#Eigendecomposition" class="headerlink" title="Eigendecomposition"></a>Eigendecomposition</h4><p>基于特征值和特征向量分解。与课本相同，不再赘述。</p>
+<h4 id="Singular-value-decomposition-SVD"><a href="#Singular-value-decomposition-SVD" class="headerlink" title="Singular value decomposition(SVD)"></a>Singular value decomposition(SVD)</h4><p>又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。</p>
+<p>对于一个<code>m*n</code>的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：</p>
+<script type="math/tex; mode=display">A=UDV^T</script><ul>
+<li>U是大小<code>m*m</code>的正交矩阵</li>
+<li>D是大小<code>m*n</code>的对角矩阵</li>
+<li>V是大小<code>n*n</code>的正交矩阵</li>
+</ul>
+<p>D中对角线的元素称为A的奇异值。U的列向量称为A的<strong>左</strong>奇异向量，V的列向量称为A的<strong>右</strong>奇异向量</p>
+<p>A的奇异值分解可以理解为「A的函数」的特征值分解：</p>
+<ul>
+<li>A的左奇异值向量是AA^T的特征向量。</li>
+<li>A的右奇异值向量是A^TA的特征向量</li>
+<li>A的非零奇异值是A^TA的特征值，也是AA^T的特征值</li>
+</ul>
+<p>SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下</p>
+<h3 id="The-Moore-Penrose-Pseudoinverse"><a href="#The-Moore-Penrose-Pseudoinverse" class="headerlink" title="The Moore-Penrose Pseudoinverse"></a>The Moore-Penrose Pseudoinverse</h3><p>又称摩尔－彭若斯广义逆（好长的名字…）</p>
+<script type="math/tex; mode=display">A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}</script><p>实际上，一般用</p>
+<script type="math/tex; mode=display">A^+=VD^+U^T</script><p>来计算广义逆</p>
+<p>U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。</p>
+<p>当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。</p>
+<p>若x无解，Ax给出了L2范式中y-Ax的最小值</p>
+<h3 id="Trace"><a href="#Trace" class="headerlink" title="Trace"></a>Trace</h3><p>又称迹，是矩阵主对角线元素的和。</p>
+<script type="math/tex; mode=display">\mathrm{Tr}(A)=\sum_i{A_{i,i}}</script><p>迹和矩阵乘法可以代替一些需要求和符号的操作：</p>
+<script type="math/tex; mode=display">||A||_F=\sqrt{\mathrm{Tr(AA^T)}}</script><p>矩阵的迹具有循环不变性：</p>
+<script type="math/tex; mode=display">\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}</script><p>更通用来说，</p>
+<script type="math/tex; mode=display">\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})</script>
 
-    
-	  <div class="readmore">
-      <a href="/2019/08/16/Queueing-Problem-Revisited/">Read More</a>
-    </div>
     
     
     
 	  <div class="full-width auto-padding tags">
       
-        <a href="/tags/PAT/">PAT</a>
+        <a href="/tags/Machine-learning/">Machine learning</a>
+      
+        <a href="/tags/Linear-algebra/">Linear algebra</a>
+      
+        <a href="/tags/The-flower-book/">The flower book</a>
       
 	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/14/PAT-1014-Waiting-in-Line/">
-        PAT 1014 Waiting in Line
-      </a>
-    </h2>
-    
-    <time>
-      Aug 14, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Waiting-in-Line"><a href="#Waiting-in-Line" class="headerlink" title="Waiting in Line"></a>Waiting in Line</h2><p><a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805498207911936" target="_blank" rel="external">1014 Waiting in Line</a></p>
-<p>Suppose a bank has N windows open for service. There is a yellow line in front of the windows which devides the waiting area into two parts. The rules for the customers to wait in line are:<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/14/PAT-1014-Waiting-in-Line/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/08/molecule-to-atoms/">
-        Molecule to atoms
-      </a>
-    </h2>
-    
-    <time>
-      Aug 8, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <p>同学发过来一道有意思的题</p>
-<p>For a given chemical formula represented by a string, count the number of atoms of each element contained in the molecule and return an object (<code>associative array</code> in PHP, <code>Dictionary&lt;string, int&gt;</code> in C#, <code>Map&lt;String,Integer&gt;</code> in Java).</p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/08/molecule-to-atoms/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/C/">C#</a>
-      
-        <a href="/tags/Parser/">Parser</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/08/PAT-1003-Emergency/">
-        PAT 1003 Emergency
-      </a>
-    </h2>
-    
-    <time>
-      Aug 8, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Emergency"><a href="#Emergency" class="headerlink" title="Emergency"></a>Emergency</h2><p><a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805523835109376" target="_blank" rel="external">1003 Emergency</a></p>
-<p>As an emergency rescue team leader of a city, you are given a special map of your country. The map shows several scattered cities connected by some roads. Amount of rescue teams in each city and the length of each road between any pair of cities are marked on the map. When there is an emergency call to you from some other city, your job is to lead your men to the place as quickly as possible, and at the mean time, call up as many hands on the way as possible.<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/08/PAT-1003-Emergency/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/08/05/PAT-1004-Counting-Leaves/">
-        PAT 1004 Counting Leaves
-      </a>
-    </h2>
-    
-    <time>
-      Aug 5, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h2 id="Counting-Leaves"><a href="#Counting-Leaves" class="headerlink" title="Counting Leaves"></a>Counting Leaves</h2><p><a href="https://pintia.cn/problem-sets/994805342720868352/problems/994805521431773184" target="_blank" rel="external">1004 Counting Leaves</a></p>
-<p>A family hierarchy is usually presented by a pedigree tree. Your job is to count those family members who have no child.<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/08/05/PAT-1004-Counting-Leaves/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/PAT/">PAT</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2019/07/08/exception-the-abnormal-control-flow/">
-        异常-控制流的突变
-      </a>
-    </h2>
-    
-    <time>
-      Jul 8, 2019
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h1 id="什么是异常"><a href="#什么是异常" class="headerlink" title="什么是异常"></a>什么是异常</h1><p>「现代操作系统」和国内的教材都没有讲清楚「中断、异常」这一组概念，再加上自己懒，一直没弄出个所以然，今天看了CSAPP上的解释，醍醐灌顶。<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2019/07/08/exception-the-abnormal-control-flow/">Read More</a>
-    </div>
-    
-    
     
   </section>
 </article>
@@ -414,22 +231,6 @@
   
 </section>
 
-
-  <nav id="page-nav">
-    
-    <a class="prev" rel="prev" href="/">
-      <span class="icon icon-chevron-left"></span>
-      <span class="text">Previous</span>
-    </a>
-    
-    
-    <a class="next" rel="next" href="/page/3/">
-      <span class="text">Next</span>
-      <span class="icon icon-chevron-right"></span>
-    </a>
-    
-  </nav>
-  
 
       </div>
       <aside class='l_side'>
