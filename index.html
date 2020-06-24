@@ -143,71 +143,12 @@
   </section>
   <section class="article typo">
 	  <p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
-<h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><h3 id="Tensor"><a href="#Tensor" class="headerlink" title="Tensor"></a>Tensor</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。<br>向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。</p>
-<script type="math/tex; mode=display">A_{i,j,k}</script><p>表示张量A的一个分量</p>
-<h3 id="Identify-matrix"><a href="#Identify-matrix" class="headerlink" title="Identify matrix"></a>Identify matrix</h3><p>Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。</p>
-<h3 id="matrix-inversion"><a href="#matrix-inversion" class="headerlink" title="matrix inversion"></a>matrix inversion</h3><p>花书定义：A−1A I= n.</p>
-<p>并<strong>未限定</strong>A为方阵</p>
-<p>花书也定义了右逆</p>
-<script type="math/tex; mode=display">A^{-1}A=I</script><p>同样<strong>未限定</strong>A为方阵</p>
-<p>而后说明，<strong>方阵</strong>的左逆和右逆是相同的</p>
-<blockquote>
-<p>For square matrices, the left inverse and right inverse are equal</p>
-</blockquote>
-<p>而课本认为<strong>非方阵</strong>没有逆矩阵。对左逆和右逆也不做显式区分。</p>
-<p>在花书接下来提到逆矩阵时，这可能是一个坑点</p>
-<h3 id="Singular-matrix"><a href="#Singular-matrix" class="headerlink" title="Singular matrix"></a>Singular matrix</h3><p>非<strong>满秩</strong>的<strong>方阵</strong>称为奇异矩阵。</p>
-<h3 id="Norms"><a href="#Norms" class="headerlink" title="Norms"></a>Norms</h3><p>又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。</p>
-<p>正式定义：</p>
-<ul>
-<li>f(x) = 0 ⇒ x = 0</li>
-<li>f(x+y) ≤ f(x) + f(y)(三角不等式)</li>
-<li>∀α∈R,f(αx) = |α|f(x)</li>
-</ul>
-<p>常用的范式:</p>
-<ul>
-<li>L2 norm<br>向量与原点的距离</li>
-</ul>
-<script type="math/tex; mode=display">||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}</script><ul>
-<li><p>Squared L2 norm<br>L2 norm的平方形式，某些情况下易于分析和计算</p>
-</li>
-<li><p>L1 norm</p>
-<script type="math/tex; mode=display">||x||_1=\sum_{i} |x_i|</script></li>
-<li><p>max norm</p>
-<script type="math/tex; mode=display">||x||_{\infty }={\max} |x_i|</script></li>
-<li><p>Frobenius norm<br>计算矩阵的“大小”</p>
-</li>
-</ul>
-<script type="math/tex; mode=display">||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}</script><h2 id="Operations"><a href="#Operations" class="headerlink" title="Operations"></a>Operations</h2><h3 id="Decomposition"><a href="#Decomposition" class="headerlink" title="Decomposition"></a>Decomposition</h3><p>将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。</p>
-<h4 id="Eigendecomposition"><a href="#Eigendecomposition" class="headerlink" title="Eigendecomposition"></a>Eigendecomposition</h4><p>基于特征值和特征向量分解。与课本相同，不再赘述。</p>
-<h4 id="Singular-value-decomposition-SVD"><a href="#Singular-value-decomposition-SVD" class="headerlink" title="Singular value decomposition(SVD)"></a>Singular value decomposition(SVD)</h4><p>又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。</p>
-<p>对于一个<code>m*n</code>的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：</p>
-<script type="math/tex; mode=display">A=UDV^T</script><ul>
-<li>U是大小<code>m*m</code>的正交矩阵</li>
-<li>D是大小<code>m*n</code>的对角矩阵</li>
-<li>V是大小<code>n*n</code>的正交矩阵</li>
-</ul>
-<p>D中对角线的元素称为A的奇异值。U的列向量称为A的<strong>左</strong>奇异向量，V的列向量称为A的<strong>右</strong>奇异向量</p>
-<p>A的奇异值分解可以理解为「A的函数」的特征值分解：</p>
-<ul>
-<li>A的左奇异值向量是AA^T的特征向量。</li>
-<li>A的右奇异值向量是A^TA的特征向量</li>
-<li>A的非零奇异值是A^TA的特征值，也是AA^T的特征值</li>
-</ul>
-<p>SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下</p>
-<h3 id="The-Moore-Penrose-Pseudoinverse"><a href="#The-Moore-Penrose-Pseudoinverse" class="headerlink" title="The Moore-Penrose Pseudoinverse"></a>The Moore-Penrose Pseudoinverse</h3><p>又称摩尔－彭若斯广义逆（好长的名字…）</p>
-<script type="math/tex; mode=display">A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}</script><p>实际上，一般用</p>
-<script type="math/tex; mode=display">A^+=VD^+U^T</script><p>来计算广义逆</p>
-<p>U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。</p>
-<p>当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。</p>
-<p>若x无解，Ax给出了L2范式中y-Ax的最小值</p>
-<h3 id="Trace"><a href="#Trace" class="headerlink" title="Trace"></a>Trace</h3><p>又称迹，是矩阵主对角线元素的和。</p>
-<script type="math/tex; mode=display">\mathrm{Tr}(A)=\sum_i{A_{i,i}}</script><p>迹和矩阵乘法可以代替一些需要求和符号的操作：</p>
-<script type="math/tex; mode=display">||A||_F=\sqrt{\mathrm{Tr(AA^T)}}</script><p>矩阵的迹具有循环不变性：</p>
-<script type="math/tex; mode=display">\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}</script><p>更通用来说，</p>
-<script type="math/tex; mode=display">\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})</script>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br></p>
 
+    
+	  <div class="readmore">
+      <a href="/2020/06/24/machine-learning-basics-linear-algebra/">Read More</a>
+    </div>
     
     
     

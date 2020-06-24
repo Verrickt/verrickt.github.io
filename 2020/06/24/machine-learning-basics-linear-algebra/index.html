@@ -12,18 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。 ConceptsTensor矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 A_{i,j,k}表示张量A的一个分量 Identify matrixIdentity matrix为单位矩阵">
+  <meta name="description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
 <meta name="keywords" content="Machine learning,Linear algebra,The flower book">
 <meta property="og:type" content="article">
 <meta property="og:title" content="机器学习基础——线性代数">
 <meta property="og:url" content="https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。 ConceptsTensor矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 A_{i,j,k}表示张量A的一个分量 Identify matrixIdentity matrix为单位矩阵">
+<meta property="og:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2020-06-24T10:20:25.131Z">
+<meta property="og:updated_time" content="2020-06-24T10:26:20.102Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="机器学习基础——线性代数">
-<meta name="twitter:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。 ConceptsTensor矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 A_{i,j,k}表示张量A的一个分量 Identify matrixIdentity matrix为单位矩阵">
+<meta name="twitter:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -144,14 +144,13 @@
 	<section class="article typo">
   	<div class="article-entry" itemprop="articleBody">
     	<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
-<h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><h3 id="Tensor"><a href="#Tensor" class="headerlink" title="Tensor"></a>Tensor</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。<br>向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。</p>
-<script type="math/tex; mode=display">A_{i,j,k}</script><p>表示张量A的一个分量</p>
-<h3 id="Identify-matrix"><a href="#Identify-matrix" class="headerlink" title="Identify matrix"></a>Identify matrix</h3><p>Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。</p>
-<h3 id="matrix-inversion"><a href="#matrix-inversion" class="headerlink" title="matrix inversion"></a>matrix inversion</h3><p>花书定义：A−1A I= n.</p>
-<p>并<strong>未限定</strong>A为方阵</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br><a id="more"></a></p>
+<h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><h3 id="Tensor"><a href="#Tensor" class="headerlink" title="Tensor"></a>Tensor</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。<br>向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。<br>表示张量A的一个分量</p>
+<script type="math/tex; mode=display">A_{i,j,k}</script><h3 id="Identify-matrix"><a href="#Identify-matrix" class="headerlink" title="Identify matrix"></a>Identify matrix</h3><p>Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。</p>
+<h3 id="matrix-inversion"><a href="#matrix-inversion" class="headerlink" title="matrix inversion"></a>matrix inversion</h3><p>花书定义：</p>
+<script type="math/tex; mode=display">A^{-1}A=I</script><p>并<strong>未限定</strong>A为方阵，并且是左逆</p>
 <p>花书也定义了右逆</p>
-<script type="math/tex; mode=display">A^{-1}A=I</script><p>同样<strong>未限定</strong>A为方阵</p>
+<script type="math/tex; mode=display">AA^{-1}=I</script><p>同样<strong>未限定</strong>A为方阵</p>
 <p>而后说明，<strong>方阵</strong>的左逆和右逆是相同的</p>
 <blockquote>
 <p>For square matrices, the left inverse and right inverse are equal</p>
