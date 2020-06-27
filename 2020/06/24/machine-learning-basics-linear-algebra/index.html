@@ -20,7 +20,7 @@
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2020-06-24T10:26:20.102Z">
+<meta property="og:updated_time" content="2020-06-27T12:00:34.274Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="机器学习基础——线性代数">
 <meta name="twitter:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
@@ -137,6 +137,11 @@
 	  Jun 24, 2020
 	</time>
 	
+    
+    <div class='cats'>
+        <a href="/categories/Machine-learning/">Machine learning</a>
+    </div>
+
 	</section>
 	
 		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Concepts"><span class="toc-number">2.</span> <span class="toc-text">Concepts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tensor"><span class="toc-number">2.1.</span> <span class="toc-text">Tensor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Identify-matrix"><span class="toc-number">2.2.</span> <span class="toc-text">Identify matrix</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#matrix-inversion"><span class="toc-number">2.3.</span> <span class="toc-text">matrix inversion</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Singular-matrix"><span class="toc-number">2.4.</span> <span class="toc-text">Singular matrix</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Norms"><span class="toc-number">2.5.</span> <span class="toc-text">Norms</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operations"><span class="toc-number">3.</span> <span class="toc-text">Operations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Decomposition"><span class="toc-number">3.1.</span> <span class="toc-text">Decomposition</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Eigendecomposition"><span class="toc-number">3.1.1.</span> <span class="toc-text">Eigendecomposition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Singular-value-decomposition-SVD"><span class="toc-number">3.1.2.</span> <span class="toc-text">Singular value decomposition(SVD)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#The-Moore-Penrose-Pseudoinverse"><span class="toc-number">3.2.</span> <span class="toc-text">The Moore-Penrose Pseudoinverse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Trace"><span class="toc-number">3.3.</span> <span class="toc-text">Trace</span></a></li></ol></li></ol></section>
@@ -223,6 +228,10 @@
 	
 		<div class="art-item-footer">
 				
+					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2020/06/26/machine-learning-basics-probability-and-information-theory/" rel="prev"  title="机器学习基础——概率论与信息论">
+						机器学习基础——概率论与信息论 
+					</a></span>
+				
 				
 					<span class="art-item-right">next：<a href="/2020/04/21/render-html-natively-in-uwp/" rel="next"  title="HTML渲染为UWP的原生控件">
 						HTML渲染为UWP的原生控件
@@ -296,6 +305,8 @@
     
         <li><a class="flat-box" href="/categories/FluentTreeView/"><div class='name'>FluentTreeView</div><div class='badget'>5</div></a></li>
     
+        <li><a class="flat-box" href="/categories/Machine-learning/"><div class='name'>Machine learning</div><div class='badget'>2</div></a></li>
+    
     </ul>
     
 </div>
@@ -305,7 +316,7 @@
 <div class="m_widget tagcloud">
     <div class="header">Tags</div>
     <div class='content'>
-        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 14px; color: #808080">Machine learning</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/The-flower-book/" style="font-size: 14px; color: #808080">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/C/" style="font-size: 18px; color: #2b2b2b">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Information-theory/" style="font-size: 14px; color: #808080">Information theory</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 16px; color: #555">Machine learning</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Probability/" style="font-size: 14px; color: #808080">Probability</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/The-flower-book/" style="font-size: 16px; color: #555">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 16px; color: #555">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
     </div>
 </div>
 
