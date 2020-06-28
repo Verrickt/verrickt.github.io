@@ -4,7 +4,7 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>机器学习基础——线性代数 | Melchior on CLR</title>
+  <title>机器学习基础——数值计算 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -12,18 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
-<meta name="keywords" content="Machine learning,The flower book,Linear algebra">
+  <meta name="description" content="前言本文的主体是机器学习中所用到的数值计算知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
+<meta name="keywords" content="Machine learning,Numberical computation,The flower book">
 <meta property="og:type" content="article">
-<meta property="og:title" content="机器学习基础——线性代数">
-<meta property="og:url" content="https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/index.html">
+<meta property="og:title" content="机器学习基础——数值计算">
+<meta property="og:url" content="https://verrickt.github.io/2020/06/28/machine-larning-basics-numerical-computation/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
+<meta property="og:description" content="前言本文的主体是机器学习中所用到的数值计算知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
 <meta property="og:locale" content="zh-CN,en-US">
-<meta property="og:updated_time" content="2020-06-27T12:00:34.274Z">
+<meta property="og:updated_time" content="2020-06-28T05:04:35.659Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="机器学习基础——线性代数">
-<meta name="twitter:description" content="前言本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
+<meta name="twitter:title" content="机器学习基础——数值计算">
+<meta name="twitter:description" content="前言本文的主体是机器学习中所用到的数值计算知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -124,17 +124,17 @@
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
-        <article id="post-machine-learning-basics-linear-algebra"
+        <article id="post-machine-larning-basics-numerical-computation"
   class="post white-box article-type-post"
   itemscope itemprop="blogPost">
 	<section class='meta'>
 	<h2 class="title">
-  	<a href="/2020/06/24/machine-learning-basics-linear-algebra/">
-    	机器学习基础——线性代数
+  	<a href="/2020/06/28/machine-larning-basics-numerical-computation/">
+    	机器学习基础——数值计算
     </a>
   </h2>
 	<time>
-	  Jun 24, 2020
+	  Jun 28, 2020
 	</time>
 	
     
@@ -144,83 +144,65 @@
 
 	</section>
 	
-		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Concepts"><span class="toc-number">2.</span> <span class="toc-text">Concepts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tensor"><span class="toc-number">2.1.</span> <span class="toc-text">Tensor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Identify-matrix"><span class="toc-number">2.2.</span> <span class="toc-text">Identify matrix</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#matrix-inversion"><span class="toc-number">2.3.</span> <span class="toc-text">matrix inversion</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Singular-matrix"><span class="toc-number">2.4.</span> <span class="toc-text">Singular matrix</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Norms"><span class="toc-number">2.5.</span> <span class="toc-text">Norms</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operations"><span class="toc-number">3.</span> <span class="toc-text">Operations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Decomposition"><span class="toc-number">3.1.</span> <span class="toc-text">Decomposition</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Eigendecomposition"><span class="toc-number">3.1.1.</span> <span class="toc-text">Eigendecomposition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Singular-value-decomposition-SVD"><span class="toc-number">3.1.2.</span> <span class="toc-text">Singular value decomposition(SVD)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#The-Moore-Penrose-Pseudoinverse"><span class="toc-number">3.2.</span> <span class="toc-text">The Moore-Penrose Pseudoinverse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Trace"><span class="toc-number">3.3.</span> <span class="toc-text">Trace</span></a></li></ol></li></ol></section>
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Source-of-errors"><span class="toc-number">2.</span> <span class="toc-text">Source of errors</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Overflow-and-Underflow"><span class="toc-number">2.1.</span> <span class="toc-text">Overflow and Underflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Poor-Conditioning"><span class="toc-number">2.2.</span> <span class="toc-text">Poor Conditioning</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Optimization"><span class="toc-number">3.</span> <span class="toc-text">Optimization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#naive-gradient-descent"><span class="toc-number">3.1.</span> <span class="toc-text">naive gradient descent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Beyond-the-Gradient-Jacobian-and-Hessian-Matrices"><span class="toc-number">3.2.</span> <span class="toc-text">Beyond the Gradient: Jacobian and Hessian Matrices</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Constrained-optimization"><span class="toc-number">3.3.</span> <span class="toc-text">Constrained optimization</span></a></li></ol></li></ol></section>
 	
 	<section class="article typo">
   	<div class="article-entry" itemprop="articleBody">
     	<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br><a id="more"></a></p>
-<h2 id="Concepts"><a href="#Concepts" class="headerlink" title="Concepts"></a>Concepts</h2><h3 id="Tensor"><a href="#Tensor" class="headerlink" title="Tensor"></a>Tensor</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。<br>向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。<br>表示张量A的一个分量</p>
-<script type="math/tex; mode=display">A_{i,j,k}</script><h3 id="Identify-matrix"><a href="#Identify-matrix" class="headerlink" title="Identify matrix"></a>Identify matrix</h3><p>Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。</p>
-<h3 id="matrix-inversion"><a href="#matrix-inversion" class="headerlink" title="matrix inversion"></a>matrix inversion</h3><p>花书定义：</p>
-<script type="math/tex; mode=display">A^{-1}A=I</script><p>并<strong>未限定</strong>A为方阵，并且是左逆</p>
-<p>花书也定义了右逆</p>
-<script type="math/tex; mode=display">AA^{-1}=I</script><p>同样<strong>未限定</strong>A为方阵</p>
-<p>而后说明，<strong>方阵</strong>的左逆和右逆是相同的</p>
-<blockquote>
-<p>For square matrices, the left inverse and right inverse are equal</p>
-</blockquote>
-<p>而课本认为<strong>非方阵</strong>没有逆矩阵。对左逆和右逆也不做显式区分。</p>
-<p>在花书接下来提到逆矩阵时，这可能是一个坑点</p>
-<h3 id="Singular-matrix"><a href="#Singular-matrix" class="headerlink" title="Singular matrix"></a>Singular matrix</h3><p>非<strong>满秩</strong>的<strong>方阵</strong>称为奇异矩阵。</p>
-<h3 id="Norms"><a href="#Norms" class="headerlink" title="Norms"></a>Norms</h3><p>又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。</p>
-<p>正式定义：</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的数值计算知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br><a id="more"></a></p>
+<h2 id="Source-of-errors"><a href="#Source-of-errors" class="headerlink" title="Source of errors"></a>Source of errors</h2><h3 id="Overflow-and-Underflow"><a href="#Overflow-and-Underflow" class="headerlink" title="Overflow and Underflow"></a>Overflow and Underflow</h3><p>计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。</p>
+<p>接近零的非零数值因为舍入变为0称为Underflow。</p>
+<p>超出表示范围的wrap-around称为Overflow</p>
 <ul>
-<li>f(x) = 0 ⇒ x = 0</li>
-<li>f(x+y) ≤ f(x) + f(y)(三角不等式)</li>
-<li>∀α∈R,f(αx) = |α|f(x)</li>
+<li>positive-overflow 指超过范围的正数被截断为负数</li>
+<li>negative-overflow 指超过范围的负数被截断为正数</li>
 </ul>
-<p>常用的范式:</p>
+<h3 id="Poor-Conditioning"><a href="#Poor-Conditioning" class="headerlink" title="Poor Conditioning"></a>Poor Conditioning</h3><p>Condition指输入的微小变化引起函数值变化的剧烈程度。计算机中的数字是有表示范围的，因此Condition大的函数会遇到很多问题。</p>
+<p>对于</p>
+<script type="math/tex; mode=display">f(\mathbf{x})=A_{-1}\mathbf{x},A \in \mathbb{R}^{nxn}</script><p>如果A可以做特征值分解，那么f的condition number定义为</p>
+<script type="math/tex; mode=display">\max{i,j}\left|\frac{\lambda_i}{\lambda_j}\right|</script><h2 id="Optimization"><a href="#Optimization" class="headerlink" title="Optimization"></a>Optimization</h2><p>解出使函数f(x)取得最大值/最小值的x的过程称为优化(optimization)。求f(x)最大值可以用求-f(x)的最小值实现，因此主要讨论求最小值。</p>
+<h3 id="naive-gradient-descent"><a href="#naive-gradient-descent" class="headerlink" title="naive gradient descent"></a>naive gradient descent</h3><p>梯度(gradient)给出了函数增长最快的方向，那么沿着梯度的反方向就可以将函数值减少。梯度下降法(gradient descent)就是采用这个思路一种方法:</p>
+<script type="math/tex; mode=display">
+x^{i+1} = x^{i} - \epsilon \nabla_xf(x)</script><p>其中ε是学习率(learning rate)。一般来说ε有两种取法</p>
 <ul>
-<li>L2 norm<br>向量与原点的距离</li>
+<li>设为一个固定的很小的常量</li>
+<li>取多个ε，选其中让f(x-ε∇f(x))最小的那个ε。这种方法又称为line search</li>
 </ul>
-<script type="math/tex; mode=display">||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}</script><ul>
-<li><p>Squared L2 norm<br>L2 norm的平方形式，某些情况下易于分析和计算</p>
-</li>
-<li><p>L1 norm</p>
-<script type="math/tex; mode=display">||x||_1=\sum_{i} |x_i|</script></li>
-<li><p>max norm</p>
-<script type="math/tex; mode=display">||x||_{\infty }={\max} |x_i|</script></li>
-<li><p>Frobenius norm<br>计算矩阵的“大小”</p>
-</li>
-</ul>
-<script type="math/tex; mode=display">||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}</script><h2 id="Operations"><a href="#Operations" class="headerlink" title="Operations"></a>Operations</h2><h3 id="Decomposition"><a href="#Decomposition" class="headerlink" title="Decomposition"></a>Decomposition</h3><p>将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。</p>
-<h4 id="Eigendecomposition"><a href="#Eigendecomposition" class="headerlink" title="Eigendecomposition"></a>Eigendecomposition</h4><p>基于特征值和特征向量分解。与课本相同，不再赘述。</p>
-<h4 id="Singular-value-decomposition-SVD"><a href="#Singular-value-decomposition-SVD" class="headerlink" title="Singular value decomposition(SVD)"></a>Singular value decomposition(SVD)</h4><p>又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。</p>
-<p>对于一个<code>m*n</code>的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：</p>
-<script type="math/tex; mode=display">A=UDV^T</script><ul>
-<li>U是大小<code>m*m</code>的正交矩阵</li>
-<li>D是大小<code>m*n</code>的对角矩阵</li>
-<li>V是大小<code>n*n</code>的正交矩阵</li>
-</ul>
-<p>D中对角线的元素称为A的奇异值。U的列向量称为A的<strong>左</strong>奇异向量，V的列向量称为A的<strong>右</strong>奇异向量</p>
-<p>A的奇异值分解可以理解为「A的函数」的特征值分解：</p>
-<ul>
-<li>A的左奇异值向量是AA^T的特征向量。</li>
-<li>A的右奇异值向量是A^TA的特征向量</li>
-<li>A的非零奇异值是A^TA的特征值，也是AA^T的特征值</li>
-</ul>
-<p>SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下</p>
-<h3 id="The-Moore-Penrose-Pseudoinverse"><a href="#The-Moore-Penrose-Pseudoinverse" class="headerlink" title="The Moore-Penrose Pseudoinverse"></a>The Moore-Penrose Pseudoinverse</h3><p>又称摩尔－彭若斯广义逆（好长的名字…）</p>
-<script type="math/tex; mode=display">A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}</script><p>实际上，一般用</p>
-<script type="math/tex; mode=display">A^+=VD^+U^T</script><p>来计算广义逆</p>
-<p>U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。</p>
-<p>当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。</p>
-<p>若x无解，Ax给出了L2范式中y-Ax的最小值</p>
-<h3 id="Trace"><a href="#Trace" class="headerlink" title="Trace"></a>Trace</h3><p>又称迹，是矩阵主对角线元素的和。</p>
-<script type="math/tex; mode=display">\mathrm{Tr}(A)=\sum_i{A_{i,i}}</script><p>迹和矩阵乘法可以代替一些需要求和符号的操作：</p>
-<script type="math/tex; mode=display">||A||_F=\sqrt{\mathrm{Tr(AA^T)}}</script><p>矩阵的迹具有循环不变性：</p>
-<script type="math/tex; mode=display">\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}</script><p>更通用来说，</p>
-<script type="math/tex; mode=display">\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})</script>
+<h3 id="Beyond-the-Gradient-Jacobian-and-Hessian-Matrices"><a href="#Beyond-the-Gradient-Jacobian-and-Hessian-Matrices" class="headerlink" title="Beyond the Gradient: Jacobian and Hessian Matrices"></a>Beyond the Gradient: Jacobian and Hessian Matrices</h3><p>对于一个输入和输出都是向量的函数f，含有它的所有偏微分的矩阵称为雅可比矩阵(Jacobian matrix)</p>
+<script type="math/tex; mode=display">f:\mathbb{R^m} \to \mathbb{R^n}</script><script type="math/tex; mode=display">J_{i,j}=\frac{\partial}{\partial x_j}f(x)_i 其中J \in \mathbb{R^{n\times m}}</script><p>同样的，含有f的所有二阶偏微分的矩阵称为海希矩阵(Hessian matrix)</p>
+<script type="math/tex; mode=display">\mathbf{}{H}(f)(x)_{i,j}=\frac{\partial ^2}{\partial x_i \partial x_j}f(x)</script><p>海希矩阵就是梯度的雅可比矩阵。</p>
+<p>当二阶偏微分连续时，微分运算符具有交换律，即</p>
+<script type="math/tex; mode=display">H_{i,j}=H_{j,i}</script><p>机器学习中大部分函数f都具有连续的二阶偏微分，因此海希矩阵是实对称矩阵，因而可以做特征值分解，并且U是正交矩阵。</p>
+<p>f对某个单位向量u方向u的二阶偏微分由</p>
+<script type="math/tex; mode=display">u^{\top} Hu</script><p>给出。</p>
+<p>在x0处对f做二阶泰勒展开</p>
+<script type="math/tex; mode=display">f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)</script><p>H为海希矩阵，g为梯度。当采用学习率ε时，梯度下降的新坐标是x0-εg，带入泰勒展开，有</p>
+<script type="math/tex; mode=display">f(x^0-\epsilon g) \approx f(x^0) - \epsilon g^{\top}g+\frac{1}{2}\epsilon^2g^{\top}Hg</script><p>当最后一项小于等于零时，ε可以任选。当最后一项大于零时，有</p>
+<script type="math/tex; mode=display">\epsilon^*=\frac{g^{\top}g}{g^{\top}Hg}</script><p>时下降最快。最坏情况下，g与H重合，因此学习率的数量级由</p>
+<script type="math/tex; mode=display">\frac{1}{\lambda_{\max}}</script><p>决定。</p>
+<p>学习率设的过大或过小都会造成问题，这可以由海希矩阵解决。其中最简单的就是<strong>牛顿法</strong></p>
+<p>牛顿法的步骤基本思路是，在x点做二阶泰勒展开。</p>
+<script type="math/tex; mode=display">f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)</script><p>解出函数的critical point</p>
+<script type="math/tex; mode=display">x^*=x^0-H(f)(x^0)^{-1}\nabla_xf(x^0)</script><p>f是正定二次函数时，一次就找到了最低点。当f不是二次函数但是可以用二次函数局部近似时，多次迭代x*即可。</p>
+<p>牛顿法只适用于解最小值，而梯度下降没有这个限制。</p>
+<p>只用到梯度的优化算法，如梯度下降，叫做一阶优化算法。使用海希矩阵的算法，如牛顿法，叫做二阶优化算法。</p>
+<h3 id="Constrained-optimization"><a href="#Constrained-optimization" class="headerlink" title="Constrained optimization"></a>Constrained optimization</h3><p>有时我们希望在某集合S上而不是R^n上找出函数的最大/最小值，这叫做constrainted optimization(受限优化)。落在s中的点称为feasible point(可行点)</p>
+<p>KKT方法是一个受限优化问题的通用方法。使用KKT方法，首先定义广义拉格朗日函数。</p>
+<p>为了定义广义拉格朗日函数，首先需要将S定义为函数的集合</p>
+<script type="math/tex; mode=display">\mathbb{S}=\{x| \forall i,g^{(i)}(x)=0 \text{ and } \forall j,h^{(j)}(x) \le0 \}</script><p>含有g(i)的方程称为equality constraints，含有h(j)的方程称为inequality constraints。</p>
+<p>对于每个函数，定义λi和αj。他们叫做KKT乘数。</p>
+<p>现在定义广义拉格朗日函数</p>
+<script type="math/tex; mode=display">L(x,\lambda,\alpha)=f(x)+\sum_i \lambda_i g^{(i)}(x)+\sum_j \alpha_jh^{(j)}(x)</script><p>接下来在广义拉格朗日函数上使用非受限优化算法，就可以解决受限优化算法了。</p>
+
   	</div>
 	  
 	  <div class="article-tags tags">
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
-        <a href="/tags/The-flower-book/">The flower book</a>
+        <a href="/tags/Numberical-computation/">Numberical computation</a>
       
-        <a href="/tags/Linear-algebra/">Linear algebra</a>
+        <a href="/tags/The-flower-book/">The flower book</a>
       
 	  </div>
     
@@ -228,13 +210,9 @@
 	
 		<div class="art-item-footer">
 				
-					<span class="art-item-left"><i class="icon icon-chevron-thin-left"></i>prev：<a href="/2020/06/26/machine-learning-basics-probability-and-information-theory/" rel="prev"  title="机器学习基础——概率论与信息论">
-						机器学习基础——概率论与信息论 
-					</a></span>
 				
-				
-					<span class="art-item-right">next：<a href="/2020/04/21/render-html-natively-in-uwp/" rel="next"  title="HTML渲染为UWP的原生控件">
-						HTML渲染为UWP的原生控件
+					<span class="art-item-right">next：<a href="/2020/06/26/machine-learning-basics-probability-and-information-theory/" rel="next"  title="机器学习基础——概率论与信息论">
+						机器学习基础——概率论与信息论
 					</a><i class="icon icon-chevron-thin-right"></i></span>
 				
 		</div>
@@ -247,7 +225,7 @@
 			<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 			<script>
 					var gitment = new Gitment({
-							id: '机器学习基础——线性代数',
+							id: '机器学习基础——数值计算',
 							owner: 'verrickt',
 							repo: 'verrickt.github.io',
 							oauth: {
@@ -262,7 +240,7 @@
 </article>
 <script>
 	window.subData = {
-		title: '机器学习基础——线性代数',
+		title: '机器学习基础——数值计算',
 		tools: true
 	}
 </script>

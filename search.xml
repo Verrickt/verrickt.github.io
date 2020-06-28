@@ -3,6 +3,75 @@
   
     
     <entry>
+      <title><![CDATA[机器学习基础——数值计算]]></title>
+      <url>/2020/06/28/machine-larning-basics-numerical-computation/</url>
+      <content type="html"><![CDATA[<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的数值计算知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br><a id="more"></a></p>
+<h2 id="Source-of-errors"><a href="#Source-of-errors" class="headerlink" title="Source of errors"></a>Source of errors</h2><h3 id="Overflow-and-Underflow"><a href="#Overflow-and-Underflow" class="headerlink" title="Overflow and Underflow"></a>Overflow and Underflow</h3><p>计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。</p>
+<p>接近零的非零数值因为舍入变为0称为Underflow。</p>
+<p>超出表示范围的wrap-around称为Overflow</p>
+<ul>
+<li>positive-overflow 指超过范围的正数被截断为负数</li>
+<li>negative-overflow 指超过范围的负数被截断为正数</li>
+</ul>
+<h3 id="Poor-Conditioning"><a href="#Poor-Conditioning" class="headerlink" title="Poor Conditioning"></a>Poor Conditioning</h3><p>Condition指输入的微小变化引起函数值变化的剧烈程度。计算机中的数字是有表示范围的，因此Condition大的函数会遇到很多问题。</p>
+<p>对于</p>
+<script type="math/tex; mode=display">f(\mathbf{x})=A_{-1}\mathbf{x},A \in \mathbb{R}^{nxn}</script><p>如果A可以做特征值分解，那么f的condition number定义为</p>
+<script type="math/tex; mode=display">\max{i,j}\left|\frac{\lambda_i}{\lambda_j}\right|</script><h2 id="Optimization"><a href="#Optimization" class="headerlink" title="Optimization"></a>Optimization</h2><p>解出使函数f(x)取得最大值/最小值的x的过程称为优化(optimization)。求f(x)最大值可以用求-f(x)的最小值实现，因此主要讨论求最小值。</p>
+<h3 id="naive-gradient-descent"><a href="#naive-gradient-descent" class="headerlink" title="naive gradient descent"></a>naive gradient descent</h3><p>梯度(gradient)给出了函数增长最快的方向，那么沿着梯度的反方向就可以将函数值减少。梯度下降法(gradient descent)就是采用这个思路一种方法:</p>
+<script type="math/tex; mode=display">
+x^{i+1} = x^{i} - \epsilon \nabla_xf(x)</script><p>其中ε是学习率(learning rate)。一般来说ε有两种取法</p>
+<ul>
+<li>设为一个固定的很小的常量</li>
+<li>取多个ε，选其中让f(x-ε∇f(x))最小的那个ε。这种方法又称为line search</li>
+</ul>
+<h3 id="Beyond-the-Gradient-Jacobian-and-Hessian-Matrices"><a href="#Beyond-the-Gradient-Jacobian-and-Hessian-Matrices" class="headerlink" title="Beyond the Gradient: Jacobian and Hessian Matrices"></a>Beyond the Gradient: Jacobian and Hessian Matrices</h3><p>对于一个输入和输出都是向量的函数f，含有它的所有偏微分的矩阵称为雅可比矩阵(Jacobian matrix)</p>
+<script type="math/tex; mode=display">f:\mathbb{R^m} \to \mathbb{R^n}</script><script type="math/tex; mode=display">J_{i,j}=\frac{\partial}{\partial x_j}f(x)_i 其中J \in \mathbb{R^{n\times m}}</script><p>同样的，含有f的所有二阶偏微分的矩阵称为海希矩阵(Hessian matrix)</p>
+<script type="math/tex; mode=display">\mathbf{}{H}(f)(x)_{i,j}=\frac{\partial ^2}{\partial x_i \partial x_j}f(x)</script><p>海希矩阵就是梯度的雅可比矩阵。</p>
+<p>当二阶偏微分连续时，微分运算符具有交换律，即</p>
+<script type="math/tex; mode=display">H_{i,j}=H_{j,i}</script><p>机器学习中大部分函数f都具有连续的二阶偏微分，因此海希矩阵是实对称矩阵，因而可以做特征值分解，并且U是正交矩阵。</p>
+<p>f对某个单位向量u方向u的二阶偏微分由</p>
+<script type="math/tex; mode=display">u^{\top} Hu</script><p>给出。</p>
+<p>在x0处对f做二阶泰勒展开</p>
+<script type="math/tex; mode=display">f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)</script><p>H为海希矩阵，g为梯度。当采用学习率ε时，梯度下降的新坐标是x0-εg，带入泰勒展开，有</p>
+<script type="math/tex; mode=display">f(x^0-\epsilon g) \approx f(x^0) - \epsilon g^{\top}g+\frac{1}{2}\epsilon^2g^{\top}Hg</script><p>当最后一项小于等于零时，ε可以任选。当最后一项大于零时，有</p>
+<script type="math/tex; mode=display">\epsilon^*=\frac{g^{\top}g}{g^{\top}Hg}</script><p>时下降最快。最坏情况下，g与H重合，因此学习率的数量级由</p>
+<script type="math/tex; mode=display">\frac{1}{\lambda_{\max}}</script><p>决定。</p>
+<p>学习率设的过大或过小都会造成问题，这可以由海希矩阵解决。其中最简单的就是<strong>牛顿法</strong></p>
+<p>牛顿法的步骤基本思路是，在x点做二阶泰勒展开。</p>
+<script type="math/tex; mode=display">f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)</script><p>解出函数的critical point</p>
+<script type="math/tex; mode=display">x^*=x^0-H(f)(x^0)^{-1}\nabla_xf(x^0)</script><p>f是正定二次函数时，一次就找到了最低点。当f不是二次函数但是可以用二次函数局部近似时，多次迭代x*即可。</p>
+<p>牛顿法只适用于解最小值，而梯度下降没有这个限制。</p>
+<p>只用到梯度的优化算法，如梯度下降，叫做一阶优化算法。使用海希矩阵的算法，如牛顿法，叫做二阶优化算法。</p>
+<h3 id="Constrained-optimization"><a href="#Constrained-optimization" class="headerlink" title="Constrained optimization"></a>Constrained optimization</h3><p>有时我们希望在某集合S上而不是R^n上找出函数的最大/最小值，这叫做constrainted optimization(受限优化)。落在s中的点称为feasible point(可行点)</p>
+<p>KKT方法是一个受限优化问题的通用方法。使用KKT方法，首先定义广义拉格朗日函数。</p>
+<p>为了定义广义拉格朗日函数，首先需要将S定义为函数的集合</p>
+<script type="math/tex; mode=display">\mathbb{S}=\{x| \forall i,g^{(i)}(x)=0 \text{ and } \forall j,h^{(j)}(x) \le0 \}</script><p>含有g(i)的方程称为equality constraints，含有h(j)的方程称为inequality constraints。</p>
+<p>对于每个函数，定义λi和αj。他们叫做KKT乘数。</p>
+<p>现在定义广义拉格朗日函数</p>
+<script type="math/tex; mode=display">L(x,\lambda,\alpha)=f(x)+\sum_i \lambda_i g^{(i)}(x)+\sum_j \alpha_jh^{(j)}(x)</script><p>接下来在广义拉格朗日函数上使用非受限优化算法，就可以解决受限优化算法了。</p>
+]]></content>
+      
+        <categories>
+            
+            <category> Machine learning </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Machine learning </tag>
+            
+            <tag> Numberical computation </tag>
+            
+            <tag> The flower book </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[机器学习基础——概率论与信息论]]></title>
       <url>/2020/06/26/machine-learning-basics-probability-and-information-theory/</url>
       <content type="html"><![CDATA[<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
@@ -196,9 +265,9 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
             
             <tag> Machine learning </tag>
             
-            <tag> Linear algebra </tag>
-            
             <tag> The flower book </tag>
+            
+            <tag> Linear algebra </tag>
             
         </tags>
         
