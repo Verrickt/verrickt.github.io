@@ -3,8 +3,160 @@
   
     
     <entry>
+      <title><![CDATA[机器学习基础——纸上谈兵]]></title>
+      <url>/2020/07/03/machine-learning-in-pure-paperworks/</url>
+      <content type="html"><![CDATA[<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对相关知识的补充会在实践后进行。<br><a id="more"></a></p>
+<h2 id="what-is-machine-learning"><a href="#what-is-machine-learning" class="headerlink" title="what is machine learning"></a>what is machine learning</h2><blockquote>
+<p>A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E</p>
+</blockquote>
+<h3 id="The-Task-T"><a href="#The-Task-T" class="headerlink" title="The Task T"></a>The Task T</h3><ul>
+<li>Classification</li>
+<li>Regression</li>
+<li>Structured output<h3 id="The-performance-measure-P"><a href="#The-performance-measure-P" class="headerlink" title="The performance measure P"></a>The performance measure P</h3></li>
+</ul>
+<p>Usually we are interested in how well the machine learning algorithm performs<br>on data that it has <strong>not</strong> seen before, since this determines how well it will work when deployed in the real world. We therefore evaluate these performance measures using a <strong>test set</strong> of data that is separate from the data used for training the machine learning system.</p>
+<p>It’s often difficult to choose a performance measure that corresponds well to the desired behavior of the system for two reasons</p>
+<ul>
+<li>The performance measure can be difficult to decide. When performing a regression task, should we penalize the system more if it frequently makes medium-sized mistakes or if it rarely makes very large mistakes? These kinds of design choices depend on the application</li>
+<li>we know what quantity we would ideally like to measure, but measuring it is impractical. Computing the actual probability value assigned to a specific point in space in many density estimation models is intractable</li>
+</ul>
+<h3 id="The-Experience-E"><a href="#The-Experience-E" class="headerlink" title="The Experience E"></a>The Experience E</h3><p>Machine learning algorithms can be broadly categorized as unsupervised or supervised by what kind of experience they are allowed to have during the learning process.</p>
+<ul>
+<li>Unsupervised learning algorithms experience a dataset containing many features, then learn useful properties of the structure of this dataset. In the context of deep learning, we usually want to learn the entire probability distribution that generated a dataset, whether explicitly as in density estimation or implicitly for tasks like synthesis or denoising. Some other unsupervised learning algorithms perform other roles, like clustering, which consists of dividing the dataset into clusters of similar examples.</li>
+<li>Supervised learning algorithms experience a dataset containing features,but each example is also associated with a label or target. </li>
+</ul>
+<p>Roughly speaking, unsupervised learning involves observing several examples<br>of a random vector x, and attempting to implicitly or explicitly learn the probability distribution p(x), or some interesting properties of that distribution, while supervised learning involves observing several examples of a random vector x and an associated value or vector y, and learning to predict y from x, usually by estimating <code>p(y|x)</code> The term supervised learning originates from the view of the target y being provided by an instructor or teacher who shows the machine learning system what to do. In unsupervised learning, there is no instructor or teacher, and the algorithm must learn to make sense of the data without this guide</p>
+<p>Some machine learning algorithms do not just experience a fixed dataset. For<br>example, <strong>reinforcement learning</strong> algorithms interact with an environment, so there is a feedback loop between the learning system and its experiences</p>
+<h3 id="Example-Linear-regression"><a href="#Example-Linear-regression" class="headerlink" title="Example: Linear regression"></a>Example: Linear regression</h3><ul>
+<li>The task T: linear regression solves a regression problem. The goal is to build a system that can take a vector x ∈ R^n as input and predict the value of a scalar y ∈ R as its output.</li>
+</ul>
+<script type="math/tex; mode=display">\hat{y}=w^{\top}x+b</script><p><strong>w</strong> is a vector of the weights over different features.</p>
+<p><strong>b</strong> is the bias(not the bias in statistic)</p>
+<p>Together ,<strong>w</strong> and <strong>b</strong> are called the <strong>parameters</strong></p>
+<p><strong>y</strong> is the <strong>label</strong> of the data.</p>
+<p><strong>y-hat</strong> is the prediction value</p>
+<ul>
+<li>The performance measurement P:</li>
+</ul>
+<p>mean squared error(MSE)</p>
+<script type="math/tex; mode=display">\mathrm{MSE_{test}}=\frac{1}{m}\sum_i(\hat{y}^{(test)}-y^{(test)})</script><h2 id="Capacity-Overfitting-and-Underfitting"><a href="#Capacity-Overfitting-and-Underfitting" class="headerlink" title="Capacity, Overfitting and Underfitting"></a>Capacity, Overfitting and Underfitting</h2><p>The central challenge in machine learning is that we must perform well on <em>new, previously unseen inputs</em>—not just those on which our model was trained. The ability to perform well on previously unobserved inputs is called generalization.</p>
+<p>The factors determining how well a machine learning algorithm will perform are its ability to:</p>
+<ol>
+<li>Make the training error small. </li>
+<li>Make the gap between training and test error small.</li>
+</ol>
+<p>These two factors are underfitting and overfitting. Underfitting occurs when the model is not able to obtain a sufficiently low error value on the training set. Overfitting occurs when the gap between the training error and test error is too large.</p>
+<p>Informally, a model’s capacity is its ability to fit a wide variety of functions. Models with low capacity may struggle to fit the training set. Models with high capacity can overfit by memorizing properties of the training set that do not serve them well on the test set. Usually,the error mainly comes from bias in the case of underfitting and variance in the case of overfitting.<br><img src="/2020/07/03/machine-learning-in-pure-paperworks/capacity.png" alt="Capacity"><br><img src="/2020/07/03/machine-learning-in-pure-paperworks/optimal_capacity.png" alt="Capacity,overfitting and underfitting"></p>
+<h3 id="Bayes-error"><a href="#Bayes-error" class="headerlink" title="Bayes error"></a>Bayes error</h3><p>The error incurred by an oracle making predictions from the true distribution<br><code>p(x,y)</code> is called the Bayes error.</p>
+<blockquote>
+<p>Why are there errors if we know the true probability distribution ?</p>
+</blockquote>
+<p>because there may still be some noise in the distribution</p>
+<h3 id="How-about-training-size"><a href="#How-about-training-size" class="headerlink" title="How about training size"></a>How about training size</h3><p>Training and generalization error vary as the size of the training set varies.<br>Expected generalization error can never increase as the number of training examples increases. For non-parametric models, more data yields better generalization until the best possible error is achieved. Any fixed parametric model with less than optimal capacity will asymptote to an error value that exceeds the Bayes error. See figure<br>5.4 for an illustration. Note that it is possible for the model to have optimal<br>capacity and yet still have a large gap between training and generalization error. In this situation, we may be able to reduce this gap by gathering more training examples.<br><img src="/2020/07/03/machine-learning-in-pure-paperworks/training_set_size_and_errors.png" alt="The effect of the training dataset size on the train and test error"></p>
+<h3 id="Hyperparameters"><a href="#Hyperparameters" class="headerlink" title="Hyperparameters"></a>Hyperparameters</h3><p>hyperparameters are use to control the behavior of the learning algorithm.</p>
+<p>Eg. In linear regression, we could use a model</p>
+<script type="math/tex; mode=display">\hat{y}=b+\sum_i^kw_ix^i</script><p><strong>k</strong> controls degree of the polynomial,which acts as a <em>capacity hyperparameter</em></p>
+<p>Why hyperparameters?</p>
+<p>Sometimes a setting is chosen to be a hyperparameter that the learning algorithm does not learn because it is difficult to optimize. The setting must be a hyperparameter because it is not appropriate to learn that hyperparameter on the training set. This applies to all hyperparameters that control model capacity(e.g:<strong>k</strong>). If learned on the training set, such hyperparameters would always choose the maximum possible model capacity, resulting in overfitting</p>
+<p>How to adjust hyperparameters?</p>
+<p>Validation set!</p>
+<h3 id="Regularization"><a href="#Regularization" class="headerlink" title="Regularization"></a>Regularization</h3><p>We can give a learning algorithm a preference for one solution in its<br>hypothesis space to another. This means that both functions are eligible, but one is preferred.(即西瓜书提到的归纳假设)</p>
+<p>For example, we can modify the training criterion for linear regression to include<br><strong>weight decay</strong></p>
+<script type="math/tex; mode=display">J(w)=\mathrm{MSE_{train}}+\lambda w^\top w</script><p>where λ is a value chosen ahead of time that controls the strength of our preference for smaller weights. in this sense, λ is also a hyperparameter<br><img src="/2020/07/03/machine-learning-in-pure-paperworks/weight_decay.png" alt="weight_decay"></p>
+<h2 id="Frequentist-vs-baysian"><a href="#Frequentist-vs-baysian" class="headerlink" title="Frequentist vs baysian"></a>Frequentist vs baysian</h2><ul>
+<li>Frequentist  statistics:<br>we assume that the true parameter value θ is fixed but unknown, while the point estimate θ_hat is a function of the data. Since the data is drawn from a random process, any function of the data is random. Therefore θ_hat is a random variable</li>
+<li>Bayesian Statistics:<br>the dataset is directly observed and so is not random. On the other hand, the true parameter θ is unknown or uncertain and thus is represented as a random variable. Before observing the data, we represent our knowledge of θ using <em>the prior probability distribution</em>, <strong>p(θ)</strong>. Generally, the machine learning practitioner selects a prior distribution that is quite broad (i.e. with high entropy) to reflect a high degree of uncertainty in the value of θ before observing any data</li>
+</ul>
+<h3 id="Maximum-likelihood"><a href="#Maximum-likelihood" class="headerlink" title="Maximum likelihood"></a>Maximum likelihood</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">最大似然估计：使得现有观测值出现概率最大的参数θ</div></pre></td></tr></table></figure>
+<p>The maximum likelihood estimator for is defined as</p>
+<script type="math/tex; mode=display">\theta_{ML}=\argmax _\theta\prod_{i=1}^mp_{model}(x^i;\theta)</script><p>log-likelihood estimator</p>
+<script type="math/tex; mode=display">\theta_{ML}=\argmax _\theta\sum_{i=1}^m\log p_{model}(x^i;\theta)</script><p>观察KL-Divergence:</p>
+<script type="math/tex; mode=display">D_{KL}(\hat{p}_{data}\|p_{model})=\mathbb{E}_{x\sim \hat{p}_{data}}[\log \hat{p}_{data}(x) - \log \hat{p}_{model}(x)]</script><p>为了最小化KL-Divergence，只需最小化</p>
+<script type="math/tex; mode=display">- \mathbb{E}_{x\sim \hat{p}_{data}} \log \hat{p}_{model}(x)]</script><p>这与最大化log-likelihood是<strong>等价</strong>的</p>
+<h2 id="Simple-machine-learning-algorithm"><a href="#Simple-machine-learning-algorithm" class="headerlink" title="Simple machine learning algorithm"></a>Simple machine learning algorithm</h2><h3 id="SVM"><a href="#SVM" class="headerlink" title="SVM"></a>SVM</h3><p>One of the most influential approaches to supervised learning is the support vector machine  This model is similar to logistic regression in that it is driven by a linear function </p>
+<script type="math/tex; mode=display">y=w^\top x+b</script><p>. The SVM predicts that the positive class is present when y is positive. Likewise, it predicts that the negative class is present when y is negative.</p>
+<p>One key innovation associated with support vector machines is the kernel trick. The kernel trick consists of observing that many machine learning algorithms can be written exclusively in terms of dot products between examples. For example, it can be shown that the linear function used by the support vector machine can be re-written as</p>
+<script type="math/tex; mode=display">w^\top x+b=b+\sum_i^m \alpha_i x^\top x^{(i)}</script><p>where x^i is a training example and α is a vector of coefficients.Rewriting the learning algorithm this way allows us to replace x by the output of a given feature function φ(x) and the dot product with a function k(x,x^i) = φ(x)· φ(x^i) called a kernel.</p>
+<p>The most commonly used kernel is the <strong>Gaussian kernel</strong></p>
+<script type="math/tex; mode=display">k(u,v)=\mathbin{N}(u-v;0;\sigma^2I)</script><p>this kernel is also known as the radial basis function (RBF) kernel. The Gaussian kernel is performing a kind of template matching. A training example x associated with training label y becomes a template for class y. When a test point x’ is near x according to Euclidean distance, the Gaussian kernel has a large response, indicating that x’ is very similar to the x template. The model then puts a large weight on the associated training label y. Overall, the prediction will combine many such training labels weighted by the similarity of the corresponding training examples</p>
+<h3 id="Gradient-descent-improved-stochastic-gradient-descent"><a href="#Gradient-descent-improved-stochastic-gradient-descent" class="headerlink" title="Gradient descent improved: stochastic gradient descent"></a>Gradient descent improved: stochastic gradient descent</h3><p>Idea:</p>
+<ul>
+<li>take a step over a ‘minibatch’ instead of observing the whole training-set</li>
+<li>step cost does not depend on size of training set, thus achieving convergence much faster.</li>
+</ul>
+<p>A recurring problem in machine learning is that large training sets are necessary<br>for good generalization, but large training sets are also more computationally expensive.</p>
+<p>the insight of stochastic gradient descent is that the gradient is an expectation.<br>The expectation may be approximately estimated using a small set of samples. Specifically, on each step of the algorithm, we can sample a <strong>minibatch</strong> of examples</p>
+<p>For a fixed model size, the cost per SGD update does not depend on the training set size m. In practice, we often use a larger model as the training set size increases, but we are not forced to do so. The number of updates required to reach convergence usually increases with training set size. However, as m approaches infinity, the model will eventually converge to its best possible test error before SGD has sampled every example in the training set. Increasing m further will not extend the amount of training time needed to reach the model’s best possible test error. From this point of view, one can argue that the asymptotic cost of training a model with SGD is O(1) as a function of m</p>
+<h2 id="Why-deep-learning"><a href="#Why-deep-learning" class="headerlink" title="Why deep learning?"></a>Why deep learning?</h2><h3 id="curse-of-dimensionality"><a href="#curse-of-dimensionality" class="headerlink" title="curse of dimensionality"></a>curse of dimensionality</h3><p>Many machine learning problems become exceedingly difficult when the number of dimensions in the data is high.</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">dimension</th>
+<th style="text-align:center">number of states</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">n</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center">n^2</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center">n^3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Traditional machine learning algorithm can’t distinguish a state that’s not seen in the training set.</p>
+<h3 id="Local-Constancy-and-Smoothness-Regularization"><a href="#Local-Constancy-and-Smoothness-Regularization" class="headerlink" title="Local Constancy and Smoothness Regularization"></a>Local Constancy and Smoothness Regularization</h3><p>In order to generalize well, machine learning algorithms need to be guided by prior beliefs about what kind of function they should learn.</p>
+<p>Among the most widely used of these implicit “priors” is the smoothness<br>prior or local constancy prior. This prior states that the function we learn should not change very much within a small region.<br>Many simpler algorithms rely exclusively on this prior to generalize well, and<br>as a result they <em>fail</em> to scale to the statistical challenges involved in solving AIlevel tasks.</p>
+<h3 id="How-do-we-deal-with-curse-of-dimensionality"><a href="#How-do-we-deal-with-curse-of-dimensionality" class="headerlink" title="How do we deal with curse of dimensionality?"></a>How do we deal with curse of dimensionality?</h3><p>The key insight is that a very large number of regions, e.g., O(2^k), can be defined with O(k) examples, so long as we introduce some <strong>dependencies</strong> between the regions via additional assumptions about the underlying data generating distribution</p>
+<p>The core idea in deep learning is that we assume that the data was generated by the composition of factors or features, potentially at multiple levels in a hierarchy.</p>
+<h3 id="Manifold-Learning-amp-manifold-hypothesis"><a href="#Manifold-Learning-amp-manifold-hypothesis" class="headerlink" title="Manifold Learning &amp; manifold hypothesis"></a>Manifold Learning &amp; manifold hypothesis</h3><p>Manifold learning algorithms  assuming that most of R^n<br>consists of <strong>invalid inputs</strong>, and that interesting inputs occur only along<br>a collection of manifolds containing a small subset of points.</p>
+<p>manifold hypothesis:</p>
+<ul>
+<li><p>probability distribution over images, text strings, and sounds that occur in real life is highly concentrated. </p>
+</li>
+<li><p>we can also imagine such neighborhoods and transformations, at least informally. In the case of images, we can certainly think of many possible transformations that allow us to trace out a manifold in image space: we can gradually dim or brighten the lights, gradually move or rotate objects in the image, gradually alter the colors on the surfaces of objects</p>
+</li>
+</ul>
+<p>流形假说:</p>
+<ol>
+<li>大部分有结构的数据的分布函数并不是分散的，而是集中聚集在某些范围。<br>支持证据：随机取像素试图产生而期待其产生日常生活中的照片的概率是微乎其微的。随机取字母指望它生成一篇文章的概率也是微乎其微的。所以有结构的数据的分布函数必然是在某个范围内聚集，而在大部分区域分散<br><img src="/2020/07/03/machine-learning-in-pure-paperworks/noise.png" alt="noise"></li>
+<li>在流形的表面移动，将可以得到流形所代表的全部数据。如在代表人脸的流形上移动，A点代表微笑的人，B点代表流泪的人。若从直线直接过去，则在A，B中间点所对应的数据可能不是人脸；若从流形的表面移动到B，则数据一直都是人脸。（微笑-&gt;皱眉-&gt;哭泣）</li>
+</ol>
+<p>请参考<a href="https://www.youtube.com/watch?v=BePQBWPnYuE" target="_blank" rel="external">Youtube视频：My understanding of the Manifold Hypothesis | Machine learning</a></p>
+<iframe maxwidth="100%" width="560" height="315" src="https://www.youtube.com/embed/BePQBWPnYuE" style="max-width:100%" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+]]></content>
+      
+        <categories>
+            
+            <category> Machine learning </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Machine learning </tag>
+            
+            <tag> The flower book </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[机器学习基础——数值计算]]></title>
-      <url>/2020/06/28/machine-larning-basics-numerical-computation/</url>
+      <url>/2020/06/28/machine-learning-basics-numerical-computation/</url>
       <content type="html"><![CDATA[<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的主体是机器学习中所用到的数值计算知识，因此奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br><a id="more"></a></p>
 <h2 id="Source-of-errors"><a href="#Source-of-errors" class="headerlink" title="Source of errors"></a>Source of errors</h2><h3 id="Overflow-and-Underflow"><a href="#Overflow-and-Underflow" class="headerlink" title="Overflow and Underflow"></a>Overflow and Underflow</h3><p>计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。</p>
@@ -63,9 +215,9 @@ x^{i+1} = x^{i} - \epsilon \nabla_xf(x)</script><p>其中ε是学习率(learning
             
             <tag> Machine learning </tag>
             
-            <tag> Numberical computation </tag>
-            
             <tag> The flower book </tag>
+            
+            <tag> Numberical computation </tag>
             
         </tags>
         
@@ -265,9 +417,9 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
             
             <tag> Machine learning </tag>
             
-            <tag> The flower book </tag>
-            
             <tag> Linear algebra </tag>
+            
+            <tag> The flower book </tag>
             
         </tags>
         
