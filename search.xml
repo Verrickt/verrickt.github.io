@@ -3,6 +3,122 @@
   
     
     <entry>
+      <title><![CDATA[从分类到对率回归再到到神经网络]]></title>
+      <url>/2020/07/04/from-logistic-regression-to-neural-network/</url>
+      <content type="html"><![CDATA[<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的是台湾大学2020机器学习的Classification<a href="https://youtu.be/fZAZUYEeIMg" target="_blank" rel="external">1</a>和<a href="https://youtu.be/hSXFuypLukA" target="_blank" rel="external">2</a>的笔记，奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>策略，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br><a id="more"></a></p>
+<h2 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h2><p>在分类问题，我们要找一个函数f，f的输入是代表样本的向量，输出是一个代表类别的标量。将样本分为两类的叫做二元分类，多于两类的叫做多元分类。我们先考虑二元分类问题。</p>
+<h3 id="引例"><a href="#引例" class="headerlink" title="引例"></a>引例</h3><p>XCOM中面对的敌人有变种人(ADVENT)和外星人(Alien)两种，长老(The elder)送来了新的物种，现有训练资料变种人数据15组，外星人10组，你能据此帮助被关在外星人网络中充当首脑的人类指挥官分辨新物种的种类吗？</p>
+<p>先考虑这个问题，蓝绿两个盒子，其中各有蓝绿球若干。从蓝盒子抽球的概率是1/3，从绿盒子抽球的概率是2/3。已知抽到了蓝球，问从蓝色盒子里抽到的概率是多少?<br><img src="/2020/07/04/from-logistic-regression-to-neural-network/two_boxes.png" alt="两个盒子"></p>
+<script type="math/tex; mode=display">
+P(蓝盒子)=\frac{1}{3} \\
+P(绿盒子)=\frac{2}{3} \\
+P(抽到蓝球|蓝盒子)=\frac{4}{5} \\
+P(绿盒子|抽到蓝球)=\frac{2}{5} \\
+P(抽到蓝球)=P(蓝盒子)P(抽到蓝球|蓝盒子)+P(绿盒子)P(绿盒子|抽到蓝球)=\frac{1*4}{3*5}*\frac{2*2}{3*5}=\frac{8}{15} \\
+P(蓝盒子|抽到蓝球)=\frac{P(抽到蓝球|蓝盒子)P(蓝盒子)}{P(抽到蓝球)}=\frac{\frac{1*4}{3*5}}{\frac{8}{15}}=\frac{1}{2}</script><h3 id="贝叶斯公式"><a href="#贝叶斯公式" class="headerlink" title="贝叶斯公式"></a>贝叶斯公式</h3><p>我们预测的依据是贝叶斯公式：</p>
+<script type="math/tex; mode=display">P(A|B)=\frac{P(B|A)P(A)}{P(B)}</script><p>用C1表示敌人属于变种人，C2表示敌人属于外星人，那么</p>
+<script type="math/tex; mode=display">P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))}</script><p>training set中一共有15组变种人，10组外星人。则</p>
+<script type="math/tex; mode=display">
+P(C_1)=\frac{15}{15+10}=\frac{3}{5} \\
+P(C_2)=\frac{10}{15+10}=\frac{2}{5}</script><p>接下来是确定P(x|C1)。思考一下，testing-set上的数据我们的算法从来没有见过，那么P(x|C1)应该是0咯。可这样贝叶斯公式就变成0/0了，还怎么预测?</p>
+<h3 id="P-C1-x"><a href="#P-C1-x" class="headerlink" title="P(C1|x)"></a>P(C1|x)</h3><p>在此，我们大胆假设，目前所见过的C1的example是由一个概率分布产生的，这样就可以对testing-set上没见过的数据了求概率了。</p>
+<p><img src="/2020/07/04/from-logistic-regression-to-neural-network/prior.png" alt="先验"></p>
+<p>这是课件的一张图，对于图中79个example，认为是一个Gaussian产生的，但好多个Gaussian都可以产生这样的点，具体是哪一个呢？这里使用极大似然的思想，就认为使得产生训练数据的概率最大的Gaussian好了</p>
+<p>回到我们的例子，似然函数是</p>
+<script type="math/tex; mode=display">
+L(\mu,\Sigma)=\prod_i^{15}f_{\mu,\Sigma}(x^i) \\
+f_{\mu,\Sigma}=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\}}
+\\
+\mu^*,\Sigma^*=\argmax_{\mu,\Sigma} L(\mu,\Sigma)</script><p>经过一番运算后，得到μ和Σ的闭式解:</p>
+<script type="math/tex; mode=display">
+\mu^*=\frac{1}{15}\sum_{n=1}^{15}x^n
+\Sigma^*=\frac{1}{15}\sum_{n=1}^{15}(x^n-\mu^*)(x^n-\mu^*)^T</script><p>这样就得到了C1的分布<code>G1(μ,Σ)</code>，同理可以得到C2的分布<code>G2(μ,Σ)</code>，有了这两项就可以计算条件概率从而完成预测了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">if(x|C1)&gt;0.5 output ADVENT</div><div class="line">else output ALIEN</div></pre></td></tr></table></figure></p>
+<p><img src="/2020/07/04/from-logistic-regression-to-neural-network/res_1.png" alt="结果"><br>回到上课的例子，这个模型的效果并不好:(。</p>
+<p>想到<a href="../../../06/26/machine-learning-basics-probability-and-information-theory/">Probability</a>中Gaussion的PS</p>
+<blockquote>
+<p>如果用高斯分布来做分类问题，让分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。</p>
+</blockquote>
+<p>那就试试共用协方差矩阵吧</p>
+<h3 id="共用协方差矩阵"><a href="#共用协方差矩阵" class="headerlink" title="共用协方差矩阵"></a>共用协方差矩阵</h3><p>似然函数变为</p>
+<script type="math/tex; mode=display">
+L(\mu_1,\mu_2,\Sigma)=\prod_i^{15}f_{\mu1,\Sigma}(x^i)\prod_{j=16}^{25}f_{\mu2,\Sigma}(x^i) \\</script><p><img src="/2020/07/04/from-logistic-regression-to-neural-network/res_2.png" alt="共用covariance-matrix"><br>求解过程省略，来看一下结果，准确度一下子就上来了。这时发现分界线变成了一条直线。这与线性模型有关系吗？推一下看看</p>
+<h3 id="Why-linear-一些推导"><a href="#Why-linear-一些推导" class="headerlink" title="Why linear?一些推导"></a>Why linear?一些推导</h3><script type="math/tex; mode=display">
+P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))} \\</script><p>上下同除以分子</p>
+<script type="math/tex; mode=display">
+P(C_1|x)=\frac{1}{1+\frac{P({x|C_2})P(C_2)}{P(x|C_1)P(C_1)}}</script><script type="math/tex; mode=display">
+令z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}，
+则P(C_1|x)=\frac{1}{1+\exp(-z)}=\sigma(z)</script><p>sigmoid函数就这样出现了!<br>继续分解z </p>
+<script type="math/tex; mode=display">
+z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}=\ln \frac{P({x|C_1})}{P(x|C_2)}+\ln\frac{P(C_1)}{P(C_2)}</script><script type="math/tex; mode=display">
+
+\lg \frac{P(C_1)}{P(C_2)}=\lg \frac{\frac{N_1}{N_1+N_2}}{\frac{N_2}{N_1+N_2}}=\lg \frac{N_1}{N2}</script><p>是个常数 </p>
+<script type="math/tex; mode=display">
+P(x|C_1)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)\}}</script><script type="math/tex; mode=display">
+P(x|C_2)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)\}}</script><p>带入，则</p>
+<script type="math/tex; mode=display">
+\ln \frac{P({x|C_1})}{P(x|C_2)} = \ln \frac{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)\}}}{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)\}}}</script><script type="math/tex; mode=display">
+=\ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\ln \exp\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup</script><script type="math/tex; mode=display">
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup</script><script type="math/tex; mode=display">
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup</script><script type="math/tex; mode=display">
+z= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup + \lg \frac{N_1}{N2}</script><p>共用协方差矩阵时，</p>
+<script type="math/tex; mode=display">\Sigma^1=\Sigma^2=\Sigma</script><script type="math/tex; mode=display">
+ \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} =0
+ x^T(\Sigma^1)^{-1}x - x^T(\Sigma^2)^{-1}x=0</script><p> 此时 </p>
+<script type="math/tex; mode=display">z = (\mu^1-\mu^2)^T\Sigma^{-1}x-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2}</script><script type="math/tex; mode=display">
+ 令w^T=(\mu^1-\mu^2)^T\Sigma^{-1},b=-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2}</script><script type="math/tex; mode=display">则z=w^T+b</script><script type="math/tex; mode=display">P(C_1|x)= \sigma(z)</script><p> 是z的广义线性模型，给它一个名字，即logistic regression。</p>
+<p> 由</p>
+<script type="math/tex; mode=display">\mu^2,\mu^2,\Sigma^1,\Sigma^2</script><p> 得到w和b的模型称为生成模型(generative model)，因为各个x可以由一组分布生成出来。 直接找出w和b的模型称为判别模型(discriminative model)</p>
+<h2 id="logistic-regression"><a href="#logistic-regression" class="headerlink" title="logistic regression"></a>logistic regression</h2><h3 id="Step1-find-a-function-set"><a href="#Step1-find-a-function-set" class="headerlink" title="Step1, find a function set"></a>Step1, find a function set</h3><p>logistic regression问题中，我们要找一组参数w和b，σ(wTx+b)给出的值是x属于正例的概率。</p>
+<h3 id="Step2-determine-goodness-of-function"><a href="#Step2-determine-goodness-of-function" class="headerlink" title="Step2, determine goodness of function"></a>Step2, determine goodness of function</h3><p>这里使用似然函数<br><img src="/2020/07/04/from-logistic-regression-to-neural-network/goodness.png" alt="loss"></p>
+<p>最小化对数似然函数(NLL)实际上就是最小化交叉熵</p>
+<p><img src="/2020/07/04/from-logistic-regression-to-neural-network/cross_entropy.png" alt="cross_entropy"></p>
+<h3 id="Step3-find-the-best-function"><a href="#Step3-find-the-best-function" class="headerlink" title="Step3, find the best function"></a>Step3, find the best function</h3><p>梯度下降走你</p>
+<h3 id="Why-likelihood-instead-of-MSE"><a href="#Why-likelihood-instead-of-MSE" class="headerlink" title="Why likelihood instead of MSE?"></a>Why likelihood instead of MSE?</h3><p><img src="/2020/07/04/from-logistic-regression-to-neural-network/MSE.png" alt="MSE"></p>
+<p>若使用MSE，则偏微分的值一直是0，无法进行梯度下降。<br><img src="/2020/07/04/from-logistic-regression-to-neural-network/cross_entropy_vs_MSE.png" alt="MSE&amp;cross entropy"><br>由图可见，在logistic regression这个问题上，交叉熵(极大似然)确实比MSE的梯度更大，更适合当作评价函数好坏的标准。</p>
+<h3 id="多元分类"><a href="#多元分类" class="headerlink" title="多元分类"></a>多元分类</h3><p><img src="/2020/07/04/from-logistic-regression-to-neural-network/multi-class_classification.png" alt="Multiclass-classification"></p>
+<h4 id="Step-1"><a href="#Step-1" class="headerlink" title="Step 1"></a>Step 1</h4><p>以三元分类为例，要做三元分类，要找三组参数</p>
+<script type="math/tex; mode=display">
+C_1:w^1,b^1 \text{  } z_1=w^1x+b_1 \\
+C_2:w^2,b^2 \text{  } z_2=w^2x+b_2 \\
+C_3:w^3,b^3 \text{  } z_3=w^3x+b_3 \\
+\mathrm{softmax}: \vec{z} \in \mathbb{R}^n\to \vec{y} \in\mathbb{R}^n \\
+\text{}\\\\
+y_i = \frac{\exp{z_i}}{\sum_{i=1}^3}</script><h4 id="Step-2"><a href="#Step-2" class="headerlink" title="Step 2"></a>Step 2</h4><p><img src="/2020/07/04/from-logistic-regression-to-neural-network/multi_class_loss.png" alt="Multiclass-Loss"></p>
+<p>把<code>z</code>经过<code>softmax</code>函数变换后得到的概率分布<code>y</code>与真实值计算交叉熵，即为需要最小化的函数</p>
+<h4 id="Step-3"><a href="#Step-3" class="headerlink" title="Step 3"></a>Step 3</h4><p>梯度下降</p>
+<h2 id="线性模型的限制"><a href="#线性模型的限制" class="headerlink" title="线性模型的限制"></a>线性模型的限制</h2><p>线性模型的函数是直线，而稍微复杂点的问题是无法用直线解决的。例如XOR问题</p>
+<p><img src="/2020/07/04/from-logistic-regression-to-neural-network/XOR.png" alt="XOR"></p>
+<h3 id="feature-transformation"><a href="#feature-transformation" class="headerlink" title="feature transformation"></a>feature transformation</h3><p><img src="/2020/07/04/from-logistic-regression-to-neural-network/feature_transformation.png" alt="feature transformation"></p>
+<p>通过对feature做一些处理，是有可能突破线性模型的限制的。<br>但需要人工参与，而且没有一般规律。这就变成<em>人工</em>学习而不是<em>机器</em>学习了:(</p>
+<h3 id="feature-transformation-with-linear-unit"><a href="#feature-transformation-with-linear-unit" class="headerlink" title="feature transformation with linear unit"></a>feature transformation with linear unit</h3><p><img src="/2020/07/04/from-logistic-regression-to-neural-network/cascading_logistic_regression.png" alt="cascading_logistic_regression"><br>但我们可以把feature transformation看作是一个线性的变化，这样就可以由logistic regression来解决。这样把多个logistic regression串起来，就可以对feature做复杂的变化。</p>
+<p><img src="/2020/07/04/from-logistic-regression-to-neural-network/feature_transformation_with_linear_unit.png" alt="feature_transformation_with_linear_unit"><br>上图是使用两个logistic regression进行feature transformation的结果，只要再接上一个logistic regression接收他俩的输出就可以进行分类了。</p>
+<h3 id="Neural-network"><a href="#Neural-network" class="headerlink" title="Neural network"></a>Neural network</h3><p>由此推广，把若干个线性模型串起来就可以实现很多复杂的功能。那么给logistic regression的单元起个新名字叫做神经元(neuron)，把它们互相连接形成的结构叫做神经网络(neural network)，瞬间就高大上起来了。</p>
+<p>现在你可以骗麻瓜说「我们在模拟人类大脑的运作实现人工智慧」了;-)</p>
+]]></content>
+      
+        <categories>
+            
+            <category> Machine learning </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Machine learning </tag>
+            
+            <tag> classification </tag>
+            
+            <tag> logistic regression </tag>
+            
+            <tag> neural network </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[机器学习基础——纸上谈兵]]></title>
       <url>/2020/07/03/machine-learning-in-pure-paperworks/</url>
       <content type="html"><![CDATA[<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
