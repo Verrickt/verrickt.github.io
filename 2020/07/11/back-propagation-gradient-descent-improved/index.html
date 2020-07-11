@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  <title>后向传播-进阶版的梯度下降算法 | Melchior on CLR</title>
+  <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
+  <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="shortcut icon" href="/">
+  <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文是NTU ML 2020中BackPropagation部分的笔记。 梯度下降是非常常用的优化算法。而在深度学习中，一个神经网络的参数动辄几百万，像线性模型那样人手工算好再告诉机器的方式已经不合适了，需要一种更高效的算法来计算梯度。">
+<meta name="keywords" content="Machine learning,Backpropagation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="后向传播-进阶版的梯度下降算法">
+<meta property="og:url" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/index.html">
+<meta property="og:site_name" content="Melchior on CLR">
+<meta property="og:description" content="本文是NTU ML 2020中BackPropagation部分的笔记。 梯度下降是非常常用的优化算法。而在深度学习中，一个神经网络的参数动辄几百万，像线性模型那样人手工算好再告诉机器的方式已经不合适了，需要一种更高效的算法来计算梯度。">
+<meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:image" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/network_structure.png">
+<meta property="og:image" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/notions_backward_pass.png">
+<meta property="og:image" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/amplify.png">
+<meta property="og:image" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/dependencies.png">
+<meta property="og:image" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/sum.png">
+<meta property="og:updated_time" content="2020-07-11T14:11:29.102Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="后向传播-进阶版的梯度下降算法">
+<meta name="twitter:description" content="本文是NTU ML 2020中BackPropagation部分的笔记。 梯度下降是非常常用的优化算法。而在深度学习中，一个神经网络的参数动辄几百万，像线性模型那样人手工算好再告诉机器的方式已经不合适了，需要一种更高效的算法来计算梯度。">
+<meta name="twitter:image" content="https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/network_structure.png">
+    
+  <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <link href='//cdn.bootcss.com/node-waves/0.7.5/waves.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+
+  <script>setLoadingBarProgress(20)</script> 
+  <header class="l_header">
+	<div class='wrapper'>
+		<div class="nav-main container container--flex">
+			<a class="logo flat-box" href='/' >
+				Melchior on CLR
+			</a>
+			<div class='menu'>
+				<ul class='h-list'>
+					
+						<li>
+							<a class='flat-box nav-home' href='/'>
+								Home
+							</a>
+						</li>
+					
+						<li>
+							<a class='flat-box nav-archives' href='/archives'>
+								Archives
+							</a>
+						</li>
+					
+						<li>
+							<a class='flat-box nav-about' href='/about'>
+								About
+							</a>
+						</li>
+					
+				</ul>
+				<div class='underline'></div>
+			</div>
+			
+				<div class="m_search">
+					<form name="searchform" class="form u-search-form">
+						<input type="text" class="input u-search-input" placeholder="Search" />
+						<span class="icon icon-search"></span>
+					</form>
+				</div>
+			
+			<ul class='switcher h-list'>
+				
+					<li class='s-search'><a href='javascript:void(0)'><span class="icon icon-search flat-box"></span></a></li>
+				
+				<li class='s-menu'><a href='javascript:void(0)'><span class="icon icon-menu flat-box"></span></a></li>
+			</ul>
+		</div>
+		
+		<div class='nav-sub container container--flex'>
+			<a class="logo" class="flat-box" href='javascript:void(0)'>
+				Word of Forks
+			</a>
+
+			<ul class='switcher h-list'>
+				<li class='s-comment'><a href='javascript:void(0)'><span class="icon icon-chat_bubble_outline flat-box"></span></a></li>
+				<li class='s-top'><a href='javascript:void(0)'><span class="icon icon-arrow_upward flat-box"></span></a></li>
+				<li class='s-toc'><a href='javascript:void(0)'><span class="icon icon-format_list_numbered flat-box"></span></a></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<aside class="menu-phone">
+	<nav>
+		
+			<a href="/" class="nav-home nav">
+				Home
+			</a>
+		
+			<a href="/archives" class="nav-archives nav">
+				Archives
+			</a>
+		
+			<a href="/about" class="nav-about nav">
+				About
+			</a>
+		
+	</nav>
+</aside>
+
+    <script>setLoadingBarProgress(40);</script>
+  <div class="l_body">
+    <div class='container clearfix'>
+      <div class='l_main'>
+        <article id="post-back-propagation-gradient-descent-improved"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2020/07/11/back-propagation-gradient-descent-improved/">
+    	后向传播-进阶版的梯度下降算法
+    </a>
+  </h2>
+	<time>
+	  Jul 11, 2020
+	</time>
+	
+    
+    <div class='cats'>
+        <a href="/categories/Machine-learning/">Machine learning</a>
+    </div>
+
+	</section>
+	
+		<section class="toc-wrapper"></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script><br>本文是<a href="http://speech.ee.ntu.edu.tw/~tlkagk/courses_ML20.html" target="_blank" rel="external">NTU ML 2020</a>中<a href="https://youtu.be/Dr-WRlEFefw" target="_blank" rel="external">BackPropagation</a>部分的笔记。</p>
+<p>梯度下降是非常常用的优化算法。而在深度学习中，一个神经网络的参数动辄几百万，像线性模型那样人手工算好再告诉机器的方式已经不合适了，需要一种更高效的算法来计算梯度。<br><a id="more"></a><br>后向传播是计算梯度的高效算法，它的理论基础是链式法则。</p>
+<script type="math/tex; mode=display">
+p=\phi(x),q=\varphi(x),g=f(p,q) \\
+\frac{dg}{dx}=\frac{\partial g}{\partial p}\frac{dp
+}{dx}+\frac{\partial g}{\partial q}\frac{dq}{dx}</script><hr>
+<p>梯度下降的目标函数<code>total loss</code>是各个example的和</p>
+<script type="math/tex; mode=display">L(\theta)=\sum_{n=1}^N C^{n}(\theta)</script><p>所以只需能计算出其中一项的<code>loss</code>就可求<code>total loss</code>的梯度。</p>
+<p>考虑如下的一个3x2的神经网络<br><img src="/2020/07/11/back-propagation-gradient-descent-improved/network_structure.png" alt="network structure"></p>
+<p>第一层第一个神经元的参数<code>w1</code>，输入激活函数的值<code>z=w1*x1+w2*x2+b1</code><br>则由链式法则</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial w_1}=\frac{\partial L}{\partial z}\frac{\partial z}{\partial w_1}=\frac{\partial L}{\partial z}x_1</script><p>转化为求</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial z}</script><p>考虑该神经元的下一层，<code>z</code>经过激活后的输出<code>a</code>被当作下一层的输入：<br><img src="/2020/07/11/back-propagation-gradient-descent-improved/notions_backward_pass.png" alt="backward-pass"><br>则由链式法则，</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial z} = \frac{\partial L}{\partial a}\frac{\partial a}{\partial z}=\frac{\partial L}{\partial a}\sigma'(z)</script><p>观察到<code>a</code>已经变成了下一层网络的输入，问题又化为了最初求<code>loss</code>对网络输入的微分，但问题的规模-求梯度的“层数”却减少了一层。思维敏锐的同学可能已经发现了，这是分治法。</p>
+<p>让我们更进一步</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial a}=\frac{\partial L}{\partial z'}\frac{\partial z'}{\partial a}+\frac{\partial L}{\partial z''}\frac{\partial z''}{\partial a}
+= \frac{\partial L}{\partial z'} w_3+ \frac{\partial L}{\partial z''} w_4</script><p>从而</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial z}=\sigma'(z) \left[\frac{\partial L}{\partial z'} w_3+ \frac{\partial L}{\partial z''} w_4 \right]</script><p><img src="/2020/07/11/back-propagation-gradient-descent-improved/amplify.png" alt="amplify"></p>
+<p>看起来就像是一个以偏微分为输入,<code>y=σ&#39;(z)x</code>为激活函数的神经元的输出</p>
+<p>考虑所有激活函数的输入<code>z</code>，当前层的偏微分<code>z</code>与后一层之间的偏微分<code>z&#39;</code>存在计算上的依赖关系。因此计算<code>loss</code>对<code>z</code>的偏微分时，要从后往前算。因此得名<code>backward pass</code>。<br><img src="/2020/07/11/back-propagation-gradient-descent-improved/dependencies.png" alt="dependencies"></p>
+<p>而计算本层神经元的输入<code>a</code>时是从前往后算的，因此叫做<code>foreward pass</code></p>
+<p><img src="/2020/07/11/back-propagation-gradient-descent-improved/sum.png" alt="sum"></p>
+<p>总结一下，要计算L对参数<code>w</code>的偏微分需要进行两个步骤：</p>
+<ol>
+<li>foreward pass. 算出L对当前层神经元的输入<code>a</code>的偏微分。从前往后算。</li>
+<li>backward pass. 计算出L对当前层激活函数的输入<code>z</code>的偏微分。从后往前算。</li>
+</ol>
+<p>两者相乘，即得</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial w}</script>
+  	</div>
+	  
+	  <div class="article-tags tags">
+      
+        <a href="/tags/Machine-learning/">Machine learning</a>
+      
+        <a href="/tags/Backpropagation/">Backpropagation</a>
+      
+	  </div>
+    
+		
+	
+		<div class="art-item-footer">
+				
+				
+					<span class="art-item-right">next：<a href="/2020/07/04/from-logistic-regression-to-neural-network/" rel="next"  title="从分类到对率回归再到到神经网络">
+						从分类到对率回归再到到神经网络
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
+</article>
+<script>
+	window.subData = {
+		title: '后向传播-进阶版的梯度下降算法',
+		tools: true
+	}
+</script>
+
+      </div>
+      <aside class='l_side'>
+        
+  <section class='m_widget about'>
+
+<img class='avatar waves-image' src='https://avatars0.githubusercontent.com/u/11483783' />
+
+<div class='header'>Verrickt</div>
+<div class='content'>
+<div class='desc'>Von as a programmer</div>
+</div>
+</section>
+
+  <section class='m_widget links'>
+<div class='header'>Links</div>
+<div class='content'>
+    <ul class="entry">
+    
+        <li><a class="flat-box" target="_blank" href="https://sjx1995.github.io">
+            <div class='name'>Sunly</div>
+        </a></li>
+    
+        <li><a class="flat-box" target="_blank" href="https://liun1an.github.io">
+            <div class='name'>LiuN1an</div>
+        </a></li>
+    
+    </ul>
+</div>
+</section>
+
+  <section class='m_widget categories'>
+<div class='header'>Categories</div>
+<div class='content'>
+    
+    <ul class="entry">
+    
+        <li><a class="flat-box" href="/categories/FluentTreeView/"><div class='name'>FluentTreeView</div><div class='badget'>5</div></a></li>
+    
+        <li><a class="flat-box" href="/categories/Machine-learning/"><div class='name'>Machine learning</div><div class='badget'>6</div></a></li>
+    
+    </ul>
+    
+</div>
+</section>
+
+  
+<div class="m_widget tagcloud">
+    <div class="header">Tags</div>
+    <div class='content'>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/Backpropagation/" style="font-size: 14px; color: #808080">Backpropagation</a> <a href="/tags/C/" style="font-size: 17.6px; color: #333">C#</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Information-theory/" style="font-size: 14px; color: #808080">Information theory</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 18.8px; color: #1a1a1a">Machine learning</a> <a href="/tags/Numberical-computation/" style="font-size: 14px; color: #808080">Numberical computation</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 20px; color: #000">PAT</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Probability/" style="font-size: 14px; color: #808080">Probability</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/The-flower-book/" style="font-size: 16.4px; color: #4d4d4d">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/WPF/" style="font-size: 15.2px; color: #666">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/classification/" style="font-size: 14px; color: #808080">classification</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/logistic-regression/" style="font-size: 14px; color: #808080">logistic regression</a> <a href="/tags/neural-network/" style="font-size: 14px; color: #808080">neural network</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+    </div>
+</div>
+
+
+
+      </aside>
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+  </div>
+  <footer id="footer" class="clearfix">
+
+  <div class="social-wrapper">
+    
+      
+        <a href="https://github.com/verrickt" class="social github" target="_blank" rel="external">
+          <span class="icon icon-github"></span>
+        </a>
+        
+        <a href="https://twitter.com/verrickt" class="social twitter" target="_blank" rel="external">
+          <span class="icon icon-twitter"></span>
+        </a>
+        
+        <a href="/atom.xml" class="social rss" target="_blank" rel="external">
+          <span class="icon icon-rss"></span>
+        </a>
+        
+          
+  </div>
+
+  <div> 2017-2020 by verrickt. Powered by
+    <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
+    <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
+    <div>
+      <span>
+        Unless explicitly stated, contents of this blog are licensed under
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
+            height="24.75" width="66">
+        </a>
+      </span>
+    </div>
+</footer>
+  <script>setLoadingBarProgress(80);</script>
+  
+
+<script src="//apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src='//cdn.bootcss.com/node-waves/0.7.5/waves.min.js'></script>
+<script src="//cdn.bootcss.com/scrollReveal.js/3.3.2/scrollreveal.min.js"></script>
+<script src="/js/jquery.fitvids.js"></script>
+<script>
+	var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+	var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+	var ALGOLIA_API_KEY = "";
+	var ALGOLIA_APP_ID = "";
+	var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var BAIDU_API_ID = "";
+  var SEARCH_SERVICE = "hexo";
+  var ROOT = "/"||"/";
+  if(!ROOT.endsWith('/'))ROOT += '/';
+</script>
+<script src="/js/search.js"></script>
+<script src="/js/app.js"></script>
+
+
+  <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
