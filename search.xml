@@ -3,6 +3,64 @@
   
     
     <entry>
+      <title><![CDATA[神经网络中的Regularization]]></title>
+      <url>/2020/07/15/regularization-of-neural-network/</url>
+      <content type="html"><![CDATA[<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+
+<p>Deep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe… Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately</p>
+<a id="more"></a>
+<p>regularization是我们应对overfitting的常用手段。在比较简单的模型，例如linear-regresseion中，人对的capacity的估计通常比较准确，一般不需要做regularization。而在神经网络动辄成千上万个节点，数以百万的参数让估测capacity变得极为困难。正如花书所说，泛化性能最好的往往是复杂的模型加上合理的regularization而得到的</p>
+<h2 id="Parameter-Penalities"><a href="#Parameter-Penalities" class="headerlink" title="Parameter Penalities"></a>Parameter Penalities</h2><p>正如三次式最高次的系数为零时退化为二次式，有越多的参数接近0，模型的capacity就越低，即「绑住手脚」。一般来说regularization不会考虑<code>bias</code>，因为<code>bias</code>对capacity的影响并不如<code>weight</code>那么大，但有需要仍可以给<code>bias</code>加上惩罚。</p>
+<p>参数惩罚的思路是，给<code>Loss</code>加上所有参数<code>θ</code>的函数<code>Ω(θ)</code>这一项，让模型更偏好于θ接近0的归纳假设。</p>
+<script type="math/tex; mode=display">
+\hat{L}(\theta,\alpha)=L(\theta)+\alpha \Omega(\theta)</script><h3 id="L2-norm"><a href="#L2-norm" class="headerlink" title="L2 norm"></a>L2 norm</h3><p>L2 norm中所选的函数Ω是</p>
+<script type="math/tex; mode=display">\Omega(\theta)=\frac{1}{2}\theta^{\top}\theta</script><p><code>Loss</code>的梯度变为</p>
+<script type="math/tex; mode=display">\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha\theta</script><p>带入梯度下降公式</p>
+<script type="math/tex; mode=display">
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_\theta L - \alpha\epsilon \theta^N = (1-\alpha \epsilon)\theta ^N-\epsilon\nabla_\theta L</script><p>每次梯度下降更新参数时会把原来的参数<strong>乘</strong>上一个固定的值<code>1-αε</code>，使得θ接近于0</p>
+<h3 id="L1-norm"><a href="#L1-norm" class="headerlink" title="L1 norm"></a>L1 norm</h3><p>L1 norm中的函数Ω是</p>
+<script type="math/tex; mode=display">
+\Omega(\theta)=\sum_{i=1}^N|\theta_i|</script><p><code>Loss</code>的梯度变为</p>
+<script type="math/tex; mode=display">\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha \mathrm{sgn}(\theta)</script><p>带入梯度下降公式</p>
+<script type="math/tex; mode=display">
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_{\theta}L-\alpha\epsilon \mathrm{sgn}(\theta^N) = \theta ^N-\epsilon\nabla_\theta L -\alpha\epsilon \mathrm{sgn}(\theta^N)</script><p>发现参数更新时会在每一个分量<code>i</code>中<strong>减</strong>掉一个固定值<code>αε*sgn(i)</code></p>
+<p>L2 norm中，每次都乘上一个小于1的数，当参数大于1时，减小的速度就非常快；当参数小于1时，减小的速度就比较慢。因此L2中最终各个参数比较接近，但不会出现很多0。</p>
+<p>而L1 norm中，每次减小一个固定值。对很大的参数，减法的步长很小，减小的效果就不是很明显。而参数很小时，减法的步长相对很大，就很容易出现0。因此L1中很容易出现很大的参数和较多的0。</p>
+<p>含较多0的矩阵叫做稀疏矩阵(Sparse matrix)，因此用L1能够得到比较稀疏的参数。</p>
+<h2 id="Early-stopping"><a href="#Early-stopping" class="headerlink" title="Early stopping"></a>Early stopping</h2><p><img src="/2020/07/15/regularization-of-neural-network/early-stopping.png" alt="early stopping"></p>
+<p>early stopping的思路就更简单了。既然复杂的模型训练时会关注一些无关的特征，那干脆不要跑那么多次训练就好了。</p>
+<p>early stopping的形式化描述：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">Let n be the number of steps between evaluations.</div><div class="line">Let p be the “patience,” the number of times to observe worsening validation set error before giving up. </div><div class="line">Let θ^o be the initial parameters. </div><div class="line">θ ← θ^o </div><div class="line">i ← 0 </div><div class="line">j ← 0 </div><div class="line">v ←∞ </div><div class="line">θ∗ ← θ </div><div class="line">i∗ ← i </div><div class="line">while j &lt; p do θ</div><div class="line">    Update by running the training algorithm for n steps. </div><div class="line">    i ← i + n</div><div class="line">    v&apos; ← ValidationSetError(θ) </div><div class="line">    if v&apos; &lt; v then </div><div class="line">        j  ← 0</div><div class="line">        θ∗ ← θ </div><div class="line">        i∗ ← i</div><div class="line">        v  ← v&apos;</div><div class="line">    else </div><div class="line">        j ← j + 1 </div><div class="line">    end if</div><div class="line">end while</div></pre></td></tr></table></figure></p>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">nodes:</div><div class="line">Best parameters are θ∗ , best number of training steps is i∗</div></pre></td></tr></table></figure>
+<h2 id="Ensemble"><a href="#Ensemble" class="headerlink" title="Ensemble"></a>Ensemble</h2><p>Ensemble认为，模型中出现的错误是随机的，那么使用<strong>同样</strong>的数据训练出k个不同的模型，将它们的结果取平均就可以得到比较好的结果。</p>
+<p>复杂模型error主要来自variance。从直觉上说，对多个模型取平均就能很好的抵消一部分variance。<br>ensemble的坏处在于，它需要训练k个不同的模型，导致计算量大增。有时这样的计算量是无法承受的，因此希望有一个代价不那么大的ensemble方法，这就是dropout</p>
+<h3 id="dropout"><a href="#dropout" class="headerlink" title="dropout"></a>dropout</h3><p>dropout和以往的方法不同，它把当前训练的模型当作是很多模型的叠加：每次训练时，每个单元都有p的概率从网络中被移除，每次只针对这些被留下来的单元做参数的更新。有n个单元时，因为每一个单元都可以被留下/丢掉，这就可能产生2^N个不同的网络结构。dropout就认为当前的模型是这2^N个网络的ensemble。</p>
+<p>下面是一个2层的神经网络。它有2个隐藏单元。dropout可以产生的网络由16个。使用dropout的网络经过一次训练后相当于训练了2^N个子网络，计算量的问题就这样解决了。<br><img src="/2020/07/15/regularization-of-neural-network/dropout.png" alt="droupout"></p>
+<p>使用dropout的网络训练完成后，在测试时不再移除神经元，而是给网络整体的参数乘上1-p。<br>一个直觉的解释：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">设w是dropout得到的参数，w&apos;是训练时的参数。</div><div class="line">在训练时神经元有p的概率被丢弃，所以网络中实际神经元个数的期望是n*(1-p)。</div><div class="line">现在要让网络的输出尽可能的一致，则</div><div class="line">n*w*(1-p) = n*w&apos;</div><div class="line">即w&apos;=w*(1-p)</div></pre></td></tr></table></figure></p>
+<p><img src="/2020/07/15/regularization-of-neural-network/linearity.png" alt="linearity"></p>
+<p>实际的分析发现，在整个网络是线性时，上面的论述是精确成立的，而加上激活函数的网络往往不是线性的。但实际使用上dropout的性能也确实比较接近ensemble的结果。为什么会这样我们不清楚，总之拿来主义了。世界各地有很多科学家也在探究背后的奥秘，希望有一天能找出一个精确的解释吧。</p>
+]]></content>
+      
+        <categories>
+            
+            <category> Machine learning </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Machine learning </tag>
+            
+            <tag> Regularization </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[后向传播-进阶版的梯度下降算法]]></title>
       <url>/2020/07/11/back-propagation-gradient-descent-improved/</url>
       <content type="html"><![CDATA[<p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script><br>本文是<a href="http://speech.ee.ntu.edu.tw/~tlkagk/courses_ML20.html" target="_blank" rel="external">NTU ML 2020</a>中<a href="https://youtu.be/Dr-WRlEFefw" target="_blank" rel="external">BackPropagation</a>部分的笔记。</p>
