@@ -4,7 +4,7 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: logistic regression | Melchior on CLR</title>
+  <title>Tag: CUDA | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -16,7 +16,7 @@
 <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/logistic-regression/index.html">
+<meta property="og:url" content="https://verrickt.github.io/tags/CUDA/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
 <meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
 <meta property="og:locale" content="zh-CN,en-US">
@@ -125,7 +125,7 @@
       <div class='l_main'>
         
   <script>
-    window.subData= { title:'Tag : logistic regression'}
+    window.subData= { title:'Tag : CUDA'}
   </script>
 
 <section class="post-list">
@@ -135,28 +135,22 @@
   <section class="meta">
     
     <h2 class="title">
-      <a href="/2020/07/04/from-logistic-regression-to-neural-network/">
-        从分类到对率回归再到到神经网络
+      <a href="/2020/07/28/gpu-accelerated-tranining-with-cuda/">
+        使用CUDA为Tensorflow加速
       </a>
     </h2>
     
     <time>
-      Jul 4, 2020
+      Jul 28, 2020
     </time>
 		
-    
-    <div class='cats'>
-        <a href="/categories/Machine-learning/">Machine learning</a>
-    </div>
-
   </section>
   <section class="article typo">
-	  <p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的是台湾大学2020机器学习的Classification<a href="https://youtu.be/fZAZUYEeIMg" target="_blank" rel="external">1</a>和<a href="https://youtu.be/hSXFuypLukA" target="_blank" rel="external">2</a>的笔记，奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>策略，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br></p>
+	  <p>梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。<br></p>
 
     
 	  <div class="readmore">
-      <a href="/2020/07/04/from-logistic-regression-to-neural-network/">Read More</a>
+      <a href="/2020/07/28/gpu-accelerated-tranining-with-cuda/">Read More</a>
     </div>
     
     
@@ -165,11 +159,9 @@
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
-        <a href="/tags/classification/">classification</a>
+        <a href="/tags/CUDA/">CUDA</a>
       
-        <a href="/tags/logistic-regression/">logistic regression</a>
-      
-        <a href="/tags/neural-network/">neural network</a>
+        <a href="/tags/Tensorflow/">Tensorflow</a>
       
 	  </div>
     

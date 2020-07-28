@@ -4,7 +4,7 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <title>Tag: logistic regression | Melchior on CLR</title>
+  <title>使用CUDA为Tensorflow加速 | Melchior on CLR</title>
   <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
   <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
   <meta name="HandheldFriendly" content="True" />
@@ -12,17 +12,18 @@
   <link rel="shortcut icon" href="/">
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="A programmer focus mainly on Microsoft Technologies">
-<meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU&#x2F;Linux,CLI">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Melchior on CLR">
-<meta property="og:url" content="https://verrickt.github.io/tags/logistic-regression/index.html">
+  <meta name="description" content="梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。">
+<meta name="keywords" content="Machine learning,CUDA,Tensorflow">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用CUDA为Tensorflow加速">
+<meta property="og:url" content="https://verrickt.github.io/2020/07/28/gpu-accelerated-tranining-with-cuda/index.html">
 <meta property="og:site_name" content="Melchior on CLR">
-<meta property="og:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta property="og:description" content="梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。">
 <meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:updated_time" content="2020-07-28T14:29:22.421Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Melchior on CLR">
-<meta name="twitter:description" content="A programmer focus mainly on Microsoft Technologies">
+<meta name="twitter:title" content="使用CUDA为Tensorflow加速">
+<meta name="twitter:description" content="梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。">
     
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
@@ -123,62 +124,84 @@
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
-        
-  <script>
-    window.subData= { title:'Tag : logistic regression'}
-  </script>
-
-<section class="post-list">
+        <article id="post-gpu-accelerated-tranining-with-cuda"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2020/07/28/gpu-accelerated-tranining-with-cuda/">
+    	使用CUDA为Tensorflow加速
+    </a>
+  </h2>
+	<time>
+	  Jul 28, 2020
+	</time>
 	
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/07/04/from-logistic-regression-to-neural-network/">
-        从分类到对率回归再到到神经网络
-      </a>
-    </h2>
-    
-    <time>
-      Jul 4, 2020
-    </time>
-		
-    
-    <div class='cats'>
-        <a href="/categories/Machine-learning/">Machine learning</a>
-    </div>
+	</section>
+	
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#踩坑"><span class="toc-number">1.</span> <span class="toc-text">踩坑</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tensorflow"><span class="toc-number">1.1.</span> <span class="toc-text">Tensorflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CUDA"><span class="toc-number">1.2.</span> <span class="toc-text">CUDA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cuDNN"><span class="toc-number">1.3.</span> <span class="toc-text">cuDNN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Coding"><span class="toc-number">1.4.</span> <span class="toc-text">Coding</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#吐槽"><span class="toc-number">2.</span> <span class="toc-text">吐槽</span></a></li></ol></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<p>梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。<br><a id="more"></a><br>根据<a href="https://www.tensorflow.org/install/gpu#windows_setup" target="_blank" rel="external">官方页面</a>，对软硬件有如下要求:</p>
+<blockquote>
+<p>The following GPU-enabled devices are supported:</p>
+<ul>
+<li>NVIDIA® GPU card with CUDA® architectures 3.5 or higher. See the list of CUDA®-enabled GPU cards.</li>
+<li>For GPUs with unsupported CUDA® architectures, or to avoid JIT compilation from PTX, or to use different versions of the NVIDIA® libraries, see the Linux build from source guide.<br>-On systems with NVIDIA® Ampere GPUs (CUDA architecture 8.0) or newer, kernels are JIT-compiled from PTX and TensorFlow can take over 30 minutes to start up. This overhead can be limited to the first start up by increasing the default JIT cache size with: ‘export CUDA_CACHE_MAXSIZE=2147483648’ (see JIT Caching for details).<br>-Packages do not contain PTX code except for the latest supported CUDA® architecture; therefore, TensorFlow fails to load on older GPUs when CUDA_FORCE_PTX_JIT=1 is set. (See Application Compatibility for details.)</li>
+</ul>
+<p>The following NVIDIA® software must be installed on your system:</p>
+<ul>
+<li>NVIDIA® GPU drivers —CUDA® 10.1 requires 418.x or higher.</li>
+<li>CUDA® Toolkit —TensorFlow supports CUDA® 10.1 (TensorFlow &gt;= 2.1.0)</li>
+<li>CUPTI ships with the CUDA® Toolkit.</li>
+<li>cuDNN SDK 7.6 </li>
+</ul>
+</blockquote>
+<p>换句话说，只要不是上古时代的NVIDIA GPU，都可以进行运算。</p>
+<h2 id="踩坑"><a href="#踩坑" class="headerlink" title="踩坑"></a>踩坑</h2><h3 id="Tensorflow"><a href="#Tensorflow" class="headerlink" title="Tensorflow"></a>Tensorflow</h3><p>安装tensorflow后要还要安装tensorflow-gpu。tensorflow-gpu<strong>不</strong>是tensorflow的替代者，而是支持运算GPU的模块。不要被网上的信息误导，两者都需要安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">pip install tensorflow</div><div class="line">pip install tensorflow-gpu</div></pre></td></tr></table></figure></p>
+<h3 id="CUDA"><a href="#CUDA" class="headerlink" title="CUDA"></a>CUDA</h3><p>CUDA请一定安装10.1版本，更新的和更旧的版本都不支持。要去Archive里找。</p>
+<h3 id="cuDNN"><a href="#cuDNN" class="headerlink" title="cuDNN"></a>cuDNN</h3><p>cuDNN请一定安装7.6版本，更新的和更旧的版本都不支持。<br>cuDNN要先去注册NVIDIA developer再去Archive里找7.6的</p>
+<h3 id="Coding"><a href="#Coding" class="headerlink" title="Coding"></a>Coding</h3><p>全部安装好后去跑hello world。tensorflow可能会卡在<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0</div></pre></td></tr></table></figure></p>
+<p>现在去泡杯咖啡，坐和放宽，大概过几个小时就好了。这么大的延迟只会第一次出现。原因似乎是因为GPU那边在做JIT🙃</p>
+<p>等出现这一行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">I tensorflow/core/common_runtime/gpu/gpu_device.cc:1247] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 1376 MB memory) -&gt; physical GPU (device: 0, name: GeForce 840M, pci bus id: 0000:01:00.0, compute capability: 5.0)</div></pre></td></tr></table></figure></p>
+<p>就说明成功了。</p>
+<p>我的渣渣840M跑训练比CPU快了一个数量级;-)</p>
+<h2 id="吐槽"><a href="#吐槽" class="headerlink" title="吐槽"></a>吐槽</h2><p>已经2020年了，CUDA已经出到<code>11.0</code>了的RC了，tensorflow居然还只支持2019年2月发布的<code>10.1</code>。<br>cuDNN同理，也用的是很老的版本。</p>
+<p>CUDA作为NVIDIA家私有的一套API，形成了事实标准，这很不好。而AMD家的搞得叫做<code>ROCm</code>的一套东西，很遗憾的还没成什么气候。<code>ROCm</code>的tensorflow是官方版的一份<a href="https://github.com/ROCmSoftwarePlatform/tensorflow-upstream" target="_blank" rel="external">fork</a>，binary还是社区自己编译的，可以想象坑是无比的多。</p>
+<p>希望开源的标准尽快取代掉私有的CUDA，让A家的GPU也能无痛的跑科学计算。</p>
 
-  </section>
-  <section class="article typo">
-	  <p><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script></p>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文的是台湾大学2020机器学习的Classification<a href="https://youtu.be/fZAZUYEeIMg" target="_blank" rel="external">1</a>和<a href="https://youtu.be/hSXFuypLukA" target="_blank" rel="external">2</a>的笔记，奉行<a href="https://en.wikipedia.org/wiki/Lazy_evaluation" target="_blank" rel="external">Lazy evaluation</a>策略，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/07/04/from-logistic-regression-to-neural-network/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
+  	</div>
+	  
+	  <div class="article-tags tags">
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
-        <a href="/tags/classification/">classification</a>
+        <a href="/tags/CUDA/">CUDA</a>
       
-        <a href="/tags/logistic-regression/">logistic regression</a>
-      
-        <a href="/tags/neural-network/">neural network</a>
+        <a href="/tags/Tensorflow/">Tensorflow</a>
       
 	  </div>
     
-  </section>
+		
+	
+		<div class="art-item-footer">
+				
+				
+					<span class="art-item-right">next：<a href="/2020/07/23/recurrent-neural-network/" rel="next"  title="循环神经网络">
+						循环神经网络
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
 </article>
-    </div>
-  
-</section>
-
+<script>
+	window.subData = {
+		title: '使用CUDA为Tensorflow加速',
+		tools: true
+	}
+</script>
 
       </div>
       <aside class='l_side'>
