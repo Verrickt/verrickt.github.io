@@ -3,6 +3,185 @@
   
     
     <entry>
+      <title><![CDATA[支持向量机]]></title>
+      <url>/2020/07/31/support-vector-machine/</url>
+      <content type="html"><![CDATA[<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>支持向量机(Support Vector Machine,SVM)是一个能求解通用二元分类问题的模型。SVM使用Kernel trick，使得自己在能够表示非线性函数的同时Loss是有闭式解的Convex function。也有人把SVM当作线性模型向神经网络过渡的中间阶段。</p>
+<a id="more"></a>
+<h2 id="SVM"><a href="#SVM" class="headerlink" title="SVM"></a>SVM</h2><p><img src="/2020/07/31/support-vector-machine/What-is-SVM.png" alt="What is SVM"></p>
+<p>对于</p>
+<script type="math/tex; mode=display">
+D = \{(x_1,y_1),(x_2,y_2)...(x_n,y_n)\} , y_i \in \{-1,+1\}</script><p>的分类问题，SVM试图在n维空间上找一个超平面，<code>wx+b</code>，使得</p>
+<ul>
+<li>当wx_i+b≥1时，yi=+1</li>
+<li>当wx_i+b≤1时，yi=-1</li>
+</ul>
+<p>并且超平面应该离两侧最近的点都尽可能远。解出这一组w和b就解出了SVM。</p>
+<p>其实如果在将w和b并在一起作为新的w,将x后接1,则SVM可以进一步简化为<code>wx</code>:</p>
+<script type="math/tex; mode=display">
+f(x)= \sum_i w_ix_i+b = \left[ \begin{array}{c} w \\ b
+\end{array} \right] \cdot
+\left[ \begin{array}{c} x \\ 1
+\end{array} \right]</script><h3 id="Hinge-loss"><a href="#Hinge-loss" class="headerlink" title="Hinge loss"></a>Hinge loss</h3><p><img src="/2020/07/31/support-vector-machine/delta-loss.png" alt="delta-loss"></p>
+<p>回到分类问题本身，通常Loss会选择在整个训练集上分类错误的次数：</p>
+<script type="math/tex; mode=display">
+L(f)=\sum_i \delta(g(x^n) \not ={\hat{y}^n})</script><p>其中<code>δ</code>函数的为真时值为1，反之值为0。<br>正如<a href="../../../07/04/from-logistic-regression-to-neural-network/">对率回归</a>中所说，<br>在分类问题上使用这类函数是不利于训练的，因此希望找到一个函数</p>
+<script type="math/tex; mode=display">
+l(f(x^n),\hat y^n)</script><p>来近似代替<code>δ</code>函数。</p>
+<p>hinge loss就是这样的一个函数。他是这么定义的：</p>
+<script type="math/tex; mode=display">
+l(f(x^n),\hat y^n)=\max(0,1-\hat y^nf(x))</script><p><img src="/2020/07/31/support-vector-machine/comparsion-of-loss.png" alt="comparsion of loss"></p>
+<p>图中紫色的线就是hinge loss。横坐标1处，hinge loss把两条直线连接起来，就像是连接骨头的关节(hinge)，因此得名。</p>
+<p>从图上可以看出</p>
+<ul>
+<li>MSE随着横坐标的增加loss反而增加，根本不适用</li>
+<li>sigmoid+square loss对横坐标的变化不敏感(saturate)，训练起来也不好做</li>
+<li>sigmoid+cross entropy会积极的将坐标点往右推，但其实只要横坐标超过了1就已经足够了</li>
+</ul>
+<p><img src="/2020/07/31/support-vector-machine/entropy-vs-hinge.png" alt="entropy-vs-hinge"></p>
+<p>cross entropy好像完美主义者，而hinge loss会想着及格就好。既然在现实世界里两者的性能是一致的，我们也就乐得省下这些无畏的开销。</p>
+<h3 id="Gradient-descent"><a href="#Gradient-descent" class="headerlink" title="Gradient descent"></a>Gradient descent</h3><p><img src="/2020/07/31/support-vector-machine/gradient-descent.png" alt="gradient-descent"></p>
+<p>hinge loss对w的偏微分后，得到梯度下降的公式</p>
+<script type="math/tex; mode=display">
+w_{i+1}=w_i-\eta\sum_n c^n(w)x_i^n</script><p>其中</p>
+<script type="math/tex; mode=display">
+c^n(w) = -\delta(\hat y^nf(x^n)<1)\hat y^nx_i</script><h3 id="soft-margin"><a href="#soft-margin" class="headerlink" title="soft margin"></a>soft margin</h3><p>将整体的损失函数L</p>
+<script type="math/tex; mode=display">
+L(f)=l(0,1-\hat y^nf(x)) + \lambda|w|_2=\sum_n \max(0,1-\hat y^nf(x)) + \lambda|w|_2</script><p>中的l用ε代替，得到下列形式<br><img src="/2020/07/31/support-vector-machine/slack-variable.png" alt="slack-variable"></p>
+<script type="math/tex; mode=display">
+L = \sum_n\epsilon^n+\lambda|w|_2</script><script type="math/tex; mode=display">
+\hat y^nf(x) \ge1-\epsilon^n</script><p>而不是硬性规定</p>
+<script type="math/tex; mode=display">
+\hat y^nf(x) \ge1</script><p><code>ε</code>作为边界条件的放松，被称作松弛变量(slack variable)</p>
+<h3 id="Support-vector"><a href="#Support-vector" class="headerlink" title="Support vector"></a>Support vector</h3><p>SVM的w是所有训练样本点的线性组合，并且多数点的系数都是0(sparsity)。</p>
+<p>这个性质可以从KKT系数反映出来<br><img src="/2020/07/31/support-vector-machine/traditonal-support-vector.png" alt="traditonal-support-vector"></p>
+<p>当然，它也可以从另一个角度说明。<br><img src="/2020/07/31/support-vector-machine/support-vector.png" alt="support-vector"><br>考虑梯度下降的式子</p>
+<script type="math/tex; mode=display">
+w_{i+1}=w_i-\eta\sum_n c^n(w)x_i^n</script><p>其中</p>
+<script type="math/tex; mode=display">
+c^n(w)  =\frac{\partial l(f(x^n),\hat y^n)}{\partial f(x^n)}=-\delta(\hat y^nf(x^n)<1)\hat y^nx_i</script><p>当w被初始化为0向量时，每一次参数更新加上了一个样本点的线性组合；而hinge loss有大约一半的定义域里微分是0，因此大部分系数会为0</p>
+<h2 id="Kernel-method"><a href="#Kernel-method" class="headerlink" title="Kernel method"></a>Kernel method</h2><p><img src="/2020/07/31/support-vector-machine/kernel-function.png" alt="kernel function"></p>
+<p>既然w是X的一个线性组合，将其写作<code>w=Xα</code>。<br>带入f(x)</p>
+<script type="math/tex; mode=display">
+f(x)=w^\top x = \sum_n \alpha_n(x^n \cdot x)</script><p>将x^n与x的内积用函数K(kernel function)表示，则</p>
+<script type="math/tex; mode=display">
+f(x)=\sum_n \alpha_nK(x^n,x)</script><p><img src="/2020/07/31/support-vector-machine/kernel-trick.png" alt="kernel trick"><br>将得到的f(x)带入loss，发现L(f)与x已经无关了，可以直接进行梯度下降。这就是Kernel trick<br><img src="/2020/07/31/support-vector-machine/useful-kernel-trick.png" alt="useful kenel trick"></p>
+<p>若我们先对x做feature transform <code>φ(x)</code>，<code>φ(x)·φ(z)</code>有时可以表示为K(x,z)。这即扩展了SVM的表述能力，也提高了效率。</p>
+<p>在使用RBF Kernel时，可以在无穷维空间做内积</p>
+<p><img src="/2020/07/31/support-vector-machine/RBF-Kernel.png" alt="RBF-Kernel"></p>
+<h2 id="SVM-and-Neural-network"><a href="#SVM-and-Neural-network" class="headerlink" title="SVM and Neural network"></a>SVM and Neural network</h2><p>SVM也可以被看作是有一层hidden unit的神经网络:</p>
+<p><img src="/2020/07/31/support-vector-machine/SVM-as-NN.png" alt="SVM-as-NN"></p>
+<p>每一个neural的weight是x^n与x的内积，所有neural的输出经过tanh后再以α为权值求和就得到输出了。</p>
+<p><img src="/2020/07/31/support-vector-machine/SVM-and-NN.png" alt="SVM-and-NN"><br>实际上，SVM也可以看作是一个神经网络。</p>
+<ul>
+<li>Kernel function相当于是神经网络中做feature transform的hidden layer</li>
+<li>SVM学到的分类器与神经网络的输出层学到的分类器是一致的。</li>
+</ul>
+]]></content>
+      
+        <categories>
+            
+            <category> Machine learning </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Machine learning </tag>
+            
+            <tag> SVM </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[主成分分析]]></title>
+      <url>/2020/07/31/principal-component-analysis/</url>
+      <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+
+<p>主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。</p>
+<a id="more"></a>
+<h2 id="PCA"><a href="#PCA" class="headerlink" title="PCA"></a>PCA</h2><p>PCA的想法很朴素。它试图找到一个线性变化W，使得经过变化后的向量<code>z=Wx</code>在各个维度<code>z_i</code>上都拥有最大的方差。</p>
+<p><img src="/2020/07/31/principal-component-analysis/maximum-variance.png" alt="maximum variance"></p>
+<h2 id="Constraints"><a href="#Constraints" class="headerlink" title="Constraints"></a>Constraints</h2><p>仅仅要求方差最大而不做任何限制是不行的。我们总是可以让<code>w_i</code>含有无穷从而使方差变为无穷大，但这没有意义。</p>
+<p>因此限制<code>w_i</code>的模是1。<br>同样的，当找出使得第i维的方差最大的参数<code>w_i</code>后，机器可以把这组参数<code>w_i</code>用在第j维上来“偷懒”，因此限制任意的参数是垂直的。</p>
+<p><img src="/2020/07/31/principal-component-analysis/constraint.png" alt="constraint"></p>
+<h2 id="Dimension-reduction"><a href="#Dimension-reduction" class="headerlink" title="Dimension reduction"></a>Dimension reduction</h2><h3 id="to-1-dimension"><a href="#to-1-dimension" class="headerlink" title="to 1 dimension"></a>to 1 dimension</h3><p>先考虑一维的情况。</p>
+<script type="math/tex; mode=display">
+z_1=w_1'x,其中 (w_1')^\top w_1'=1</script><p><img src="/2020/07/31/principal-component-analysis/z1-var.png" alt="z1_var"></p>
+<script type="math/tex; mode=display">
+\mathrm{Var}(z_1)=\sum_{z_{i}}(z_1-\bar z)^2
+=\sum_x(w_1'x-w_1'\bar x)^2=\sum_x(w_1'(x- \bar x))^2 \\
+=\sum_x(w_1')^\top(x- \bar x)(x- \bar x)^\top w_1' \\
+=(w_1')^\top\left(\sum_x(x-\bar x)(x-\bar x)^\top\right)w_1' \\
+=(w_1')^\top\mathrm{Cov}(x)w_1'</script><p><img src="/2020/07/31/principal-component-analysis/w1-eigenvector.png" alt="w1-eigenvector"></p>
+<p>构造拉格朗日函数，其中S=Cov(x),</p>
+<script type="math/tex; mode=display">
+L(w_1')=(w_1')^\top S w_1'-\alpha((w_1')^\top w_1'-1) \\
+\frac{\partial L}{\partial w}=0 \rArr Sw_1'-\alpha w_1'
+\rArr Sw_1' = \alpha w_1'
+\rArr \alpha是S的特征值,w'是对应的特征向量</script><p>带回到上式</p>
+<script type="math/tex; mode=display">
+(w_1')^\top\mathrm{Cov}(x)w_1'
+= (w_1')^\top Sw_1' = (w_1')^\top \alpha w_1'
+= \alpha (w_1')^\top w_1'=\alpha</script><p><code>α</code>的最大值，即是Cov(x)最大的特征值。此时的<code>w1&#39;</code>为<code>α</code>对应的特征向量</p>
+<p>对于二元的情况也类似</p>
+<h3 id="to-2-dimensions"><a href="#to-2-dimensions" class="headerlink" title="to 2 dimensions"></a>to 2 dimensions</h3><p><img src="/2020/07/31/principal-component-analysis/z2_lagrange_operator.png" alt="z2_lagrange_operator"></p>
+<p>拉格朗日函数</p>
+<script type="math/tex; mode=display">
+g(w_2)=(w_2')^\top S w_2 - \alpha((w_2')^\top w_2' = 1) - \beta((w_2')^\top w_1')</script><p>而</p>
+<script type="math/tex; mode=display">
+(w_2')^\top w_2' = 1 \\
+(w_1')^\top w_2' = 0 \\
+(w_1')^\top Sw_2'=((w_1')^\top Sw_2')^\top
+=(w_2')^\top S^\top w_1  \\
+=(w_2')^\top S w_1 = (w_2')^\top \alpha w_1 \\
+=\alpha  (w_2')^\top w_1 = 0</script><p>所以系数拉格朗日函数的只剩下<code>β</code>.</p>
+<p><img src="/2020/07/31/principal-component-analysis/z2_simplified.png" alt="z2_simplified"></p>
+<p><code>β</code>的最大值，即是Cov(x)第二大的特征值。此时的<code>w2&#39;</code>为<code>β</code>对应的特征向量</p>
+<h3 id="to-k-dimensions"><a href="#to-k-dimensions" class="headerlink" title="to k dimensions"></a>to k dimensions</h3><p>把PCA推广到k维，则<code>W</code>是<code>Cov(X)</code>的最大的k个特征值所对应的特征向量的行矩阵。</p>
+<h2 id="Decorelation"><a href="#Decorelation" class="headerlink" title="Decorelation"></a>Decorelation</h2><p>PCA处理后的z矩阵的各个维度之间是没有相互关系的。</p>
+<p><img src="/2020/07/31/principal-component-analysis/decorelation.png" alt="decorelation"></p>
+<script type="math/tex; mode=display">
+Cov(z)=\sum(z-\bar{z})(z-\bar{z})^\top
+=\sum_xW(x- \bar x)(x- \bar x)^\top W^\top
+=WCov(x)W^\top</script><p>将W展开，</p>
+<script type="math/tex; mode=display">
+Cov(z)=WS\left[w^1,w^2...w^k\right]</script><script type="math/tex; mode=display">
+
+=W\left[Sw^1,Sw^2...Sw^k\right]</script><script type="math/tex; mode=display">
+
+=W\left[\lambda_1w^1,\lambda_2w^2...
+\lambda_kw^k\right]</script><script type="math/tex; mode=display">
+=\left[w^1,w^2...w^k\right]^\top 
+\left[\lambda_1w^1,\lambda_2w^2...\lambda_kw^k\right]</script><script type="math/tex; mode=display">
+\forall i, (w^i)^\top w^i = 1</script><script type="math/tex; mode=display">
+\forall i\not ={j}, (w^i)^\top w^j = 0</script><p>因此</p>
+<script type="math/tex; mode=display">
+Cov(z)=diag(\lambda_1,\lambda_2,...,\lambda_k)</script><p>协方差矩阵为对角阵，所以不同分量之间没有线性的相关性。</p>
+]]></content>
+      
+        <categories>
+            
+            <category> Machine learning </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Machine learning </tag>
+            
+            <tag> PCA </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[使用CUDA为Tensorflow加速]]></title>
       <url>/2020/07/28/gpu-accelerated-tranining-with-cuda/</url>
       <content type="html"><![CDATA[<p>梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。<br><a id="more"></a><br>根据<a href="https://www.tensorflow.org/install/gpu#windows_setup" target="_blank" rel="external">官方页面</a>，对软硬件有如下要求:</p>
