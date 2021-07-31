@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://verrickt.github.io/"/>
-  <updated>2021-07-31T02:43:11.193Z</updated>
+  <updated>2021-01-16T08:25:36.226Z</updated>
   <id>https://verrickt.github.io/</id>
   
   <author>
@@ -15,27 +15,6 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>troubleshot-hyper-v</title>
-    <link href="https://verrickt.github.io/2021/02/14/troubleshot-hyper-v/"/>
-    <id>https://verrickt.github.io/2021/02/14/troubleshot-hyper-v/</id>
-    <published>2021-02-13T16:31:50.000Z</published>
-    <updated>2021-07-31T02:43:11.193Z</updated>
-    
-    <content type="html"><![CDATA[<figure class="highlight powershell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">(base) PS C:\Windows\system32&gt; Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All                                                                    Enable-WindowsOptionalFeature : The source files could not be found.</div><div class="line">Use the <span class="string">"Source"</span> option to specify the location of the files that are required to restore the feature. <span class="keyword">For</span> more information on specifying a source location, see</div><div class="line">https://go.microsoft.com/fwlink/?LinkId=<span class="number">243077</span>.</div><div class="line">At line:<span class="number">1</span> char:<span class="number">1</span></div><div class="line">+ Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V  ...</div><div class="line">+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div><div class="line">    + CategoryInfo          : NotSpecified: (:) [Enable-WindowsOptionalFeature], COMException</div><div class="line">    + FullyQualifiedErrorId : Microsoft.Dism.Commands.EnableWindowsOptionalFeatureCommand</div></pre></td></tr></table></figure>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;figure class=&quot;highlight powershell&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;div class=&quot;line&quot;&gt;1&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;2&lt;/div&gt;&lt;div class=&quot;line&quot;&gt;
-      
-    
-    </summary>
-    
-    
-  </entry>
   
   <entry>
     <title>使VSCode的中的Jupyter Notebook访问同conda环境下的依赖</title>
@@ -372,9 +351,9 @@
     
       <category term="Machine learning" scheme="https://verrickt.github.io/tags/Machine-learning/"/>
     
-      <category term="Numberical computation" scheme="https://verrickt.github.io/tags/Numberical-computation/"/>
-    
       <category term="The flower book" scheme="https://verrickt.github.io/tags/The-flower-book/"/>
+    
+      <category term="Numberical computation" scheme="https://verrickt.github.io/tags/Numberical-computation/"/>
     
   </entry>
   
@@ -429,9 +408,9 @@
     
       <category term="Machine learning" scheme="https://verrickt.github.io/tags/Machine-learning/"/>
     
-      <category term="The flower book" scheme="https://verrickt.github.io/tags/The-flower-book/"/>
-    
       <category term="Linear algebra" scheme="https://verrickt.github.io/tags/Linear-algebra/"/>
+    
+      <category term="The flower book" scheme="https://verrickt.github.io/tags/The-flower-book/"/>
     
   </entry>
   
@@ -509,6 +488,26 @@
     <summary type="html">
     
       &lt;p&gt;PAT里链表题有各式各样的&lt;a href=&quot;https://www.liuchuo.net/archives/2116&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;骚操作&lt;/a&gt;。这些非常规操作易学易用，但是习惯了这些后，反而对题目真正想考察的知识生疏了。今天就碰到一道这样的题，想用正经的算法写却写不出来。希望大家以我为戒，不要过多的学习这些「奇技淫巧」&lt;br&gt;&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="PAT" scheme="https://verrickt.github.io/tags/PAT/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>PAT-1038 Recover the Smallest Number</title>
+    <link href="https://verrickt.github.io/2020/03/16/PAT-1038-Recover-the-Smallest-Number/"/>
+    <id>https://verrickt.github.io/2020/03/16/PAT-1038-Recover-the-Smallest-Number/</id>
+    <published>2020-03-16T04:04:00.000Z</published>
+    <updated>2021-01-11T12:07:36.797Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Recover-the-Smallest-Number"><a href="#Recover-the-Smallest-Number" class="headerlink" title="Recover the Smallest Number"></a>Recover the Smallest Number</h1><p>Given a collection of number segments, you are supposed to recover the smallest number from them. For example, given <code>{ 32, 321, 3214, 0229, 87 }</code>, we can recover many numbers such like <code>32-321-3214-0229-87</code> or <code>0229-32-87-321-3214</code> with respect to different orders of combinations of these segments, and the smallest number is <code>0229-321-3214-32-87</code>.<br><a id="more"></a><br><strong>Input Specification</strong></p><p>Each input file contains one test case. Each case gives a positive integer N (≤10​^4​​) followed by N number segments. Each segment contains a non-negative integer of no more than 8 digits. All the numbers in a line are separated by a space. </p><p><strong>Output Specification</strong></p><p>For each test case, print the smallest number in one line. Notice that the first digit must not be zero.</p><p><strong>Sample Input</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">5 32 321 3214 0229 87</div></pre></td></tr></table></figure></p><p><strong>Sample Output</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">22932132143287</div></pre></td></tr></table></figure></p><hr><p>这道题以前就没做对，这次也没做对，记录一下。</p><p>两次读完题的反应完全一致：谁“小”把谁排前面。</p><ol><li>若两个数位数相同，按数值比较</li><li>若两个数位数不同，位数少的数字补0至位数相同，按数值比较。</li></ol><p>我的cmp是这么写的<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cmp</span><span class="params">(<span class="built_in">string</span> a, <span class="built_in">string</span> b)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line"><span class="built_in">string</span> p1 = a, p2 = b;</div><div class="line"><span class="keyword">int</span> diff = p1.size() - p2.size();</div><div class="line"><span class="keyword">if</span> (diff &lt; <span class="number">0</span>) swap(p1, p2);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="built_in">abs</span>(diff); i++) p2.push_back(<span class="string">'0'</span>);</div><div class="line"><span class="keyword">return</span> p1 &lt; p2;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p><p>Debug模式在运行时报错，<code>Assert failed: Invalid comparor</code>. 根据<a href="https://en.cppreference.com/w/cpp/named_req/Compare" target="_blank" rel="external">cppreference</a>，<code>comparer</code>需满足</p><ul><li>反自反.对于所有的<code>a</code>,<code>comp(a,a)==false</code></li><li>反对称.若<code>comp(a,b)==true</code>，则<code>comp(b,a)==false</code></li><li>传递 若<code>comp(a,b)==true</code>，<code>comp(b,c)==true</code>,则<code>comp(a,c)==true</code>.</li></ul><p>我们的<code>comparer</code>违背了反对称性。<code>comp(9,10)===comp(10,9)</code></p><p>查到<code>string</code>的<code>&lt;</code>操作符按照<a href="https://en.wikipedia.org/wiki/Lexicographical_order" target="_blank" rel="external">字典序</a>进行比较。而我们辛辛苦苦的补<code>0</code>，就是要按字典序比较。</p><p>事实证明字典序也不对。考虑<code>32</code>和<code>321</code>，按照字典序，<code>32</code>&lt;<code>321</code>，但这样拼接的<code>32321</code>却比<code>32132</code>要大。似乎还要考虑字符串的首位和末位。</p><p>查了别人的代码，最好的解决办法是，把问题原样丢给C++<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cmp</span><span class="params">(<span class="built_in">string</span> s1, <span class="built_in">string</span> s2)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line"><span class="keyword">return</span> s1 + s2 &gt; s2 + s1;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p><p>我居然还想了半天，整个人都不好了😶</p><figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"string"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"vector"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"iostream"</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"algorithm"</span></span></div><div class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</div><div class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cmp</span><span class="params">(<span class="built_in">string</span> s1, <span class="built_in">string</span> s2)</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line"><span class="comment">//sort by lexicographical order doesn't work here. 33&lt;321,but 33321 &gt; 32133. :-(</span></div><div class="line"><span class="comment">//but we can throw the problem at cpp :-)</span></div><div class="line"><span class="keyword">auto</span> p1 = s1;</div><div class="line"><span class="keyword">auto</span> p2 = s2;</div><div class="line"><span class="keyword">return</span> p1+p2 &lt; p2+p1;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></div><div class="line"><span class="function"></span>&#123;</div><div class="line"><span class="keyword">int</span> n;</div><div class="line"><span class="built_in">cin</span> &gt;&gt; n;</div><div class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; v=<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;(n);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) <span class="built_in">cin</span> &gt;&gt; v[i];</div><div class="line">sort(v.begin(), v.end(), cmp);</div><div class="line"><span class="built_in">string</span> res;</div><div class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> i : v) res.append(i);</div><div class="line"><span class="keyword">int</span> i = <span class="number">0</span>; <span class="keyword">while</span> (res[i] == <span class="string">'0'</span>) i++;</div><div class="line">res = res.substr(i);</div><div class="line"><span class="keyword">if</span> (res.size() == <span class="number">0</span>) res = <span class="string">"0"</span>;</div><div class="line"><span class="built_in">cout</span> &lt;&lt; res &lt;&lt; <span class="built_in">endl</span>;</div><div class="line"><span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;Recover-the-Smallest-Number&quot;&gt;&lt;a href=&quot;#Recover-the-Smallest-Number&quot; class=&quot;headerlink&quot; title=&quot;Recover the Smallest Number&quot;&gt;&lt;/a&gt;Recover the Smallest Number&lt;/h1&gt;&lt;p&gt;Given a collection of number segments, you are supposed to recover the smallest number from them. For example, given &lt;code&gt;{ 32, 321, 3214, 0229, 87 }&lt;/code&gt;, we can recover many numbers such like &lt;code&gt;32-321-3214-0229-87&lt;/code&gt; or &lt;code&gt;0229-32-87-321-3214&lt;/code&gt; with respect to different orders of combinations of these segments, and the smallest number is &lt;code&gt;0229-321-3214-32-87&lt;/code&gt;.&lt;br&gt;&lt;/p&gt;
     
     </summary>
     
