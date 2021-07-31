@@ -952,9 +952,9 @@ x^{i+1} = x^{i} - \epsilon \nabla_xf(x)</script><p>其中ε是学习率(learning
             
             <tag> Machine learning </tag>
             
-            <tag> The flower book </tag>
-            
             <tag> Numberical computation </tag>
+            
+            <tag> The flower book </tag>
             
         </tags>
         
@@ -1065,11 +1065,11 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
             
             <tag> Machine learning </tag>
             
+            <tag> The flower book </tag>
+            
             <tag> Probability </tag>
             
             <tag> Information theory </tag>
-            
-            <tag> The flower book </tag>
             
         </tags>
         
