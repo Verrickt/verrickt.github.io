@@ -3,6 +3,14 @@
   
     
     <entry>
+      <title><![CDATA[troubleshot-hyper-v]]></title>
+      <url>/2021/02/14/troubleshot-hyper-v/</url>
+      <content type="html"><![CDATA[<figure class="highlight powershell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">(base) PS C:\Windows\system32&gt; Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All                                                                    Enable-WindowsOptionalFeature : The source files could not be found.</div><div class="line">Use the <span class="string">"Source"</span> option to specify the location of the files that are required to restore the feature. <span class="keyword">For</span> more information on specifying a source location, see</div><div class="line">https://go.microsoft.com/fwlink/?LinkId=<span class="number">243077</span>.</div><div class="line">At line:<span class="number">1</span> char:<span class="number">1</span></div><div class="line">+ Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V  ...</div><div class="line">+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div><div class="line">    + CategoryInfo          : NotSpecified: (:) [Enable-WindowsOptionalFeature], COMException</div><div class="line">    + FullyQualifiedErrorId : Microsoft.Dism.Commands.EnableWindowsOptionalFeatureCommand</div></pre></td></tr></table></figure>]]></content>
+      
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[使VSCode的中的Jupyter Notebook访问同conda环境下的依赖]]></title>
       <url>/2021/01/16/access-packages-from-jupyter--in-the-same-conda-environment-in-vscode/</url>
       <content type="html"><![CDATA[<p>作为Python的一个依赖管理工具，Anaconda实现了Pip「全局安装」和virtualenv「本地安装」的折衷，它使用「按名访问」的方式实现环境的隔离，使使用者能够灵活的隔离和共享环境。</p>
@@ -1057,11 +1065,11 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
             
             <tag> Machine learning </tag>
             
-            <tag> The flower book </tag>
-            
             <tag> Probability </tag>
             
             <tag> Information theory </tag>
+            
+            <tag> The flower book </tag>
             
         </tags>
         
@@ -1146,9 +1154,9 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
             
             <tag> Machine learning </tag>
             
-            <tag> Linear algebra </tag>
-            
             <tag> The flower book </tag>
+            
+            <tag> Linear algebra </tag>
             
         </tags>
         

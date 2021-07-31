@@ -1,3 +1,4 @@
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,6 +28,10 @@
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
   <link href='//cdn.bootcss.com/node-waves/0.7.5/waves.min.css' rel='stylesheet'>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="/style.css">
   <script>
     function setLoadingBarProgress(num) {
@@ -120,12 +125,79 @@
 </aside>
 
     <script>setLoadingBarProgress(40);</script>
+  
+  <section class="splash  ">
+    <div class='splash-bg'  >
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="splash-content ">
+        
+            <img class='avatar' src='/rei.png' />
+            
+        <h3 class='nickname'>Melchior on CLR</h3>
+        <p class='desc typewriter-content' ></p>
+    </div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11"></script>
+
+<script>
+  var options = {
+    strings: ['Console.WriteLine("Hello World");'],
+    typeSpeed: 100,
+    loop: false,
+    backSpeed: 50,
+    startdelay:300,
+    showCursor:false,
+    fadeOut: true
+  };
+  window.onload = function() {
+    // 这里可以是id选择器也可以是class选择器
+     typed = new Typed('.typewriter-content', options);
+  }
+</script>
+
+  
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
         
 <section class="post-list">
 	
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2019/04/19/fluent-treeview-part4/">
+        FluentTreeView Part.4
+      </a>
+    </h2>
+    
+    <time>
+      Apr 19, 2019
+    </time>
+		
+    
+    <div class='cats'>
+        <a href="/categories/FluentTreeView/">FluentTreeView</a>
+    </div>
+
+  </section>
+  <section class="article typo">
+	  <p>这篇起我们正式开始实现FluentTreeView。先看看图片<br><img src="/2019/04/19/fluent-treeview-part4/fluent-tree-view.jpg" alt="FluentTreeView"></p>
+<p>TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。<br>再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？</p>
+
+    
+	  <div class="readmore">
+      <a href="/2019/04/19/fluent-treeview-part4/">Read More</a>
+    </div>
+    
+    
+    
+  </section>
+</article>
+    </div>
+  
     <div class='post-wrapper'>
       <article class="post reveal">
   <section class="meta">
@@ -376,48 +448,6 @@
 </article>
     </div>
   
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2018/07/12/program-upon-abstractions/">
-        面向抽象编程
-      </a>
-    </h2>
-    
-    <time>
-      Jul 12, 2018
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h1 id="Preface"><a href="#Preface" class="headerlink" title="Preface"></a>Preface</h1><p>说来惭愧，直到近几天才明白了一点面向对象设计的。给我带来启发的是<a href="https://en.wikipedia.org/wiki/SOLID" target="_blank" rel="external"><strong>SOLID</strong></a>中的D，它代表Dependency Inversion（依赖反转）。尽管写/背定义很无聊，但我还是想写一下依赖反转的核心</p>
-<blockquote>
-<p>上层模块不应该依赖下层模块，他们都应该依赖抽象</p>
-</blockquote>
-<h1 id="Talk-is-cheap-show-me-the-code"><a href="#Talk-is-cheap-show-me-the-code" class="headerlink" title="Talk is cheap, show me the code"></a>Talk is cheap, show me the code</h1><p>最近在写一个音乐电台应用，采用服务端、客户端的方式实现。在服务端，用户可以指定一个路径，程序根据这个路径生成播放列表。</p>
-<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>服务器是一个一旦开起来就不会轻易关闭的程序，我希望播放列表能够自动刷新。这样当用户添加或删除了某首音乐后不用重启服务器就可以反映变化。考虑到易用性，应该支持由路径直接生成播放列表。歌曲是有封面等其他信息的，要满足这些信息的可定制化，程序也支持由配置文件指定的播放列表。<br></p>
-
-    
-	  <div class="readmore">
-      <a href="/2018/07/12/program-upon-abstractions/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/OOP/">OOP</a>
-      
-        <a href="/tags/SOLID/">SOLID</a>
-      
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
 </section>
 
 
@@ -442,11 +472,11 @@
         
   <section class='m_widget about'>
 
-<img class='avatar waves-image' src='https://avatars0.githubusercontent.com/u/11483783' />
+<img class='avatar waves-image' src='/rei.png' />
 
 <div class='header'>Verrickt</div>
 <div class='content'>
-<div class='desc'>Von as a programmer</div>
+<div class='desc'>What one programmer can do in one month, two programmers can do in two months</div>
 </div>
 </section>
 
@@ -494,44 +524,99 @@
 
 
 
+  <section class='m_widget categories'>
+
+    <div class='header'>Statistics</div>
+    <div class='content'>
+        <ul class="entry">
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Page Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_pv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Unique Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_uv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Up time</div>
+                    <div class='badget'>
+                        
+                            
+                                1375
+                                    Days
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Last Updated</div>
+                    <div class='badget'>
+                            Jul 31, 2021
+                                    
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Blogs</div>
+                    <div class='badget'>
+                        44
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
       </aside>
       <script>setLoadingBarProgress(60);</script>
     </div>
   </div>
   <footer id="footer" class="clearfix">
 
-  <div class="social-wrapper">
-    
+	<div class="social-wrapper">
+  	
       
-        <a href="https://github.com/verrickt" class="social github" target="_blank" rel="external">
+        <a href="https://github.com/verrickt" class="social github"
+          target="_blank" rel="external">
           <span class="icon icon-github"></span>
         </a>
-        
-        <a href="https://twitter.com/verrickt" class="social twitter" target="_blank" rel="external">
+      
+        <a href="https://twitter.com/verrickt" class="social twitter"
+          target="_blank" rel="external">
           <span class="icon icon-twitter"></span>
         </a>
-        
-        <a href="/atom.xml" class="social rss" target="_blank" rel="external">
+      
+        <a href="/atom.xml" class="social rss"
+          target="_blank" rel="external">
           <span class="icon icon-rss"></span>
         </a>
-        
-          
+      
+    
   </div>
+  <div class="footer_content">
+    Melchior on CLR
+    ©
+    2017
+      -
+    2021,
+    brought to life with ❤️ By
+    <a  href='/' >
+      Verrickt
+    </a>
 
-  <div> 2017-2020 by verrickt. Powered by
-    <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
-    <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
-    <div>
-      <span>
-        Unless explicitly stated, contents of this blog are licensed under
-        <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
-        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
-          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
-            height="24.75" width="66">
-        </a>
-      </span>
-    </div>
+  </div>
+  <div class="footer_content">
+    Powered by <a href='https://hexo.io/' target="blank_">Hexo</a> |
+    Theme based on <a target="blank_" href='https://github.com/stkevintan/hexo-theme-material-flow' class="">MaterialFlow</a></div>
+  
 </footer>
+
+
   <script>setLoadingBarProgress(80);</script>
   
 
@@ -555,7 +640,9 @@
 </script>
 <script src="/js/search.js"></script>
 <script src="/js/app.js"></script>
-
+<script src="/js/waifu.js"></script>
+<script src="/js/canvas.js"></script>
+<script src="/js/typed.js"></script>
 
   <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>

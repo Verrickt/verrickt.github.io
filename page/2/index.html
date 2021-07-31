@@ -1,3 +1,4 @@
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,6 +28,10 @@
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
   <link href='//cdn.bootcss.com/node-waves/0.7.5/waves.min.css' rel='stylesheet'>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="/style.css">
   <script>
     function setLoadingBarProgress(num) {
@@ -120,12 +125,94 @@
 </aside>
 
     <script>setLoadingBarProgress(40);</script>
+  
+  <section class="splash  ">
+    <div class='splash-bg'  >
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="splash-content ">
+        
+            <img class='avatar' src='/rei.png' />
+            
+        <h3 class='nickname'>Melchior on CLR</h3>
+        <p class='desc typewriter-content' ></p>
+    </div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11"></script>
+
+<script>
+  var options = {
+    strings: ['Console.WriteLine("Hello World");'],
+    typeSpeed: 100,
+    loop: false,
+    backSpeed: 50,
+    startdelay:300,
+    showCursor:false,
+    fadeOut: true
+  };
+  window.onload = function() {
+    // 这里可以是id选择器也可以是class选择器
+     typed = new Typed('.typewriter-content', options);
+  }
+</script>
+
+  
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
         
 <section class="post-list">
 	
+    <div class='post-wrapper'>
+      <article class="post reveal">
+  <section class="meta">
+    
+    <h2 class="title">
+      <a href="/2020/07/18/convolutional-neural-network/">
+        卷积神经网络
+      </a>
+    </h2>
+    
+    <time>
+      Jul 18, 2020
+    </time>
+		
+    
+    <div class='cats'>
+        <a href="/categories/Machine-learning/">Machine learning</a>
+    </div>
+
+  </section>
+  <section class="article typo">
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+
+<p>任何一个机器学习的任务都可以被拆解为三步</p>
+<ol>
+<li>找到一组函数(model)</li>
+<li>找到评价函数好坏的标准(loss)</li>
+<li>找出最好的函数(optimization)</li>
+</ol>
+<p>这三步在神经网络中同样成立。但在神经网络中，要找的不是一组函数，而是一种网络架构(architecture)。本文中的卷积神经网络(CNN)就是一种网络架构<br></p>
+
+    
+	  <div class="readmore">
+      <a href="/2020/07/18/convolutional-neural-network/">Read More</a>
+    </div>
+    
+    
+    
+	  <div class="full-width auto-padding tags">
+      
+        <a href="/tags/Machine-learning/">Machine learning</a>
+      
+        <a href="/tags/CNN/">CNN</a>
+      
+	  </div>
+    
+  </section>
+</article>
+    </div>
+  
     <div class='post-wrapper'>
       <article class="post reveal">
   <section class="meta">
@@ -384,11 +471,11 @@
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
-        <a href="/tags/The-flower-book/">The flower book</a>
-      
         <a href="/tags/Probability/">Probability</a>
       
         <a href="/tags/Information-theory/">Information theory</a>
+      
+        <a href="/tags/The-flower-book/">The flower book</a>
       
 	  </div>
     
@@ -431,46 +518,9 @@
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
-        <a href="/tags/Linear-algebra/">Linear algebra</a>
-      
         <a href="/tags/The-flower-book/">The flower book</a>
       
-	  </div>
-    
-  </section>
-</article>
-    </div>
-  
-    <div class='post-wrapper'>
-      <article class="post reveal">
-  <section class="meta">
-    
-    <h2 class="title">
-      <a href="/2020/04/21/render-html-natively-in-uwp/">
-        HTML渲染为UWP的原生控件
-      </a>
-    </h2>
-    
-    <time>
-      Apr 21, 2020
-    </time>
-		
-  </section>
-  <section class="article typo">
-	  <h3 id="没啥用的前言"><a href="#没啥用的前言" class="headerlink" title="没啥用的前言"></a>没啥用的前言</h3><p>说着再做UWP就剁手，我还是开了一个新坑🤣<br>这次是<a href="http://bog.ac" target="_blank" rel="external">B岛</a>的<a href="https://github.com/Verrickt/BogNMB.UWP" target="_blank" rel="external">UWP端</a><br>论坛客户端的一个老大难问题是内容的呈现。论坛一般以网页端为主，网页做好，论坛活跃起来后之后才会开发客户端/有开发者愿意做第三方的客户端。因此，API绝大多数情况是为网页端为一等公民的。此外，各个UI框架展示内容的格式也各有不同。以上两个原因导致HTML被选做富文本展示的通用语言。</p>
-
-    
-	  <div class="readmore">
-      <a href="/2020/04/21/render-html-natively-in-uwp/">Read More</a>
-    </div>
-    
-    
-    
-	  <div class="full-width auto-padding tags">
-      
-        <a href="/tags/UWP/">UWP</a>
-      
-        <a href="/tags/HTML/">HTML</a>
+        <a href="/tags/Linear-algebra/">Linear algebra</a>
       
 	  </div>
     
@@ -502,11 +552,11 @@
         
   <section class='m_widget about'>
 
-<img class='avatar waves-image' src='https://avatars0.githubusercontent.com/u/11483783' />
+<img class='avatar waves-image' src='/rei.png' />
 
 <div class='header'>Verrickt</div>
 <div class='content'>
-<div class='desc'>Von as a programmer</div>
+<div class='desc'>What one programmer can do in one month, two programmers can do in two months</div>
 </div>
 </section>
 
@@ -554,44 +604,99 @@
 
 
 
+  <section class='m_widget categories'>
+
+    <div class='header'>Statistics</div>
+    <div class='content'>
+        <ul class="entry">
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Page Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_pv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Unique Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_uv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Up time</div>
+                    <div class='badget'>
+                        
+                            
+                                1375
+                                    Days
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Last Updated</div>
+                    <div class='badget'>
+                            Jul 31, 2021
+                                    
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Blogs</div>
+                    <div class='badget'>
+                        44
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
       </aside>
       <script>setLoadingBarProgress(60);</script>
     </div>
   </div>
   <footer id="footer" class="clearfix">
 
-  <div class="social-wrapper">
-    
+	<div class="social-wrapper">
+  	
       
-        <a href="https://github.com/verrickt" class="social github" target="_blank" rel="external">
+        <a href="https://github.com/verrickt" class="social github"
+          target="_blank" rel="external">
           <span class="icon icon-github"></span>
         </a>
-        
-        <a href="https://twitter.com/verrickt" class="social twitter" target="_blank" rel="external">
+      
+        <a href="https://twitter.com/verrickt" class="social twitter"
+          target="_blank" rel="external">
           <span class="icon icon-twitter"></span>
         </a>
-        
-        <a href="/atom.xml" class="social rss" target="_blank" rel="external">
+      
+        <a href="/atom.xml" class="social rss"
+          target="_blank" rel="external">
           <span class="icon icon-rss"></span>
         </a>
-        
-          
+      
+    
   </div>
+  <div class="footer_content">
+    Melchior on CLR
+    ©
+    2017
+      -
+    2021,
+    brought to life with ❤️ By
+    <a  href='/' >
+      Verrickt
+    </a>
 
-  <div> 2017-2020 by verrickt. Powered by
-    <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
-    <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
-    <div>
-      <span>
-        Unless explicitly stated, contents of this blog are licensed under
-        <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
-        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
-          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
-            height="24.75" width="66">
-        </a>
-      </span>
-    </div>
+  </div>
+  <div class="footer_content">
+    Powered by <a href='https://hexo.io/' target="blank_">Hexo</a> |
+    Theme based on <a target="blank_" href='https://github.com/stkevintan/hexo-theme-material-flow' class="">MaterialFlow</a></div>
+  
 </footer>
+
+
   <script>setLoadingBarProgress(80);</script>
   
 
@@ -615,7 +720,9 @@
 </script>
 <script src="/js/search.js"></script>
 <script src="/js/app.js"></script>
-
+<script src="/js/waifu.js"></script>
+<script src="/js/canvas.js"></script>
+<script src="/js/typed.js"></script>
 
   <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>

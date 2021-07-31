@@ -1,3 +1,4 @@
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,7 +14,7 @@
   <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="前言本文的主体是机器学习中所用到的概率论知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识">
-<meta name="keywords" content="Machine learning,The flower book,Probability,Information theory">
+<meta name="keywords" content="Machine learning,Probability,Information theory,The flower book">
 <meta property="og:type" content="article">
 <meta property="og:title" content="机器学习基础——概率论与信息论">
 <meta property="og:url" content="https://verrickt.github.io/2020/06/26/machine-learning-basics-probability-and-information-theory/index.html">
@@ -28,6 +29,10 @@
   <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
   <link href='//cdn.bootcss.com/node-waves/0.7.5/waves.min.css' rel='stylesheet'>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="/style.css">
   <script>
     function setLoadingBarProgress(num) {
@@ -121,6 +126,7 @@
 </aside>
 
     <script>setLoadingBarProgress(40);</script>
+  
   <div class="l_body">
     <div class='container clearfix'>
       <div class='l_main'>
@@ -133,15 +139,38 @@
     	机器学习基础——概率论与信息论
     </a>
   </h2>
-	<time>
-	  Jun 26, 2020
-	</time>
+  <div class="status" >
+	  <div class='item-container'>
+		<time>
+			Published at
+			Jun 26, 2020  
+		  </time>
+	  </div>
+	<div class='item-container'>
+		<time>
+			Last updated
+			Jan 11, 2021
+		  </time>
+	</div>
+	<div class='item-container hide-on-mobile'>
+		<time>
+			2.2k
+			words
+		  </time>
+	</div>
+	<div class='item-container hide-on-mobile'>
+		<time>
+			<time  id='busuanzi_value_page_pv'></time>
+view			
+		  </time>
+	</div>
 	
     
     <div class='cats'>
         <a href="/categories/Machine-learning/">Machine learning</a>
     </div>
 
+</div>
 	</section>
 	
 		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Probability"><span class="toc-number">2.</span> <span class="toc-text">Probability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Conditional-probability"><span class="toc-number">2.1.</span> <span class="toc-text">Conditional probability</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Independence"><span class="toc-number">2.2.</span> <span class="toc-text">Independence</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Covariance"><span class="toc-number">2.3.</span> <span class="toc-text">Covariance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Gaussian-Distribution"><span class="toc-number">2.4.</span> <span class="toc-text">Gaussian Distribution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Dirac-delta-distribution-amp-empirical-distribution"><span class="toc-number">2.5.</span> <span class="toc-text">Dirac delta distribution & empirical distribution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mixture-distribution"><span class="toc-number">2.6.</span> <span class="toc-text">Mixture distribution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Latent-variable"><span class="toc-number">2.7.</span> <span class="toc-text">Latent variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Useful-properties-of-Common-Functions"><span class="toc-number">2.8.</span> <span class="toc-text">Useful properties of Common Functions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bayes’-Rule"><span class="toc-number">2.9.</span> <span class="toc-text">Bayes’ Rule</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#prior-probability-and-posterior-probability"><span class="toc-number">2.10.</span> <span class="toc-text">prior-probability and posterior-probability</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PDF-of-y-where-y-g-x"><span class="toc-number">2.11.</span> <span class="toc-text">PDF of y where y=g(x)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Information-theory"><span class="toc-number">3.</span> <span class="toc-text">Information theory</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Self-information-amp-Shanon-entropy"><span class="toc-number">3.1.</span> <span class="toc-text">Self-information & Shanon entropy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Structed-Probabilistic-Models"><span class="toc-number">3.2.</span> <span class="toc-text">Structed Probabilistic Models</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#DAG"><span class="toc-number">3.2.1.</span> <span class="toc-text">DAG</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UAG"><span class="toc-number">3.2.2.</span> <span class="toc-text">UAG</span></a></li></ol></li></ol></li></ol></section>
@@ -244,11 +273,11 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
       
         <a href="/tags/Machine-learning/">Machine learning</a>
       
-        <a href="/tags/The-flower-book/">The flower book</a>
-      
         <a href="/tags/Probability/">Probability</a>
       
         <a href="/tags/Information-theory/">Information theory</a>
+      
+        <a href="/tags/The-flower-book/">The flower book</a>
       
 	  </div>
     
@@ -268,6 +297,7 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
 		</div>
 	
 	</section>
+	
 </article>
 <script>
 	window.subData = {
@@ -281,11 +311,11 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
         
   <section class='m_widget about'>
 
-<img class='avatar waves-image' src='https://avatars0.githubusercontent.com/u/11483783' />
+<img class='avatar waves-image' src='/rei.png' />
 
 <div class='header'>Verrickt</div>
 <div class='content'>
-<div class='desc'>Von as a programmer</div>
+<div class='desc'>What one programmer can do in one month, two programmers can do in two months</div>
 </div>
 </section>
 
@@ -333,44 +363,99 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
 
 
 
+  <section class='m_widget categories'>
+
+    <div class='header'>Statistics</div>
+    <div class='content'>
+        <ul class="entry">
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Page Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_pv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Unique Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_uv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Up time</div>
+                    <div class='badget'>
+                        
+                            
+                                1375
+                                    Days
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Last Updated</div>
+                    <div class='badget'>
+                            Jul 31, 2021
+                                    
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Blogs</div>
+                    <div class='badget'>
+                        44
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
       </aside>
       <script>setLoadingBarProgress(60);</script>
     </div>
   </div>
   <footer id="footer" class="clearfix">
 
-  <div class="social-wrapper">
-    
+	<div class="social-wrapper">
+  	
       
-        <a href="https://github.com/verrickt" class="social github" target="_blank" rel="external">
+        <a href="https://github.com/verrickt" class="social github"
+          target="_blank" rel="external">
           <span class="icon icon-github"></span>
         </a>
-        
-        <a href="https://twitter.com/verrickt" class="social twitter" target="_blank" rel="external">
+      
+        <a href="https://twitter.com/verrickt" class="social twitter"
+          target="_blank" rel="external">
           <span class="icon icon-twitter"></span>
         </a>
-        
-        <a href="/atom.xml" class="social rss" target="_blank" rel="external">
+      
+        <a href="/atom.xml" class="social rss"
+          target="_blank" rel="external">
           <span class="icon icon-rss"></span>
         </a>
-        
-          
+      
+    
   </div>
+  <div class="footer_content">
+    Melchior on CLR
+    ©
+    2017
+      -
+    2021,
+    brought to life with ❤️ By
+    <a  href='/' >
+      Verrickt
+    </a>
 
-  <div> 2017-2020 by verrickt. Powered by
-    <a href="https://hexo.io/" class="codename">Hexo</a>. Theme by
-    <a href='https://github.com/stkevintan/hexo-theme-material-flow' class="codename">MaterialFlow</a>
-    <div>
-      <span>
-        Unless explicitly stated, contents of this blog are licensed under
-        <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="codename" target="_blank">CC BY-SA</a>
-        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
-          <img style="vertical-align: middle" alt="graphical represerentaion of CC BY-SA license" src="https://licensebuttons.net/l/by-sa/3.0/88x31.png"
-            height="24.75" width="66">
-        </a>
-      </span>
-    </div>
+  </div>
+  <div class="footer_content">
+    Powered by <a href='https://hexo.io/' target="blank_">Hexo</a> |
+    Theme based on <a target="blank_" href='https://github.com/stkevintan/hexo-theme-material-flow' class="">MaterialFlow</a></div>
+  
 </footer>
+
+
   <script>setLoadingBarProgress(80);</script>
   
 
@@ -394,7 +479,9 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
 </script>
 <script src="/js/search.js"></script>
 <script src="/js/app.js"></script>
-
+<script src="/js/waifu.js"></script>
+<script src="/js/canvas.js"></script>
+<script src="/js/typed.js"></script>
 
   <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
