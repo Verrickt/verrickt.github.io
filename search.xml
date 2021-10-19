@@ -3,6 +3,56 @@
   
     
     <entry>
+      <title><![CDATA[Powershell、Github Actions、环境变量踩坑]]></title>
+      <url>/2021/10/19/pwsh-github-actions-env-var-pit-fall/</url>
+      <content type="html"><![CDATA[<h3 id="没用的前言"><a href="#没用的前言" class="headerlink" title="没用的前言"></a>没用的前言</h3><p>最近做了一个AI安全会议的<a href="https://github.com/Verrickt/ccf-deadlines" target="_blank" rel="external">倒计时网站</a>，核心思想类似MVVM：开发者维护一份人类可读的<code>yml</code>，网站则根据这些<code>yml</code>生成对应HTML。开发和维护都比较友好，构建也有脚本自动化</p>
+<a id="more"></a>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="variable">$dest_dir</span> = <span class="string">'./public'</span></div><div class="line"><span class="variable">$dest_dir</span> = <span class="built_in">Join-Path</span> <span class="variable">$dest_dir</span> <span class="string">'conference'</span> </div><div class="line"><span class="built_in">New-Item</span> -Type dir <span class="variable">$dest_dir</span> -Force</div><div class="line"><span class="built_in">Copy-Item</span> -Path <span class="string">'./conference/types.yml'</span> -Destination (<span class="built_in">Join-Path</span> <span class="variable">$dest_dir</span> <span class="string">'types.yml'</span>) -Force</div><div class="line"><span class="variable">$all_yml</span> = <span class="built_in">Get-Content</span> <span class="string">'./conference/*/*.yml'</span> -Encoding UTF8</div><div class="line"><span class="built_in">Set-Content</span> -Path (<span class="built_in">Join-Path</span> <span class="variable">$dest_dir</span> <span class="string">'allconf.yml'</span>) <span class="variable">$all_yml</span> -Encoding UTF8 -Force</div><div class="line"><span class="variable">$updated_by</span> = git config user.name</div><div class="line"><span class="variable">$updated_by</span> = <span class="variable">$updated_by</span>.trim()</div><div class="line"><span class="variable">$last_updated</span> = <span class="built_in">Get-ChildItem</span> -Path(<span class="built_in">Join-Path</span> <span class="variable">$dest_dir</span> <span class="string">'allconf.yml'</span>) | select LastWriteTimeUtc</div><div class="line"><span class="variable">$content</span> = <span class="string">"$(<span class="variable">$last_updated</span>.LastWriteTimeUtc),$(<span class="variable">$updated_by</span>)"</span></div><div class="line"><span class="built_in">Set-Content</span> -Path (<span class="built_in">Join-Path</span> <span class="variable">$dest_dir</span> <span class="string">'last_updated.json'</span>) <span class="variable">$content</span> -Encoding UTF8 -Force</div><div class="line"></div><div class="line"><span class="built_in">Write-Host</span> <span class="variable">$content</span></div></pre></td></tr></table></figure>
+<p>唯一剩下的麻烦只有下部署了：</p>
+<ol>
+<li>人肉拷贝<code>dist</code>文件夹到Github Pages的仓库</li>
+<li>commit</li>
+<li>推送到origin</li>
+</ol>
+<p>虽说这也不麻烦，但在全自动化的Pipeline中这需要人力的过程显得那么格格不入。正好<a href="https://github.com/features/actions" target="_blank" rel="external">Github Actions</a>提供了可编程的接口，强迫症患者终于有救了：</p>
+<blockquote>
+<p>Automate, customize, and execute your software development workflows right in your repository with GitHub Actions. You can discover, create, and share actions to perform any job you’d like, including CI/CD, and combine actions in a completely customized workflow.</p>
+</blockquote>
+<h3 id="Github-Actions、Powershell与环境变量"><a href="#Github-Actions、Powershell与环境变量" class="headerlink" title="Github Actions、Powershell与环境变量"></a>Github Actions、Powershell与环境变量</h3><p>自动化部署的脚本原作者已经<a href="https://github.com/ccfddl/ccf-deadlines/blob/main/.github/workflows/deploy.yml" target="_blank" rel="external">写了一份</a>，我只要稍作修改即可。更具体一些，我需要做的事情如下：</p>
+<ol>
+<li>更新<code>git config user.name</code>，以便上文中构建脚本<code>$updated_by = git config user.name</code>能够获得作者信息</li>
+<li>以我的身份推送<code>dist</code>到origin</li>
+</ol>
+<p>两者都可通过“环境变量”取得：</p>
+<ol>
+<li>作者信息由<code>github.actor</code>环境变量给出</li>
+<li><a href="https://docs.github.com/en/actions/security-guides/encrypted-secrets" target="_blank" rel="external">Github secrets</a>指出，Token由<code>secrets.*</code>环境变量给出</li>
+</ol>
+<p>这简单，我马上在powershell中引入了这些变量<br><figure class="highlight yml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="attr">- name:</span> <span class="string">Setup</span> <span class="string">Authors</span></div><div class="line"><span class="attr">  run:</span> <span class="string">|</span></div><div class="line"><span class="string">    git config --global user.name $env:github.actor</span></div><div class="line"><span class="string"></span><span class="attr">- name:</span> <span class="string">Deploy</span></div><div class="line"><span class="attr">  run:</span> <span class="string">|</span></div><div class="line"><span class="string">    ...</span></div><div class="line"><span class="string">    git init</span></div><div class="line"><span class="string">    git commit -m ...</span></div><div class="line"><span class="string">    git push --force https://$&#123;env:secrets.ACCESS_TOKEN&#125;@github.com/</span></div><div class="line"><span class="string">    ...</span></div></pre></td></tr></table></figure></p>
+<p>然而事与愿违，Github Actions挂在<code>Deploy</code>，报错如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">*** Please tell me who you are.</div><div class="line">fatal: unable to auto-detect email address</div></pre></td></tr></table></figure></p>
+<p>怀疑<code>Setup Authors</code>未成功执行，打印:<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&gt;</span> Write-Host $env:github.authors</div><div class="line"><span class="meta">&gt;</span></div></pre></td></tr></table></figure></p>
+<p><code>$env:github.authors</code>是空的，怪不得git会报错<br>查文档，官方的语法是这样的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$&#123;&#123;variable_name_here&#125;&#125;</div></pre></td></tr></table></figure></p>
+<p>虽然和powershell的语法完全不一样，但改了试试看吧<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- name: Setup Authors</div><div class="line">  run: |</div><div class="line">    git config --global user.name $&#123;&#123;github.actor&#125;&#125;</div><div class="line">- name: Deploy</div><div class="line">  run: |</div><div class="line">    ...</div><div class="line">    git init</div><div class="line">    git commit -m ...</div><div class="line">    git push --force https://$&#123;&#123;secrets.ACCESS_TOKEN&#125;&#125;@github.com/</div><div class="line">    ...</div></pre></td></tr></table></figure></p>
+<p>修改后运行，成功</p>
+<p>这是咋回事？</p>
+<h3 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h3><p>一番瞎猜后，我认为官方文档里提到的“环境变量”和powershell的“环境变量”并非是同一回事。即，官方文档里的“环境变量”是针对<code>github actions</code>的。</p>
+<p>举个例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- name: Deploy</div><div class="line">  run: |</div><div class="line">    ...</div><div class="line">    git init</div><div class="line">    git commit -m ...</div><div class="line">    git push --force https://$&#123;&#123;secrets.ACCESS_TOKEN&#125;&#125;@github.com/</div><div class="line">    ...</div></pre></td></tr></table></figure></p>
+<p><code>Github Actions</code>的运行引擎看到<code>run</code>字句，知道后面的内容应该被当作shell脚本被对待。接下来会根据<code>runs-on</code>和<code>shell</code>选项调用特定的<code>shell</code>来执行脚本。<strong>但是</strong>在调用<code>shell</code>之前，它检查<code>run</code>字句的内容，若有<br><code>$</code>的环境变量访问，则将这部分内容替换为实际值，结束后再交给<code>shell</code>运行。这个过程<strong>直接替换了脚本的内容</strong>，与<code>shell</code>的类型、访问环境变量的语法都<strong>无关</strong></p>
+<p>如果使用特定<code>shell</code>的写法（如<code>$env:blah</code>），则环境变量不会由运行引擎不会注入，这些环境变量<code>shell</code>自身也没有，当然是空了。</p>
+]]></content>
+      
+        
+        <tags>
+            
+            <tag> Powershell </tag>
+            
+            <tag> Github Actions </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[使VSCode的中的Jupyter Notebook访问同conda环境下的依赖]]></title>
       <url>/2021/01/16/access-packages-from-jupyter--in-the-same-conda-environment-in-vscode/</url>
       <content type="html"><![CDATA[<p>作为Python的一个依赖管理工具，Anaconda实现了Pip「全局安装」和virtualenv「本地安装」的折衷，它使用「按名访问」的方式实现环境的隔离，使使用者能够灵活的隔离和共享环境。</p>
@@ -944,9 +994,9 @@ x^{i+1} = x^{i} - \epsilon \nabla_xf(x)</script><p>其中ε是学习率(learning
             
             <tag> Machine learning </tag>
             
-            <tag> The flower book </tag>
-            
             <tag> Numberical computation </tag>
+            
+            <tag> The flower book </tag>
             
         </tags>
         
@@ -1146,9 +1196,9 @@ H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)</script><p>Minimizing 
             
             <tag> Machine learning </tag>
             
-            <tag> Linear algebra </tag>
-            
             <tag> The flower book </tag>
+            
+            <tag> Linear algebra </tag>
             
         </tags>
         
