@@ -1,0 +1,417 @@
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  <title>逃出「Driver Verifier」导致的无限蓝屏 | Melchior on CLR</title>
+  <meta name="description" content="A programmer focus mainly on Microsoft Technologies" />
+  <meta name="keywords" content="Windows desktop,C#,XAML,UWP,WPF,OpenSource,GNU/Linux,CLI" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="shortcut icon" href="/">
+  <link rel="alternate" href="/atom.xml" title="Melchior on CLR">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="没啥用的前言我的电脑自从买来就故障不断，无故卡死、无故蓝屏、自动重启。好在频率都不高，忍一忍凑合用。最近一段时间蓝屏的频率激增到了忍无可忍的地步，作为一个Geek，我自然要想办法排查一下原因。蓝屏最常见的错误码是KMODE_EXCEPTION_NOT_HANDLED,IRQL_LESS_OR_NOT_EQUAL,PAGE_FAULT_IN_NONPAGED_AREA,这将凶手指向了驱动。然而「Wi">
+<meta name="keywords" content="BSOD">
+<meta property="og:type" content="article">
+<meta property="og:title" content="逃出「Driver Verifier」导致的无限蓝屏">
+<meta property="og:url" content="https://verrickt.github.io/2022/03/27/escape-verifier-boot-loop/index.html">
+<meta property="og:site_name" content="Melchior on CLR">
+<meta property="og:description" content="没啥用的前言我的电脑自从买来就故障不断，无故卡死、无故蓝屏、自动重启。好在频率都不高，忍一忍凑合用。最近一段时间蓝屏的频率激增到了忍无可忍的地步，作为一个Geek，我自然要想办法排查一下原因。蓝屏最常见的错误码是KMODE_EXCEPTION_NOT_HANDLED,IRQL_LESS_OR_NOT_EQUAL,PAGE_FAULT_IN_NONPAGED_AREA,这将凶手指向了驱动。然而「Wi">
+<meta property="og:locale" content="zh-CN,en-US">
+<meta property="og:image" content="https://verrickt.github.io/2022/03/27/escape-verifier-boot-loop/BSOD.png">
+<meta property="og:image" content="https://verrickt.github.io/2022/03/27/escape-verifier-boot-loop/eventlog.png">
+<meta property="og:updated_time" content="2022-03-27T04:56:11.848Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="逃出「Driver Verifier」导致的无限蓝屏">
+<meta name="twitter:description" content="没啥用的前言我的电脑自从买来就故障不断，无故卡死、无故蓝屏、自动重启。好在频率都不高，忍一忍凑合用。最近一段时间蓝屏的频率激增到了忍无可忍的地步，作为一个Geek，我自然要想办法排查一下原因。蓝屏最常见的错误码是KMODE_EXCEPTION_NOT_HANDLED,IRQL_LESS_OR_NOT_EQUAL,PAGE_FAULT_IN_NONPAGED_AREA,这将凶手指向了驱动。然而「Wi">
+<meta name="twitter:image" content="https://verrickt.github.io/2022/03/27/escape-verifier-boot-loop/BSOD.png">
+    
+  <link href="https://fonts.googleapis.com/css?family=Inconsolata|Titillium+Web" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <link href='//cdn.bootcss.com/node-waves/0.7.5/waves.min.css' rel='stylesheet'>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+
+  <script>setLoadingBarProgress(20)</script> 
+  <header class="l_header">
+	<div class='wrapper'>
+		<div class="nav-main container container--flex">
+			<a class="logo flat-box" href='/' >
+				Melchior on CLR
+			</a>
+			<div class='menu'>
+				<ul class='h-list'>
+					
+						<li>
+							<a class='flat-box nav-home' href='/'>
+								Home
+							</a>
+						</li>
+					
+						<li>
+							<a class='flat-box nav-archives' href='/archives'>
+								Archives
+							</a>
+						</li>
+					
+						<li>
+							<a class='flat-box nav-about' href='/about'>
+								About
+							</a>
+						</li>
+					
+				</ul>
+				<div class='underline'></div>
+			</div>
+			
+				<div class="m_search">
+					<form name="searchform" class="form u-search-form">
+						<input type="text" class="input u-search-input" placeholder="Search" />
+						<span class="icon icon-search"></span>
+					</form>
+				</div>
+			
+			<ul class='switcher h-list'>
+				
+					<li class='s-search'><a href='javascript:void(0)'><span class="icon icon-search flat-box"></span></a></li>
+				
+				<li class='s-menu'><a href='javascript:void(0)'><span class="icon icon-menu flat-box"></span></a></li>
+			</ul>
+		</div>
+		
+		<div class='nav-sub container container--flex'>
+			<a class="logo" class="flat-box" href='javascript:void(0)'>
+				Word of Forks
+			</a>
+
+			<ul class='switcher h-list'>
+				<li class='s-comment'><a href='javascript:void(0)'><span class="icon icon-chat_bubble_outline flat-box"></span></a></li>
+				<li class='s-top'><a href='javascript:void(0)'><span class="icon icon-arrow_upward flat-box"></span></a></li>
+				<li class='s-toc'><a href='javascript:void(0)'><span class="icon icon-format_list_numbered flat-box"></span></a></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<aside class="menu-phone">
+	<nav>
+		
+			<a href="/" class="nav-home nav">
+				Home
+			</a>
+		
+			<a href="/archives" class="nav-archives nav">
+				Archives
+			</a>
+		
+			<a href="/about" class="nav-about nav">
+				About
+			</a>
+		
+	</nav>
+</aside>
+
+    <script>setLoadingBarProgress(40);</script>
+  
+  <div class="l_body">
+    <div class='container clearfix'>
+      <div class='l_main'>
+        <article id="post-escape-verifier-boot-loop"
+  class="post white-box article-type-post"
+  itemscope itemprop="blogPost">
+	<section class='meta'>
+	<h2 class="title">
+  	<a href="/2022/03/27/escape-verifier-boot-loop/">
+    	逃出「Driver Verifier」导致的无限蓝屏
+    </a>
+  </h2>
+  <div class="status" >
+	  <div class='item-container'>
+		<time>
+			Published at
+			Mar 27, 2022  
+		  </time>
+	  </div>
+	<div class='item-container'>
+		<time>
+			Last updated
+			Mar 27, 2022
+		  </time>
+	</div>
+	<div class='item-container hide-on-mobile'>
+		<time>
+			1.6k
+			words
+		  </time>
+	</div>
+	<div class='item-container hide-on-mobile'>
+		<time>
+			<time  id='busuanzi_value_page_pv'></time>
+view			
+		  </time>
+	</div>
+	
+</div>
+	</section>
+	
+		<section class="toc-wrapper"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#没啥用的前言"><span class="toc-number">1.</span> <span class="toc-text">没啥用的前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#逃出无限蓝屏"><span class="toc-number">2.</span> <span class="toc-text">逃出无限蓝屏</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#法1-WinRE（无效）"><span class="toc-number">2.1.</span> <span class="toc-text">法1 WinRE（无效）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#法2-系统还原（无效）"><span class="toc-number">2.2.</span> <span class="toc-text">法2 系统还原（无效）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#法3-安全模式（有效）"><span class="toc-number">2.3.</span> <span class="toc-text">法3 安全模式（有效）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#调试"><span class="toc-number">3.</span> <span class="toc-text">调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-number">4.</span> <span class="toc-text">Reference</span></a></li></ol></section>
+	
+	<section class="article typo">
+  	<div class="article-entry" itemprop="articleBody">
+    	<h2 id="没啥用的前言"><a href="#没啥用的前言" class="headerlink" title="没啥用的前言"></a>没啥用的前言</h2><p>我的电脑自从买来就故障不断，无故卡死、无故蓝屏、自动重启。好在频率都不高，忍一忍凑合用。最近一段时间蓝屏的频率激增到了忍无可忍的地步，作为一个Geek，我自然要想办法排查一下原因。蓝屏最常见的错误码是<code>KMODE_EXCEPTION_NOT_HANDLED</code>,<code>IRQL_LESS_OR_NOT_EQUAL</code>,<code>PAGE_FAULT_IN_NONPAGED_AREA</code>,这将凶手指向了驱动。然而「Windows Debugger」却分析不到可疑的驱动，有几次分析甚至将故障原因指向硬件。这让找真凶的过程异常艰难。好在微软提供了一个自带工具「Driver Verifier」，它可以检测驱动程序在运行过程中存在的问题，这给“查案”带来了一丝转机。</p>
+<a id="more"></a>
+<p>「Driver Verifier」的应用逻辑如下：</p>
+<blockquote>
+<p>当被检测的驱动程序出现行为异常时，<strong>立刻、主动</strong>触发一次蓝屏（错误码为<code>DRIVER_VEFRIFIER_DETECTED_VIOLATION</code>，以保留错误现场完整的调用栈帧和中断序列。</p>
+</blockquote>
+<p><img src="/2022/03/27/escape-verifier-boot-loop/./BSOD.png" alt="2"></p>
+<blockquote>
+<p>Driver Verifier is a diagnostic tool built into Windows 10, it is designed to verify both native Microsoft drivers and third party drivers. Driver Verifier’s verification process involves putting heavy stress on drivers with the intention of making bad, outdated, incompatible or misbehaving drivers fail. The required result is a BSOD (Blue Screen of Death) which will generate a crash dump for debugging purposes.</p>
+</blockquote>
+<p>我开启了「Driver Verifier」的标准配置，应用到了所有驱动程序，并打开了「完全内存转储」，增加「Windows Debugger」可用的信息量。配置完后重启，POST自检后马上就触发了蓝屏<code>DRIVER_VEFRIFIER_DETECTED_VIOLATION</code>，好家伙，原来真的是驱动搞的鬼？</p>
+<p>我重启电脑，准备进入系统用「Windows Debugger」调试，然而，POST自检后马上又进入<code>DRIVER_VEFRIFIER_DETECTED_VIOLATION</code>。这时我才意识到，我陷入了无限蓝屏(Boot loop)</p>
+<h2 id="逃出无限蓝屏"><a href="#逃出无限蓝屏" class="headerlink" title="逃出无限蓝屏"></a>逃出无限蓝屏</h2><h3 id="法1-WinRE（无效）"><a href="#法1-WinRE（无效）" class="headerlink" title="法1 WinRE（无效）"></a>法1 WinRE（无效）</h3><p>重启进入恢复模式，选择打开命令提示符。运行<code>verifier</code>，从图形界面尝试关掉「Driver Verifier」，选择删除现有配置后返回<code>No action taken</code>，提示成功。重启后依旧蓝屏。<br>怀疑是RE的路径问题，<code>cd</code>到<code>C:\Windows\System32</code>重新执行，依旧没效果</p>
+<h3 id="法2-系统还原（无效）"><a href="#法2-系统还原（无效）" class="headerlink" title="法2 系统还原（无效）"></a>法2 系统还原（无效）</h3><p>理论上可行，然而我并没有创建系统还原点，pass😅</p>
+<h3 id="法3-安全模式（有效）"><a href="#法3-安全模式（有效）" class="headerlink" title="法3 安全模式（有效）"></a>法3 安全模式（有效）</h3><p>在安全模式下，Windows指挥加载必要的驱动，换句话说，有问题的驱动不会被加载。理论上可以正常进入系统；Windows 10并不提供从「Windows Boot Manager」直接进入安全模式的方法，所以要绕点路。<br>先进入恢复模式，在命令提示符输入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">bcdedit /set &#123;default&#125; safeboot minimal</div></pre></td></tr></table></figure>
+<p>将安全模式设为默认启动选项，重启，没有蓝屏，终于成功进系统了😭</p>
+<p>打开终端，将「Driver Verifier」关掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">verifier /reset</div></pre></td></tr></table></figure></p>
+<p>输入<code>msconfig</code>，将<code>Boot-&gt;Boot Option</code>的安全模式取消，重启正常进入系统。</p>
+<h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>使用「Windows Debugger」分析刚刚的内存转储文件，凶手出来了，是谷歌的安卓模拟器驱动😶</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div></pre></td><td class="code"><pre><div class="line">Microsoft (R) Windows Debugger Version 10.0.22549.1000 AMD64</div><div class="line">Copyright (c) Microsoft Corporation. All rights reserved.</div><div class="line"></div><div class="line"></div><div class="line">Loading Dump File [C:\WINDOWS\MEMORY.DMP]</div><div class="line">Kernel Bitmap Dump File: Full address space is available</div><div class="line"></div><div class="line"></div><div class="line">************* Path validation summary **************</div><div class="line">Response                         Time (ms)     Location</div><div class="line">Deferred                                       srv*</div><div class="line">Symbol search path is: srv*</div><div class="line">Executable search path is: </div><div class="line">Windows 10 Kernel Version 19041 MP (16 procs) Free x64</div><div class="line">Product: WinNt, suite: TerminalServer SingleUserTS</div><div class="line">Edition build lab: 19041.1.amd64fre.vb_release.191206-1406</div><div class="line">Machine Name:</div><div class="line">Kernel base = 0xfffff800`1401e000 PsLoadedModuleList = 0xfffff800`14c482b0</div><div class="line">Debug session time: Sun Mar 27 00:29:33.307 2022 (UTC + 8:00)</div><div class="line">System Uptime: 0 days 0:00:05.019</div><div class="line">Loading Kernel Symbols</div><div class="line">...............................................................</div><div class="line">......................................</div><div class="line">Loading User Symbols</div><div class="line"></div><div class="line">Loading unloaded module list</div><div class="line">...</div><div class="line">For analysis of this file, run !analyze -v</div><div class="line">nt!KeBugCheckEx:</div><div class="line">fffff800`144152e0 48894c2408      mov     qword ptr [rsp+8],rcx ss:0018:ffffea87`e5e06520=00000000000000c4</div><div class="line">5: kd&gt; !analyze -v</div><div class="line">*******************************************************************************</div><div class="line">*                                                                             *</div><div class="line">*                        Bugcheck Analysis                                    *</div><div class="line">*                                                                             *</div><div class="line">*******************************************************************************</div><div class="line"></div><div class="line">DRIVER_VERIFIER_DETECTED_VIOLATION (c4)</div><div class="line">A device driver attempting to corrupt the system has been caught.  This is</div><div class="line">because the driver was specified in the registry as being suspect (by the</div><div class="line">administrator) and the kernel has enabled substantial checking of this driver.</div><div class="line">If the driver attempts to corrupt the system, BugChecks 0xC4, 0xC1 and 0xA will</div><div class="line">be among the most commonly seen crashes.</div><div class="line">Arguments:</div><div class="line">Arg1: 0000000000000062, A driver has forgotten to free its pool allocations prior to unloading.</div><div class="line">Arg2: ffffb90f949ffcc0, name of the driver having the issue.</div><div class="line">Arg3: ffffb90f9492b570, verifier internal structure with driver information.</div><div class="line">Arg4: 0000000000000002, total # of (paged+nonpaged) allocations that weren&apos;t freed.</div><div class="line">	Type !verifier 3 drivername.sys for info on the allocations</div><div class="line">	that were leaked that caused the bugcheck.</div><div class="line"></div><div class="line">Debugging Details:</div><div class="line">------------------</div><div class="line"></div><div class="line">Unable to load image \SystemRoot\system32\DRIVERS\gvm.sys, Win32 error 0n2</div><div class="line"></div><div class="line">KEY_VALUES_STRING: 1</div><div class="line"></div><div class="line">    Key  : Analysis.CPU.mSec</div><div class="line">    Value: 3140</div><div class="line"></div><div class="line">    Key  : Analysis.DebugAnalysisManager</div><div class="line">    Value: Create</div><div class="line"></div><div class="line">    Key  : Analysis.Elapsed.mSec</div><div class="line">    Value: 14338</div><div class="line"></div><div class="line">    Key  : Analysis.Init.CPU.mSec</div><div class="line">    Value: 499</div><div class="line"></div><div class="line">    Key  : Analysis.Init.Elapsed.mSec</div><div class="line">    Value: 10589</div><div class="line"></div><div class="line">    Key  : Analysis.Memory.CommitPeak.Mb</div><div class="line">    Value: 83</div><div class="line"></div><div class="line">    Key  : WER.OS.Branch</div><div class="line">    Value: vb_release</div><div class="line"></div><div class="line">    Key  : WER.OS.Timestamp</div><div class="line">    Value: 2019-12-06T14:06:00Z</div><div class="line"></div><div class="line">    Key  : WER.OS.Version</div><div class="line">    Value: 10.0.19041.1</div><div class="line"></div><div class="line"></div><div class="line">FILE_IN_CAB:  MEMORY.DMP</div><div class="line"></div><div class="line">BUGCHECK_CODE:  c4</div><div class="line"></div><div class="line">BUGCHECK_P1: 62</div><div class="line"></div><div class="line">BUGCHECK_P2: ffffb90f949ffcc0</div><div class="line"></div><div class="line">BUGCHECK_P3: ffffb90f9492b570</div><div class="line"></div><div class="line">BUGCHECK_P4: 2</div><div class="line"></div><div class="line">IMAGE_NAME:  gvm.sys</div><div class="line"></div><div class="line">MODULE_NAME: gvm</div><div class="line"></div><div class="line">FAULTING_MODULE: fffff80956390000 gvm</div><div class="line"></div><div class="line">VERIFIER_DRIVER_ENTRY: dt nt!_MI_VERIFIER_DRIVER_ENTRY ffffb90f9492b570</div><div class="line">Symbol nt!_MI_VERIFIER_DRIVER_ENTRY not found.</div><div class="line"></div><div class="line">BLACKBOXNTFS: 1 (!blackboxntfs)</div><div class="line"></div><div class="line"></div><div class="line">PROCESS_NAME:  System</div><div class="line"></div><div class="line">STACK_TEXT:  </div><div class="line">ffffea87`e5e06518 fffff800`149ebe34     : 00000000`000000c4 00000000`00000062 ffffb90f`949ffcc0 ffffb90f`9492b570 : nt!KeBugCheckEx</div><div class="line">ffffea87`e5e06520 fffff800`149fb169     : ffffb90f`9492b570 ffffea87`e5e06610 ffffb90f`949ffb30 ffffb90f`94460040 : nt!VerifierBugCheckIfAppropriate+0xe0</div><div class="line">ffffea87`e5e06560 fffff800`144a85e0     : ffffb90f`9492b570 ffffb90f`949ffbd0 00000000`00000001 ffffb90f`94460020 : nt!VfPoolCheckForLeaks+0x49</div><div class="line">ffffea87`e5e065a0 fffff800`149dd502     : 00000000`00274000 ffffb90f`949ffb30 fffff800`14c3aeb0 fffff800`14c3aeb0 : nt!VfTargetDriversRemove+0x11a174</div><div class="line">ffffea87`e5e06620 fffff800`146c7553     : ffffb90f`949ffb30 ffffea87`e5e06750 00000000`00000001 00000000`ffffffff : nt!VfDriverUnloadImage+0x3e</div><div class="line">ffffea87`e5e06650 fffff800`1477e001     : 00000000`00000000 fffff800`ffffffff ffff241c`00000001 ffffa303`e1ed1240 : nt!MiUnloadSystemImage+0x2eb</div><div class="line">ffffea87`e5e067f0 fffff800`1477df2e     : ffffb90f`8c4e4a60 ffffea87`e5e06a40 00000000`00000000 00000000`00000000 : nt!MmUnloadSystemImage+0x41</div><div class="line">ffffea87`e5e06820 fffff800`146913e0     : ffffb90f`8c4e4a60 ffffea87`e5e06a40 ffffb90f`8c4e4a60 fffff800`1465b7df : nt!IopDeleteDriver+0x4e</div><div class="line">ffffea87`e5e06870 fffff800`14226357     : 00000000`00000000 00000000`00000000 ffffea87`e5e06a40 ffffb90f`8c4e4a90 : nt!ObpRemoveObjectRoutine+0x80</div><div class="line">ffffea87`e5e068d0 fffff800`1422627e     : 00000000`00000008 00000000`00000000 ffffb90f`8c4e4a60 00000000`c0000365 : nt!ObfDereferenceObjectWithTag+0xc7</div><div class="line">ffffea87`e5e06910 fffff800`1474814a     : 00000000`00000008 00000000`00000008 00000000`ffffffa1 00000000`00001000 : nt!HalPutDmaAdapter+0xe</div><div class="line">ffffea87`e5e06940 fffff800`14a6bda3     : ffffb90f`945ff658 ffffb90f`945ff658 ffffea87`e5e06b80 00000000`00000000 : nt!IopLoadDriver+0x76a</div><div class="line">ffffea87`e5e06b10 fffff800`14a6072a     : ffffffff`ffffffa1 ffffa303`e51fefd0 00000000`00000000 fffff800`116d7750 : nt!IopInitializeSystemDrivers+0x157</div><div class="line">ffffea87`e5e06bb0 fffff800`147a485b     : fffff800`116d7750 fffff800`14c64fe8 fffff800`147a4820 fffff800`116d7750 : nt!IoInitSystem+0x2e</div><div class="line">ffffea87`e5e06be0 fffff800`14373995     : ffffb90f`89ec3080 fffff800`147a4820 fffff800`116d7750 a1a64fe8`ce8b48d7 : nt!Phase1Initialization+0x3b</div><div class="line">ffffea87`e5e06c10 fffff800`1441c938     : fffff800`11a4c180 ffffb90f`89ec3080 fffff800`14373940 058b4800`0040b7e8 : nt!PspSystemThreadStartup+0x55</div><div class="line">ffffea87`e5e06c60 00000000`00000000     : ffffea87`e5e07000 ffffea87`e5e01000 00000000`00000000 00000000`00000000 : nt!KiStartSystemThread+0x28</div><div class="line"></div><div class="line"></div><div class="line">IMAGE_VERSION:  1.7.0.0</div><div class="line"></div><div class="line">STACK_COMMAND:  .cxr; .ecxr ; kb</div><div class="line"></div><div class="line">FAILURE_BUCKET_ID:  0xc4_62_VRF_LEAKED_POOL_IMAGE_gvm.sys</div><div class="line"></div><div class="line">OS_VERSION:  10.0.19041.1</div><div class="line"></div><div class="line">BUILDLAB_STR:  vb_release</div><div class="line"></div><div class="line">OSPLATFORM_TYPE:  x64</div><div class="line"></div><div class="line">OSNAME:  Windows 10</div><div class="line"></div><div class="line">FAILURE_ID_HASH:  &#123;a0c4665d-e60a-f4d0-aeeb-0605adf8a6ef&#125;</div><div class="line"></div><div class="line">Followup:     MachineOwner</div><div class="line">---------</div><div class="line"></div><div class="line">5: kd&gt; lmvm gvm</div><div class="line">Browse full module list</div><div class="line">start             end                 module name</div><div class="line">fffff809`56390000 fffff809`56604000   gvm        (no symbols)           </div><div class="line">    Loaded symbol image file: gvm.sys</div><div class="line">    Image path: \SystemRoot\system32\DRIVERS\gvm.sys</div><div class="line">    Image name: gvm.sys</div><div class="line">    Browse all global symbols  functions  data</div><div class="line">    Timestamp:        Wed Sep 23 03:38:16 2020 (5F6A52A8)</div><div class="line">    CheckSum:         00065EDA</div><div class="line">    ImageSize:        00274000</div><div class="line">    File version:     1.7.0.0</div><div class="line">    Product version:  1.7.0.0</div><div class="line">    File flags:       2 (Mask 3F) Pre-release</div><div class="line">    File OS:          40004 NT Win32</div><div class="line">    File type:        3.7 Driver</div><div class="line">    File date:        00000000.00000000</div><div class="line">    Translations:     0409.04b0</div><div class="line">    Information from resource tables:</div><div class="line">        CompanyName:      Google LLC</div><div class="line">        ProductName:      Android Emulator Hypervisor Driver for AMD Processors</div><div class="line">        InternalName:     Android Emulator Hypervisor Driver for AMD Processors</div><div class="line">        OriginalFilename: gvm.sys</div><div class="line">        ProductVersion:   1.7</div><div class="line">        FileVersion:      1.7</div><div class="line">        FileDescription:  Android Emulator Hypervisor Driver for AMD Processors</div><div class="line">        LegalCopyright:   Copyright (c) 2019 Google LLC</div></pre></td></tr></table></figure>
+<p>好吧，这个驱动只是阻止了系统启动，并不一定就是真凶。为了进一步排查，我又重新打开了「Driver Verifier」，当然这次长了记性，设置它的启动模式为「启动失败时自动关闭」。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">verifier /bootmode resetonbootfail</div></pre></td></tr></table></figure>
+<p>接下来的2天内我打算继续运行「Driver Verifier」，看看还有没有其他的幕后黑手。看看这一串蓝屏记录，我是真的能忍🙃<br><img src="/2022/03/27/escape-verifier-boot-loop/./eventlog.png" alt="1"></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://www.tenforums.com/tutorials/5470-enable-disable-driver-verifier-windows-10-a.html" target="_blank" rel="external">Driver Verifier - Enable and Disable in Windows 10</a></li>
+</ul>
+
+  	</div>
+	  
+	  <div class="article-tags tags">
+      
+        <a href="/tags/BSOD/">BSOD</a>
+      
+	  </div>
+    
+		
+	
+		<div class="art-item-footer">
+				
+				
+					<span class="art-item-right">next：<a href="/2021/10/19/pwsh-github-actions-env-var-pit-fall/" rel="next"  title="Powershell、Github Actions、环境变量踩坑">
+						Powershell、Github Actions、环境变量踩坑
+					</a><i class="icon icon-chevron-thin-right"></i></span>
+				
+		</div>
+	
+	</section>
+	
+</article>
+<script>
+	window.subData = {
+		title: '逃出「Driver Verifier」导致的无限蓝屏',
+		tools: true
+	}
+</script>
+
+      </div>
+      <aside class='l_side'>
+        
+  <section class='m_widget about'>
+
+<img class='avatar waves-image' src='/rei.png' />
+
+<div class='header'>Verrickt</div>
+<div class='content'>
+<div class='desc'>What one programmer can do in one month, two programmers can do in two months</div>
+</div>
+</section>
+
+  <section class='m_widget links'>
+<div class='header'>My friends</div>
+<div class='content'>
+    <ul class="entry">
+    
+        <li><a class="flat-box" target="_blank" href="https://sjx1995.github.io">
+            <div class='name'>Sunly</div>
+        </a></li>
+    
+        <li><a class="flat-box" target="_blank" href="https://liun1an.github.io">
+            <div class='name'>LiuN1an</div>
+        </a></li>
+    
+        <li><a class="flat-box" target="_blank" href="https://woodencross.github.io">
+            <div class='name'>Woodencross</div>
+        </a></li>
+    
+    </ul>
+</div>
+</section>
+
+  <section class='m_widget categories'>
+<div class='header'>Categories</div>
+<div class='content'>
+    
+    <ul class="entry">
+    
+        <li><a class="flat-box" href="/categories/FluentTreeView/"><div class='name'>FluentTreeView</div><div class='badget'>5</div></a></li>
+    
+        <li><a class="flat-box" href="/categories/Machine-learning/"><div class='name'>Machine learning</div><div class='badget'>12</div></a></li>
+    
+        <li><a class="flat-box" href="/categories/Other/"><div class='name'>Other</div><div class='badget'>2</div></a></li>
+    
+    </ul>
+    
+</div>
+</section>
+
+  
+<div class="m_widget tagcloud">
+    <div class="header">Tags</div>
+    <div class='content'>
+        <a href="/tags/Net-Framework/" style="font-size: 14px; color: #808080">.Net Framework</a> <a href="/tags/Anaconda/" style="font-size: 15.2px; color: #666">Anaconda</a> <a href="/tags/BSOD/" style="font-size: 14px; color: #808080">BSOD</a> <a href="/tags/Backpropagation/" style="font-size: 14px; color: #808080">Backpropagation</a> <a href="/tags/C/" style="font-size: 17.6px; color: #333">C#</a> <a href="/tags/CNN/" style="font-size: 14px; color: #808080">CNN</a> <a href="/tags/CPP/" style="font-size: 14px; color: #808080">CPP</a> <a href="/tags/CUDA/" style="font-size: 14px; color: #808080">CUDA</a> <a href="/tags/Debugging/" style="font-size: 14px; color: #808080">Debugging</a> <a href="/tags/Github-Actions/" style="font-size: 14px; color: #808080">Github Actions</a> <a href="/tags/HTML/" style="font-size: 14px; color: #808080">HTML</a> <a href="/tags/HttpClient/" style="font-size: 14px; color: #808080">HttpClient</a> <a href="/tags/Information-theory/" style="font-size: 14px; color: #808080">Information theory</a> <a href="/tags/Jupyter/" style="font-size: 14px; color: #808080">Jupyter</a> <a href="/tags/Linear-algebra/" style="font-size: 14px; color: #808080">Linear algebra</a> <a href="/tags/MSBuild/" style="font-size: 14px; color: #808080">MSBuild</a> <a href="/tags/Machine-learning/" style="font-size: 20px; color: #000">Machine learning</a> <a href="/tags/Numberical-computation/" style="font-size: 14px; color: #808080">Numberical computation</a> <a href="/tags/OOP/" style="font-size: 14px; color: #808080">OOP</a> <a href="/tags/PAT/" style="font-size: 18.8px; color: #1a1a1a">PAT</a> <a href="/tags/PCA/" style="font-size: 14px; color: #808080">PCA</a> <a href="/tags/Parser/" style="font-size: 14px; color: #808080">Parser</a> <a href="/tags/Powershell/" style="font-size: 14px; color: #808080">Powershell</a> <a href="/tags/Probability/" style="font-size: 14px; color: #808080">Probability</a> <a href="/tags/RNN/" style="font-size: 14px; color: #808080">RNN</a> <a href="/tags/Reentrance/" style="font-size: 14px; color: #808080">Reentrance</a> <a href="/tags/Regularization/" style="font-size: 14px; color: #808080">Regularization</a> <a href="/tags/SOLID/" style="font-size: 14px; color: #808080">SOLID</a> <a href="/tags/SVM/" style="font-size: 14px; color: #808080">SVM</a> <a href="/tags/Semi-supervised-learning/" style="font-size: 14px; color: #808080">Semi-supervised learning</a> <a href="/tags/Tensorflow/" style="font-size: 14px; color: #808080">Tensorflow</a> <a href="/tags/The-flower-book/" style="font-size: 16.4px; color: #4d4d4d">The flower book</a> <a href="/tags/UWP/" style="font-size: 14px; color: #808080">UWP</a> <a href="/tags/VSCode/" style="font-size: 14px; color: #808080">VSCode</a> <a href="/tags/WPF/" style="font-size: 15.2px; color: #666">WPF</a> <a href="/tags/async-await/" style="font-size: 14px; color: #808080">async/await</a> <a href="/tags/classification/" style="font-size: 14px; color: #808080">classification</a> <a href="/tags/lambda/" style="font-size: 14px; color: #808080">lambda</a> <a href="/tags/logistic-regression/" style="font-size: 14px; color: #808080">logistic regression</a> <a href="/tags/neural-network/" style="font-size: 14px; color: #808080">neural network</a> <a href="/tags/overhead/" style="font-size: 14px; color: #808080">overhead</a> <a href="/tags/reference-type/" style="font-size: 14px; color: #808080">reference type</a>
+    </div>
+</div>
+
+
+
+  <section class='m_widget categories'>
+
+    <div class='header'>Statistics</div>
+    <div class='content'>
+        <ul class="entry">
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Page Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_pv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Unique Viewer</div>
+                    <div class='badget' id='busuanzi_value_site_uv'></div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Up time</div>
+                    <div class='badget'>
+                        
+                            
+                                1614
+                                    Days
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Last Updated</div>
+                    <div class='badget'>
+                            Mar 27, 2022
+                                    
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a class='flat-box'>
+                    <div class='name'>Blogs</div>
+                    <div class='badget'>
+                        45
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+      </aside>
+      <script>setLoadingBarProgress(60);</script>
+    </div>
+  </div>
+  <footer id="footer" class="clearfix">
+
+	<div class="social-wrapper">
+  	
+      
+        <a href="https://github.com/verrickt" class="social github"
+          target="_blank" rel="external">
+          <span class="icon icon-github"></span>
+        </a>
+      
+        <a href="https://twitter.com/verrickt" class="social twitter"
+          target="_blank" rel="external">
+          <span class="icon icon-twitter"></span>
+        </a>
+      
+        <a href="/atom.xml" class="social rss"
+          target="_blank" rel="external">
+          <span class="icon icon-rss"></span>
+        </a>
+      
+    
+  </div>
+  <div class="footer_content">
+    Melchior on CLR
+    ©
+    2017
+      -
+    2022,
+    brought to life with ❤️ By
+    <a  href='/' >
+      Verrickt
+    </a>
+
+  </div>
+  <div class="footer_content">
+    Powered by <a href='https://hexo.io/' target="blank_">Hexo</a> |
+    Theme based on <a target="blank_" href='https://github.com/stkevintan/hexo-theme-material-flow' class="">MaterialFlow</a></div>
+  
+</footer>
+
+
+  <script>setLoadingBarProgress(80);</script>
+  
+
+<script src="//apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src='//cdn.bootcss.com/node-waves/0.7.5/waves.min.js'></script>
+<script src="//cdn.bootcss.com/scrollReveal.js/3.3.2/scrollreveal.min.js"></script>
+<script src="/js/jquery.fitvids.js"></script>
+<script>
+	var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+	var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+	var ALGOLIA_API_KEY = "";
+	var ALGOLIA_APP_ID = "";
+	var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var BAIDU_API_ID = "";
+  var SEARCH_SERVICE = "hexo";
+  var ROOT = "/"||"/";
+  if(!ROOT.endsWith('/'))ROOT += '/';
+</script>
+<script src="/js/search.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/canvas.js"></script>
+<script src="/js/typed.js"></script>
+
+  <script>setLoadingBarProgress(100);</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
