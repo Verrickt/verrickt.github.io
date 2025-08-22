@@ -264,6 +264,7 @@
         <li><a href="#资源处理">资源处理</a></li>
       </ol>
     </li>
+    <li><a href="#部署">部署</a></li>
   </ol>
 </nav>
         </div>
@@ -482,6 +483,46 @@ This theme uses SCSS and TypeScript, that&rsquo;s why Hugo extended version is r
 </h3><p>Hugo中，文章(<code>index.md</code>)与资源(<code>resource.png</code>)处在同一个目录(<code>content/post/article</code>)下。因此，原先采用相对路径引用(<code>![test graph][./resource.png]</code>)的资源最好改成直接路径(<code>![test graph][resource.png]</code>)。</p>
 <p>主题<a class="link" href="https://github.com/CaiJimmy/hugo-theme-stack"  target="_blank" rel="noopener"
     >Stack</a>中展示图片时会显示caption，如果以前偷懒了最好补一下;-)</p>
+<h2 id="部署">部署
+</h2><p>调试CI/CD的<code>yml</code>过于麻烦，我同样采用old-fashion的<a class="link" href="https://pypi.org/project/hugo-deployer-git/"  target="_blank" rel="noopener"
+    >hugo-deployer-git</a>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">conda create -n hugo python=3.9
+</span></span><span class="line"><span class="cl">conda activate hugo
+</span></span><span class="line"><span class="cl">pip3 install hugo-deployer-git
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>填好<code>config.toml</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="p">[</span><span class="nx">hugo-deployer-git</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="c"># required</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">repo</span> <span class="p">=</span> <span class="s2">&#34;https://github.com/Verrickt/verrickt.github.io.git&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">branch</span> <span class="p">=</span>  <span class="s2">&#34;your-github-page-branch&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">hugo-deployer-git
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>大功告成！</p>
 
 </section>
 
