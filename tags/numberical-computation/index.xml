@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Numberical Computation on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/numberical-computation/</link>
+        <description>Recent content in Numberical Computation on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Sun, 28 Jun 2020 11:00:27 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/numberical-computation/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>机器学习基础——数值计算</title>
+        <link>https://verrickt.github.io/2020/06/28/machine-learning-basics-numerical-computation/</link>
+        <pubDate>Sun, 28 Jun 2020 11:00:27 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/28/machine-learning-basics-numerical-computation/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的数值计算知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;source-of-errors&#34;&gt;Source of errors
+&lt;/h2&gt;&lt;h3 id=&#34;overflow-and-underflow&#34;&gt;Overflow and Underflow
+&lt;/h3&gt;&lt;p&gt;计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。&lt;/p&gt;
+&lt;p&gt;接近零的非零数值因为舍入变为0称为Underflow。&lt;/p&gt;
+&lt;p&gt;超出表示范围的wrap-around称为Overflow&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;positive-overflow 指超过范围的正数被截断为负数&lt;/li&gt;
+&lt;li&gt;negative-overflow 指超过范围的负数被截断为正数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;poor-conditioning&#34;&gt;Poor Conditioning
+&lt;/h3&gt;&lt;p&gt;Condition指输入的微小变化引起函数值变化的剧烈程度。计算机中的数字是有表示范围的，因此Condition大的函数会遇到很多问题。&lt;/p&gt;
+&lt;p&gt;对于&lt;/p&gt;
+$$f(\mathbf{x})=A_{-1}\mathbf{x},A \in \mathbb{R}^{nxn}$$&lt;p&gt;
+如果A可以做特征值分解，那么f的condition number定义为
+&lt;/p&gt;
+$$\max{i,j}\left|\frac{\lambda_i}{\lambda_j}\right|$$&lt;h2 id=&#34;optimization&#34;&gt;Optimization
+&lt;/h2&gt;&lt;p&gt;解出使函数f(x)取得最大值/最小值的x的过程称为优化(optimization)。求f(x)最大值可以用求-f(x)的最小值实现，因此主要讨论求最小值。&lt;/p&gt;
+&lt;h3 id=&#34;naive-gradient-descent&#34;&gt;naive gradient descent
+&lt;/h3&gt;&lt;p&gt;梯度(gradient)给出了函数增长最快的方向，那么沿着梯度的反方向就可以将函数值减少。梯度下降法(gradient descent)就是采用这个思路一种方法:&lt;/p&gt;
+$$
+x^{i+1} = x^{i} - \epsilon \nabla_xf(x)
+$$&lt;p&gt;
+其中ε是学习率(learning rate)。一般来说ε有两种取法&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;设为一个固定的很小的常量&lt;/li&gt;
+&lt;li&gt;取多个ε，选其中让f(x-ε∇f(x))最小的那个ε。这种方法又称为line search&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;beyond-the-gradient-jacobian-and-hessian-matrices&#34;&gt;Beyond the Gradient: Jacobian and Hessian Matrices
+&lt;/h3&gt;&lt;p&gt;对于一个输入和输出都是向量的函数f，含有它的所有偏微分的矩阵称为雅可比矩阵(Jacobian matrix)&lt;/p&gt;
+$$f:\mathbb{R^m} \to \mathbb{R^n}$$$$J_{i,j}=\frac{\partial}{\partial x_j}f(x)_i 其中J \in \mathbb{R^{n\times m}}$$&lt;p&gt;同样的，含有f的所有二阶偏微分的矩阵称为海希矩阵(Hessian matrix)&lt;/p&gt;
+$$\mathbf{}{H}(f)(x)_{i,j}=\frac{\partial ^2}{\partial x_i \partial x_j}f(x)
+$$&lt;p&gt;海希矩阵就是梯度的雅可比矩阵。&lt;/p&gt;
+&lt;p&gt;当二阶偏微分连续时，微分运算符具有交换律，即
+&lt;/p&gt;
+$$H_{i,j}=H_{j,i}$$&lt;p&gt;机器学习中大部分函数f都具有连续的二阶偏微分，因此海希矩阵是实对称矩阵，因而可以做特征值分解，并且U是正交矩阵。&lt;/p&gt;
+&lt;p&gt;f对某个单位向量u方向u的二阶偏微分由
+&lt;/p&gt;
+$$u^{\top} Hu$$&lt;p&gt;给出。&lt;/p&gt;
+&lt;p&gt;在x0处对f做二阶泰勒展开&lt;/p&gt;
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$&lt;p&gt;H为海希矩阵，g为梯度。当采用学习率ε时，梯度下降的新坐标是x0-εg，带入泰勒展开，有&lt;/p&gt;
+$$f(x^0-\epsilon g) \approx f(x^0) - \epsilon g^{\top}g+\frac{1}{2}\epsilon^2g^{\top}Hg$$&lt;p&gt;当最后一项小于等于零时，ε可以任选。当最后一项大于零时，有&lt;/p&gt;
+$$\epsilon^*=\frac{g^{\top}g}{g^{\top}Hg}$$&lt;p&gt;时下降最快。最坏情况下，g与H重合，因此学习率的数量级由
+&lt;/p&gt;
+$$\frac{1}{\lambda_{\max}}$$&lt;p&gt;
+决定。&lt;/p&gt;
+&lt;p&gt;学习率设的过大或过小都会造成问题，这可以由海希矩阵解决。其中最简单的就是&lt;strong&gt;牛顿法&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;牛顿法的步骤基本思路是，在x点做二阶泰勒展开。&lt;/p&gt;
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$&lt;p&gt;
+解出函数的critical point&lt;/p&gt;
+$$x^*=x^0-H(f)(x^0)^{-1}\nabla_xf(x^0)$$&lt;p&gt;f是正定二次函数时，一次就找到了最低点。当f不是二次函数但是可以用二次函数局部近似时，多次迭代x*即可。&lt;/p&gt;
+&lt;p&gt;牛顿法只适用于解最小值，而梯度下降没有这个限制。&lt;/p&gt;
+&lt;p&gt;只用到梯度的优化算法，如梯度下降，叫做一阶优化算法。使用海希矩阵的算法，如牛顿法，叫做二阶优化算法。&lt;/p&gt;
+&lt;h3 id=&#34;constrained-optimization&#34;&gt;Constrained optimization
+&lt;/h3&gt;&lt;p&gt;有时我们希望在某集合S上而不是R^n上找出函数的最大/最小值，这叫做constrainted optimization(受限优化)。落在s中的点称为feasible point(可行点)&lt;/p&gt;
+&lt;p&gt;KKT方法是一个受限优化问题的通用方法。使用KKT方法，首先定义广义拉格朗日函数。&lt;/p&gt;
+&lt;p&gt;为了定义广义拉格朗日函数，首先需要将S定义为函数的集合&lt;/p&gt;
+$$\mathbb{S}=\{x| \forall i,g^{(i)}(x)=0 \text{ and } \forall j,h^{(j)}(x) \le0 \}$$&lt;p&gt;
+含有g(i)的方程称为equality constraints，含有h(j)的方程称为inequality constraints。&lt;/p&gt;
+&lt;p&gt;对于每个函数，定义λi和αj。他们叫做KKT乘数。&lt;/p&gt;
+&lt;p&gt;现在定义广义拉格朗日函数&lt;/p&gt;
+$$L(x,\lambda,\alpha)=f(x)+\sum_i \lambda_i g^{(i)}(x)+\sum_j \alpha_jh^{(j)}(x)$$&lt;p&gt;接下来在广义拉格朗日函数上使用非受限优化算法，就可以解决受限优化算法了。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

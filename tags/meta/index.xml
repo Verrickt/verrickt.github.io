@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Meta on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/meta/</link>
+        <description>Recent content in Meta on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Fri, 22 Aug 2025 19:42:57 +0800</lastBuildDate><atom:link href="https://verrickt.github.io/tags/meta/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Hexo博客迁移到HUGO</title>
+        <link>https://verrickt.github.io/2025/08/22/migrate-blog-from-hexo-to-hugo/</link>
+        <pubDate>Fri, 22 Aug 2025 19:42:57 +0800</pubDate>
+        
+        <guid>https://verrickt.github.io/2025/08/22/migrate-blog-from-hexo-to-hugo/</guid>
+        <description>&lt;p&gt;本博客使用&lt;a class=&#34;link&#34; href=&#34;https://hexo.io/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Hexo&lt;/a&gt;已经7年了。博文和内容增多后，hexo的生成速度越来越难以满足需求啦。我的个人博客迁移到&lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Hugo&lt;/a&gt;近一年了，生成的速度飞快，也没有遇到什么坑，是时候迁移了。&lt;del&gt;顺便还能水一篇文章&lt;/del&gt;&lt;/p&gt;
+&lt;h2 id=&#34;前期准备&#34;&gt;前期准备
+&lt;/h2&gt;&lt;h3 id=&#34;安装hugo&#34;&gt;安装Hugo
+&lt;/h3&gt;&lt;p&gt;我打算使用的主题&lt;a class=&#34;link&#34; href=&#34;https://github.com/CaiJimmy/hugo-theme-stack&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Stack&lt;/a&gt;需要使用到&lt;code&gt;Hugo&lt;/code&gt;的扩展版&lt;code&gt;hugo-extended&lt;/code&gt;，如果你的主题没有额外的要求，按照普通版即可&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Before you start, make sure you have installed Hugo extended version. For more information, see &lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/getting-started/installing/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Hugo&amp;rsquo;s documentation&lt;/a&gt;.&lt;br&gt;
+This theme uses SCSS and TypeScript, that&amp;rsquo;s why Hugo extended version is required&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;choco install hugo-extended
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;新建网站&#34;&gt;新建网站
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo new site-example
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; site-example
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;安装主题&#34;&gt;安装主题
+&lt;/h3&gt;&lt;p&gt;我比较old-fashion，喜欢用sub module&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;git submodule add https://github.com/CaiJimmy/hugo-theme-stack/themes/hugo-theme-stack
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;基于hugo mod的安装流程请参考&lt;a class=&#34;link&#34; href=&#34;https://stack.jimmycai.com/guide/getting-started#git&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;文档&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;修改site-config&#34;&gt;修改site-config
+&lt;/h3&gt;&lt;p&gt;我的hexo站点设置中，文章的URI加上了&lt;code&gt;yyyy/MM/dd&lt;/code&gt;的前缀。这里调整permalinks的规则，保证兼容性&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-toml&#34; data-lang=&#34;toml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;permalinks&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nx&#34;&gt;post&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;/:year/:month/:day/:slug/&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nx&#34;&gt;page&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;/:&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;slug&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;开启$\LaTeX$处理&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    article:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        math: true
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        ...
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;迁移&#34;&gt;迁移
+&lt;/h2&gt;&lt;h3 id=&#34;迁移内容&#34;&gt;迁移内容
+&lt;/h3&gt;&lt;p&gt;Hugo支持多种&lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/content-management/front-matter&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;&lt;code&gt;front matter&lt;/code&gt;&lt;/a&gt;的格式，如YAML,TOML和JSON。
+出乎我预想的是，其区分格式的依据是&lt;code&gt;front matter&lt;/code&gt;&lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/content-management/front-matter/#overview&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;分隔符&lt;/a&gt;，这与Hexo不太一致。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The front matter at the top of each content file is metadata that:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Describes the content&lt;/li&gt;
+&lt;li&gt;Augments the content&lt;/li&gt;
+&lt;li&gt;Establishes relationships with other content&lt;/li&gt;
+&lt;li&gt;Controls the published structure of your site&lt;/li&gt;
+&lt;li&gt;Determines template selection&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Provide front matter using a serialization format, one of JSON, TOML, or YAML. Hugo determines the front matter format by examining the delimiters that separate the front matter from the page content.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;此外，页面的permalink需要在front-matter的&lt;code&gt;slug&lt;/code&gt;中显式指定；对于内容与本地资源的命名和存放路径也与hexo不太一样。&lt;/p&gt;
+&lt;p&gt;我迁移个人博客时做了一个&lt;a class=&#34;link&#34; href=&#34;https://gist.github.com/Verrickt/1643d9547e77223d001d1e399ad17e60&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;迁移脚本&lt;/a&gt;，用于处理这些差异。&lt;/p&gt;
+&lt;p&gt;原hexo中的自定义页面比较少，我自己手工迁移了。理论上脚本对post和page均有效，欢迎你尝试。如果有问题欢迎提出BUG。&lt;/p&gt;
+&lt;h3 id=&#34;开始预览&#34;&gt;开始预览
+&lt;/h3&gt;&lt;p&gt;感受一下闪电般的速度&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;hugo serve
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;疑难问题处理&#34;&gt;疑难问题处理
+&lt;/h2&gt;&lt;h3 id=&#34;front-matter处理&#34;&gt;front-matter处理
+&lt;/h3&gt;&lt;p&gt;hexo对front-matter的格式要求比较松散，在数组的地方填入字符串也无伤大雅。但是，hugo对格式的要求十分严格，一言不合死给你看：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;render: failed to render pages: render of &amp;#34;page&amp;#34; failed: &amp;#34;C:\Users\test-user\Documents\GitHub\site-example\themes\hugo-theme-stack\layouts\_default\baseof.html:4:12&amp;#34;: execute of template failed at &amp;lt;partial &amp;#34;head/head.html&amp;#34; .&amp;gt;: error calling partial: &amp;#34;C:\Users\test-user\Documents\GitHub\site-example\themes\hugo-theme-stack\layouts\partials\head\head.html:15:4&amp;#34;: execute of template failed at &amp;lt;partial &amp;#34;head/opengraph/include.html&amp;#34; .&amp;gt;: &amp;#34;C:\Users\test-user\Documents\GitHub\site-example\themes\hugo-theme-stack\layouts\partials\head\opengraph\include.html:1:3&amp;#34;: execute of template failed at &amp;lt;partial &amp;#34;head/opengraph/provider/base&amp;#34; .&amp;gt;: &amp;#34;C:\Users\test-user\Documents\GitHub\site-example\themes\hugo-theme-stack\layouts\partials\head\opengraph\provider\base.html:22:21&amp;#34;: execute of template failed at &amp;lt;.Params.tags&amp;gt;: range can’t iterate over XYZ
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;更为致命的是，这里只告诉你字段(即&lt;code&gt;tags&lt;/code&gt;)，但不能定位到有问题的那些文章。这就让问题的排查变得十分困难，可以说这里整个迁移中最耗时的地方了。&lt;/p&gt;
+&lt;p&gt;我自己的经验是，这里只能采用一对一处理：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;上面的报错信息告诉我们出错的是&lt;code&gt;tag&lt;/code&gt;是&lt;code&gt;XYZ&lt;/code&gt;的文章&lt;/li&gt;
+&lt;li&gt;全局搜索找出所有的文章，只留下一篇&lt;/li&gt;
+&lt;li&gt;修改文章的&lt;code&gt;tag&lt;/code&gt;，使其符合front-matter规定的格式&lt;/li&gt;
+&lt;li&gt;对同类型文章处理。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;上文中的报错，需要把&lt;code&gt;tags: &#39;XYZ&#39;&lt;/code&gt;改为&lt;code&gt;tags: [&#39;XYZ&#39;]&lt;/code&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;同站引用处理&#34;&gt;同站引用处理
+&lt;/h3&gt;&lt;p&gt;hexo的博文中我使用了相对路径做同站文章的引用，例如
+&lt;a class=&#34;link&#34; href=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/&#34; &gt;半监督学习&lt;/a&gt;一文中，我使用了下面的方式引用&lt;a class=&#34;link&#34; href=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/&#34; &gt;从分类到对率回归再到到神经网络&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[1]:../../../07/04/from-logistic-regression-to-neural-network/
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里使用hugo提供&lt;a class=&#34;link&#34; href=&#34;https://gohugo.io/shortcodes/ref/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;ref shortcode&lt;/a&gt;，可以确保permlink永远保持最新。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;[1]:{{&amp;lt; ref &amp;#34;from-logistic-regression-to-neural-network.md&amp;#34; &amp;gt;}}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;del&gt;$\LaTeX$的hyperref既视感&lt;/del&gt;&lt;/p&gt;
+&lt;h3 id=&#34;资源处理&#34;&gt;资源处理
+&lt;/h3&gt;&lt;p&gt;Hugo中，文章(&lt;code&gt;index.md&lt;/code&gt;)与资源(&lt;code&gt;resource.png&lt;/code&gt;)处在同一个目录(&lt;code&gt;content/post/article&lt;/code&gt;)下。因此，原先采用相对路径引用(&lt;code&gt;![test graph][./resource.png]&lt;/code&gt;)的资源最好改成直接路径(&lt;code&gt;![test graph][resource.png]&lt;/code&gt;)。&lt;/p&gt;
+&lt;p&gt;主题&lt;a class=&#34;link&#34; href=&#34;https://github.com/CaiJimmy/hugo-theme-stack&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Stack&lt;/a&gt;中展示图片时会显示caption，如果以前偷懒了最好补一下;-)&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

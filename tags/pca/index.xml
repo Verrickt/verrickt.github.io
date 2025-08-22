@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>PCA on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/pca/</link>
+        <description>Recent content in PCA on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Fri, 31 Jul 2020 19:49:41 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/pca/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>主成分分析</title>
+        <link>https://verrickt.github.io/2020/07/31/principal-component-analysis/</link>
+        <pubDate>Fri, 31 Jul 2020 19:49:41 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/31/principal-component-analysis/</guid>
+        <description>&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;pca&#34;&gt;PCA
+&lt;/h2&gt;&lt;p&gt;PCA的想法很朴素。它试图找到一个线性变化W，使得经过变化后的向量&lt;code&gt;z=Wx&lt;/code&gt;在各个维度&lt;code&gt;z_i&lt;/code&gt;上都拥有最大的方差。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/maximum-variance.png&#34;
+	width=&#34;960&#34;
+	height=&#34;720&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;maximum variance&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;constraints&#34;&gt;Constraints
+&lt;/h2&gt;&lt;p&gt;仅仅要求方差最大而不做任何限制是不行的。我们总是可以让&lt;code&gt;w_i&lt;/code&gt;含有无穷从而使方差变为无穷大，但这没有意义。&lt;/p&gt;
+&lt;p&gt;因此限制&lt;code&gt;w_i&lt;/code&gt;的模是1。
+同样的，当找出使得第i维的方差最大的参数&lt;code&gt;w_i&lt;/code&gt;后，机器可以把这组参数&lt;code&gt;w_i&lt;/code&gt;用在第j维上来“偷懒”，因此限制任意的参数是垂直的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/constraint.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;constraint&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;dimension-reduction&#34;&gt;Dimension reduction
+&lt;/h2&gt;&lt;h3 id=&#34;to-1-dimension&#34;&gt;to 1 dimension
+&lt;/h3&gt;&lt;p&gt;先考虑一维的情况。
+&lt;/p&gt;
+$$
+z_1=w_1&#39;x,其中 (w_1&#39;)^\top w_1&#39;=1
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/z1-var.png&#34;
+	width=&#34;1296&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;z1_var&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;
+&lt;/p&gt;
+$$
+\mathrm{Var}(z_1)=\sum_{z_{i}}(z_1-\bar z)^2
+=\sum_x(w_1&#39;x-w_1&#39;\bar x)^2=\sum_x(w_1&#39;(x- \bar x))^2 \\
+=\sum_x(w_1&#39;)^\top(x- \bar x)(x- \bar x)^\top w_1&#39; \\
+=(w_1&#39;)^\top\left(\sum_x(x-\bar x)(x-\bar x)^\top\right)w_1&#39; \\
+=(w_1&#39;)^\top\mathrm{Cov}(x)w_1&#39;
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/w1-eigenvector.png&#34;
+	width=&#34;1305&#34;
+	height=&#34;969&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;w1-eigenvector&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;构造拉格朗日函数，其中S=Cov(x),
+&lt;/p&gt;
+$$
+L(w_1&#39;)=(w_1&#39;)^\top S w_1&#39;-\alpha((w_1&#39;)^\top w_1&#39;-1) \\
+\frac{\partial L}{\partial w}=0 \rArr Sw_1&#39;-\alpha w_1&#39;
+\rArr Sw_1&#39; = \alpha w_1&#39;
+\rArr \alpha是S的特征值,w&#39;是对应的特征向量
+$$&lt;p&gt;带回到上式
+&lt;/p&gt;
+$$
+(w_1&#39;)^\top\mathrm{Cov}(x)w_1&#39;
+= (w_1&#39;)^\top Sw_1&#39; = (w_1&#39;)^\top \alpha w_1&#39;
+= \alpha (w_1&#39;)^\top w_1&#39;=\alpha
+$$&lt;p&gt;
+&lt;code&gt;α&lt;/code&gt;的最大值，即是Cov(x)最大的特征值。此时的&lt;code&gt;w1&#39;&lt;/code&gt;为&lt;code&gt;α&lt;/code&gt;对应的特征向量&lt;/p&gt;
+&lt;p&gt;对于二元的情况也类似&lt;/p&gt;
+&lt;h3 id=&#34;to-2-dimensions&#34;&gt;to 2 dimensions
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/z2_lagrange_operator.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;980&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;z2_lagrange_operator&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;拉格朗日函数
+&lt;/p&gt;
+$$
+g(w_2)=(w_2&#39;)^\top S w_2 - \alpha((w_2&#39;)^\top w_2&#39; = 1) - \beta((w_2&#39;)^\top w_1&#39;)
+$$&lt;p&gt;
+而
+&lt;/p&gt;
+$$
+(w_2&#39;)^\top w_2&#39; = 1 \\
+(w_1&#39;)^\top w_2&#39; = 0 \\
+(w_1&#39;)^\top Sw_2&#39;=((w_1&#39;)^\top Sw_2&#39;)^\top
+=(w_2&#39;)^\top S^\top w_1  \\
+=(w_2&#39;)^\top S w_1 = (w_2&#39;)^\top \alpha w_1 \\
+=\alpha  (w_2&#39;)^\top w_1 = 0
+$$&lt;p&gt;
+所以系数拉格朗日函数的只剩下&lt;code&gt;β&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/z2_simplified.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;z2_simplified&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;β&lt;/code&gt;的最大值，即是Cov(x)第二大的特征值。此时的&lt;code&gt;w2&#39;&lt;/code&gt;为&lt;code&gt;β&lt;/code&gt;对应的特征向量&lt;/p&gt;
+&lt;h3 id=&#34;to-k-dimensions&#34;&gt;to k dimensions
+&lt;/h3&gt;&lt;p&gt;把PCA推广到k维，则&lt;code&gt;W&lt;/code&gt;是&lt;code&gt;Cov(X)&lt;/code&gt;的最大的k个特征值所对应的特征向量的行矩阵。&lt;/p&gt;
+&lt;h2 id=&#34;decorelation&#34;&gt;Decorelation
+&lt;/h2&gt;&lt;p&gt;PCA处理后的z矩阵的各个维度之间是没有相互关系的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/decorelation.png&#34;
+	width=&#34;1303&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;decorelation&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+$$
+Cov(z)=\sum(z-\bar{z})(z-\bar{z})^\top
+=\sum_xW(x- \bar x)(x- \bar x)^\top W^\top
+=WCov(x)W^\top
+$$&lt;p&gt;
+将W展开，
+&lt;/p&gt;
+$$
+Cov(z)=WS\left[w^1,w^2...w^k\right] 
+$$&lt;p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;=W\left[Sw^1,Sw^2&amp;hellip;Sw^k\right]
+&lt;/p&gt;
+$$
+$$&lt;p&gt;=W\left[\lambda_1w^1,\lambda_2w^2&amp;hellip;
+\lambda_kw^k\right]&lt;br&gt;
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+=\left[w^1,w^2&amp;hellip;w^k\right]^\top
+\left[\lambda_1w^1,\lambda_2w^2&amp;hellip;\lambda_kw^k\right]
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+\forall i, (w^i)^\top w^i = 1
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+\forall i\not ={j}, (w^i)^\top w^j = 0
+&lt;/p&gt;
+$$
+因此
+$$&lt;p&gt;
+Cov(z)=diag(\lambda_1,\lambda_2,&amp;hellip;,\lambda_k)
+$$
+协方差矩阵为对角阵，所以不同分量之间没有线性的相关性。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

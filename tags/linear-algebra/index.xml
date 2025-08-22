@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Linear Algebra on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/linear-algebra/</link>
+        <description>Recent content in Linear Algebra on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Wed, 24 Jun 2020 09:38:56 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/linear-algebra/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>机器学习基础——线性代数</title>
+        <link>https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/</link>
+        <pubDate>Wed, 24 Jun 2020 09:38:56 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的线性代数知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;concepts&#34;&gt;Concepts
+&lt;/h2&gt;&lt;h3 id=&#34;tensor&#34;&gt;Tensor
+&lt;/h3&gt;&lt;p&gt;矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。
+向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。
+表示张量A的一个分量&lt;/p&gt;
+$$A_{i,j,k}$$&lt;h3 id=&#34;identify-matrix&#34;&gt;Identify matrix
+&lt;/h3&gt;&lt;p&gt;Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。&lt;/p&gt;
+&lt;h3 id=&#34;matrix-inversion&#34;&gt;matrix inversion
+&lt;/h3&gt;&lt;p&gt;花书定义：
+&lt;/p&gt;
+$$A^{-1}A=I$$&lt;p&gt;并&lt;strong&gt;未限定&lt;/strong&gt;A为方阵，并且是左逆&lt;/p&gt;
+&lt;p&gt;花书也定义了右逆
+&lt;/p&gt;
+$$AA^{-1}=I$$&lt;p&gt;同样&lt;strong&gt;未限定&lt;/strong&gt;A为方阵&lt;/p&gt;
+&lt;p&gt;而后说明，&lt;strong&gt;方阵&lt;/strong&gt;的左逆和右逆是相同的&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For square matrices, the left inverse and right inverse are equal&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;而课本认为&lt;strong&gt;非方阵&lt;/strong&gt;没有逆矩阵。对左逆和右逆也不做显式区分。&lt;/p&gt;
+&lt;p&gt;在花书接下来提到逆矩阵时，这可能是一个坑点&lt;/p&gt;
+&lt;h3 id=&#34;singular-matrix&#34;&gt;Singular matrix
+&lt;/h3&gt;&lt;p&gt;非&lt;strong&gt;满秩&lt;/strong&gt;的&lt;strong&gt;方阵&lt;/strong&gt;称为奇异矩阵。&lt;/p&gt;
+&lt;h3 id=&#34;norms&#34;&gt;Norms
+&lt;/h3&gt;&lt;p&gt;又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。&lt;/p&gt;
+&lt;p&gt;正式定义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;f(x) = 0 ⇒ x = 0&lt;/li&gt;
+&lt;li&gt;f(x+y) ≤ f(x) + f(y)(三角不等式)&lt;/li&gt;
+&lt;li&gt;∀α∈R,f(αx) = |α|f(x)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;常用的范式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;L2 norm
+向量与原点的距离&lt;/li&gt;
+&lt;/ul&gt;
+$$||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}$$&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Squared L2 norm
+L2 norm的平方形式，某些情况下易于分析和计算&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;L1 norm
+&lt;/p&gt;
+$$||x||_1=\sum_{i} |x_i|$$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;max norm
+&lt;/p&gt;
+$$||x||_{\infty }={\max} |x_i|$$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Frobenius norm
+计算矩阵的“大小”&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+$$||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}$$&lt;h2 id=&#34;operations&#34;&gt;Operations
+&lt;/h2&gt;&lt;h3 id=&#34;decomposition&#34;&gt;Decomposition
+&lt;/h3&gt;&lt;p&gt;将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。&lt;/p&gt;
+&lt;h4 id=&#34;eigendecomposition&#34;&gt;Eigendecomposition
+&lt;/h4&gt;&lt;p&gt;基于特征值和特征向量分解。与课本相同，不再赘述。&lt;/p&gt;
+&lt;h4 id=&#34;singular-value-decompositionsvd&#34;&gt;Singular value decomposition(SVD)
+&lt;/h4&gt;&lt;p&gt;又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。&lt;/p&gt;
+&lt;p&gt;对于一个&lt;code&gt;m*n&lt;/code&gt;的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：
+&lt;/p&gt;
+$$A=UDV^T$$&lt;ul&gt;
+&lt;li&gt;U是大小&lt;code&gt;m*m&lt;/code&gt;的正交矩阵&lt;/li&gt;
+&lt;li&gt;D是大小&lt;code&gt;m*n&lt;/code&gt;的对角矩阵&lt;/li&gt;
+&lt;li&gt;V是大小&lt;code&gt;n*n&lt;/code&gt;的正交矩阵&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;D中对角线的元素称为A的奇异值。U的列向量称为A的&lt;strong&gt;左&lt;/strong&gt;奇异向量，V的列向量称为A的&lt;strong&gt;右&lt;/strong&gt;奇异向量&lt;/p&gt;
+&lt;p&gt;A的奇异值分解可以理解为「A的函数」的特征值分解：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A的左奇异值向量是AA^T的特征向量。&lt;/li&gt;
+&lt;li&gt;A的右奇异值向量是A^TA的特征向量&lt;/li&gt;
+&lt;li&gt;A的非零奇异值是A^TA的特征值，也是AA^T的特征值&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下&lt;/p&gt;
+&lt;h3 id=&#34;the-moore-penrose-pseudoinverse&#34;&gt;The Moore-Penrose Pseudoinverse
+&lt;/h3&gt;&lt;p&gt;又称摩尔－彭若斯广义逆（好长的名字&amp;hellip;）&lt;/p&gt;
+$$A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}$$&lt;p&gt;实际上，一般用
+&lt;/p&gt;
+$$A^+=VD^+U^T$$&lt;p&gt;
+来计算广义逆&lt;/p&gt;
+&lt;p&gt;U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。&lt;/p&gt;
+&lt;p&gt;当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。&lt;/p&gt;
+&lt;p&gt;若x无解，Ax给出了L2范式中y-Ax的最小值&lt;/p&gt;
+&lt;h3 id=&#34;trace&#34;&gt;Trace
+&lt;/h3&gt;&lt;p&gt;又称迹，是矩阵主对角线元素的和。&lt;/p&gt;
+$$\mathrm{Tr}(A)=\sum_i{A_{i,i}}$$&lt;p&gt;迹和矩阵乘法可以代替一些需要求和符号的操作：
+&lt;/p&gt;
+$$||A||_F=\sqrt{\mathrm{Tr(AA^T)}}$$&lt;p&gt;矩阵的迹具有循环不变性：&lt;/p&gt;
+$$\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}$$&lt;p&gt;更通用来说，
+&lt;/p&gt;
+$$\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})$$</description>
+        </item>
+        
+    </channel>
+</rss>

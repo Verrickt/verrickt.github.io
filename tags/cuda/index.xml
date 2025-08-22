@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>CUDA on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/cuda/</link>
+        <description>Recent content in CUDA on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Tue, 28 Jul 2020 21:39:05 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/cuda/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>使用CUDA为Tensorflow加速</title>
+        <link>https://verrickt.github.io/2020/07/28/gpu-accelerated-tranining-with-cuda/</link>
+        <pubDate>Tue, 28 Jul 2020 21:39:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/28/gpu-accelerated-tranining-with-cuda/</guid>
+        <description>&lt;p&gt;梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;根据&lt;a class=&#34;link&#34; href=&#34;https://www.tensorflow.org/install/gpu#windows_setup&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;官方页面&lt;/a&gt;，对软硬件有如下要求:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The following GPU-enabled devices are supported:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NVIDIA® GPU card with CUDA® architectures 3.5 or higher. See the list of CUDA®-enabled GPU cards.&lt;/li&gt;
+&lt;li&gt;For GPUs with unsupported CUDA® architectures, or to avoid JIT compilation from PTX, or to use different versions of the NVIDIA® libraries, see the Linux build from source guide.
+-On systems with NVIDIA® Ampere GPUs (CUDA architecture 8.0) or newer, kernels are JIT-compiled from PTX and TensorFlow can take over 30 minutes to start up. This overhead can be limited to the first start up by increasing the default JIT cache size with: &amp;rsquo;export CUDA_CACHE_MAXSIZE=2147483648&amp;rsquo; (see JIT Caching for details).
+-Packages do not contain PTX code except for the latest supported CUDA® architecture; therefore, TensorFlow fails to load on older GPUs when CUDA_FORCE_PTX_JIT=1 is set. (See Application Compatibility for details.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The following NVIDIA® software must be installed on your system:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NVIDIA® GPU drivers —CUDA® 10.1 requires 418.x or higher.&lt;/li&gt;
+&lt;li&gt;CUDA® Toolkit —TensorFlow supports CUDA® 10.1 (TensorFlow &amp;gt;= 2.1.0)&lt;/li&gt;
+&lt;li&gt;CUPTI ships with the CUDA® Toolkit.&lt;/li&gt;
+&lt;li&gt;cuDNN SDK 7.6&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;换句话说，只要不是上古时代的NVIDIA GPU，都可以进行运算。&lt;/p&gt;
+&lt;h2 id=&#34;踩坑&#34;&gt;踩坑
+&lt;/h2&gt;&lt;h3 id=&#34;tensorflow&#34;&gt;Tensorflow
+&lt;/h3&gt;&lt;p&gt;安装tensorflow后要还要安装tensorflow-gpu。tensorflow-gpu&lt;strong&gt;不&lt;/strong&gt;是tensorflow的替代者，而是支持运算GPU的模块。不要被网上的信息误导，两者都需要安装&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pip install tensorflow
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pip install tensorflow-gpu
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;cuda&#34;&gt;CUDA
+&lt;/h3&gt;&lt;p&gt;CUDA请一定安装10.1版本，更新的和更旧的版本都不支持。要去Archive里找。&lt;/p&gt;
+&lt;h3 id=&#34;cudnn&#34;&gt;cuDNN
+&lt;/h3&gt;&lt;p&gt;cuDNN请一定安装7.6版本，更新的和更旧的版本都不支持。
+cuDNN要先去注册NVIDIA developer再去Archive里找7.6的&lt;/p&gt;
+&lt;h3 id=&#34;coding&#34;&gt;Coding
+&lt;/h3&gt;&lt;p&gt;全部安装好后去跑hello world。tensorflow可能会卡在&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;现在去泡杯咖啡，坐和放宽，大概过几个小时就好了。这么大的延迟只会第一次出现。原因似乎是因为GPU那边在做JIT🙃&lt;/p&gt;
+&lt;p&gt;等出现这一行&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;I tensorflow/core/common_runtime/gpu/gpu_device.cc:1247] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 1376 MB memory) -&amp;gt; physical GPU (device: 0, name: GeForce 840M, pci bus id: 0000:01:00.0, compute capability: 5.0)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;就说明成功了。&lt;/p&gt;
+&lt;p&gt;我的渣渣840M跑训练比CPU快了一个数量级;-)&lt;/p&gt;
+&lt;h2 id=&#34;吐槽&#34;&gt;吐槽
+&lt;/h2&gt;&lt;p&gt;已经2020年了，CUDA已经出到&lt;code&gt;11.0&lt;/code&gt;了的RC了，tensorflow居然还只支持2019年2月发布的&lt;code&gt;10.1&lt;/code&gt;。
+cuDNN同理，也用的是很老的版本。&lt;/p&gt;
+&lt;p&gt;CUDA作为NVIDIA家私有的一套API，形成了事实标准，这很不好。而AMD家的搞得叫做&lt;code&gt;ROCm&lt;/code&gt;的一套东西，很遗憾的还没成什么气候。&lt;code&gt;ROCm&lt;/code&gt;的tensorflow是官方版的一份&lt;a class=&#34;link&#34; href=&#34;https://github.com/ROCmSoftwarePlatform/tensorflow-upstream&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;fork&lt;/a&gt;，binary还是社区自己编译的，可以想象坑是无比的多。&lt;/p&gt;
+&lt;p&gt;希望开源的标准尽快取代掉私有的CUDA，让A家的GPU也能无痛的跑科学计算。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

@@ -1,0 +1,2632 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Machine Learning on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/machine-learning/</link>
+        <description>Recent content in Machine Learning on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Tue, 04 Aug 2020 15:27:52 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>半监督学习</title>
+        <link>https://verrickt.github.io/2020/08/04/semi-supervised-learning/</link>
+        <pubDate>Tue, 04 Aug 2020 15:27:52 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/08/04/semi-supervised-learning/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的是台湾大学2020机器学习&lt;a class=&#34;link&#34; href=&#34;https://youtu.be/fX_guE7JNnY&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Semi-supervised leraning&lt;/a&gt;的笔记。奉行&lt;a class=&#34;link&#34; href=&#34;why-semi-supervised.png&#34; &gt;Lazy evaluation&lt;/a&gt;策略，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;现在是所谓的大数据时代，每人每天产生的数据成千上万。对商业公司来说，数据的收集已经不是问题，但给数据添加标记的工作因为其所需要消耗的人力物力成为老大难问题；而在机器学习中，带标记数据的不足会给模型引入bias。一个很自然的想法是，能不能用这些不带标记的数据来提高模型的泛化性能呢？答案是肯定的。这就是半监督学习。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/introduction.png&#34;
+	width=&#34;1320&#34;
+	height=&#34;985&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;1&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;
+在半监督学习中，数据分为两块。
+&lt;/p&gt;
+$$
+{(x^r,\hat y^r)}_{r=1}^R,{x^u}_{u=R}^{R+U}
+$$&lt;p&gt;
+其中R是带标记数据(labeled data)的数量，U是不带标记数据(unlabelled data)的数量。U通常远远大于U；
+根据testing data是否包括unlabelled data，可将半监督学习分为两类。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/why-semi-supervised.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;987&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;2&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+半监督学习为什么有效，一个比较令人接受的说法是，无标签数据的分布对问题有些启发。
+而半自动学习有没有用，有多大用，取决于假设做的好不好；&lt;/p&gt;
+&lt;h2 id=&#34;semi-supervised-learning-for-generative-model&#34;&gt;Semi-supervised Learning for Generative Model
+&lt;/h2&gt;&lt;p&gt;在&lt;a class=&#34;link&#34; href=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/&#34; &gt;二元分类&lt;/a&gt;时，曾经用过生成模型解决这个问题。
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/recall.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;991&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;4&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;
+在半监督学习中，分类依旧可以用生成模型来解决。
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/semi-supervised-generative.png&#34;
+	width=&#34;1322&#34;
+	height=&#34;986&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;5&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;大体的的思路是，使用unlabelled data来修正对prior的估计，以期更小的泛化错误&lt;/p&gt;
+&lt;p&gt;具体算法如下:
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/how-to-train-a-semi-supervised-generative-model.png&#34;
+	width=&#34;1311&#34;
+	height=&#34;990&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;6&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;317px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;初始化参数θ&lt;/li&gt;
+&lt;li&gt;对unlabelled data计算其属于某一个类别的后验概率&lt;/li&gt;
+&lt;li&gt;更新参数θ:
+$$
+P(C_1)=\frac{N_1+\sum_{x^u} P(C_1|x_u)}{N} \\
+\mu^1=\frac{1}{N_1}\sum_{x^r \in C_1}x^r+\frac{1}{\sum_{x^u}P(C_1|x^u)}\sum P(C_1|x^u)x^u
+$$
+算法最终会收敛，但初始化的参数值θ会影响结果。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/why-does-it-converge.png&#34;
+	width=&#34;1318&#34;
+	height=&#34;987&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;7&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;在监督学习的时候，最大似然函数的结果是有闭式解的；
+而在半监督学习时，unlabelled data对应的似然函数依赖于当前参数θ，所以只能迭代的来求解。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;半监督学习通常基于两个假设&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Low-density Separation Assumption&lt;/li&gt;
+&lt;li&gt;Smoothness Assumption&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这两个假设成立不成立，对半监督学习的效果息息相关。&lt;/p&gt;
+&lt;h2 id=&#34;low-density-separation-assumption&#34;&gt;Low-density Separation Assumption
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/what-is-low-density.png&#34;
+	width=&#34;1312&#34;
+	height=&#34;987&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;8&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Low-density Separation Assumption认为，在分界线上，数据的密度是低的。换言之，这个世界是非黑即白的。&lt;/p&gt;
+&lt;p&gt;在投影中，左边分界线位置的密度比右边分界线上的密度更低，因此认为左侧分界线更好。&lt;/p&gt;
+&lt;p&gt;基于这个想法，我们可以提出Self training算法：
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/self-training.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;987&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;9&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;根据labelled data训练一个model&lt;/li&gt;
+&lt;li&gt;用1中得到的model给一部分的unlabelled data打上标记,作为labelled data。这个标记叫做pseudo label(伪标记)&lt;/li&gt;
+&lt;li&gt;回到1&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;需要注意的是伪标记是否对新训练的model有用。&lt;/p&gt;
+&lt;p&gt;如果做regression，pseudo label并不能让model学到新东西，所以就完全没有用处。&lt;/p&gt;
+&lt;p&gt;如果用神经网络做分类，用soft label也没有用处
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/self-training-pitfall-2.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;992&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;10&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;换一种思路，我们也可以把Low-density Separation Assumption当作一个regularization term:
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/entropy-regularizer.png&#34;
+	width=&#34;1322&#34;
+	height=&#34;983&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;13&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;对于一个概率分布，我们希望密度越集中越好。概率分布的集中程度可以用香农熵来衡量。这样把香农熵当作regularization的一个term，就能鼓励网络找到我们所期待的密度分布。&lt;/p&gt;
+&lt;h2 id=&#34;smoothness-assumption&#34;&gt;Smoothness Assumption
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/smothness.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;992&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;11&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Smoothness Assumption认为对于接近的x，他们的标记y应该是相近的。换言之，近朱者赤近墨者黑；&lt;/p&gt;
+&lt;p&gt;下面是Smoothness Assumption的一个例子
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/entropy-regularizer.png&#34;
+	width=&#34;1322&#34;
+	height=&#34;983&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;13&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;通过“相似”的传递性，model可以给很多数据打上正确的标签。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/what-is-smoothness.png&#34;
+	width=&#34;1323&#34;
+	height=&#34;982&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;12&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+比较正式的说法是，若x1和x2在一个高密度区域之内非常接近，那么y1和y2就是接近的；&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/clustering.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;987&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;17&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这和clustering比较类似。但clustering的数目并不好确定。因此引入了基于图的方法。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/graph-distance.png&#34;
+	width=&#34;1313&#34;
+	height=&#34;988&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;18&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;
+将数据看作高维空间中的图，只需把图建立起来即可。&lt;/p&gt;
+&lt;p&gt;关于图的构建方法，有如下几种
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/how-to-construct-a-graph.png&#34;
+	width=&#34;1321&#34;
+	height=&#34;990&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;19&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;可以看到，通过构建图，一个点的影响可以扩散的很大一片区域：
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/graph-advantage.png&#34;
+	width=&#34;1317&#34;
+	height=&#34;983&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;20&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;但图也有劣势。如果不能给每一个连通分量收集到一个数据点，这些unlabelled data就无法被计算相似度。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/graph-disadvantage.png&#34;
+	width=&#34;1321&#34;
+	height=&#34;988&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;21&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+有了图之后就可以计算图的smoothness了。这时可以把smoothness当作网络的一个regularizer
+&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/graph-smoothness.png&#34;
+	width=&#34;1316&#34;
+	height=&#34;985&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;22&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;better-represerentation&#34;&gt;Better Represerentation
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/better-represerentation.png&#34;
+	width=&#34;1315&#34;
+	height=&#34;987&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;15&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;对使用者来说，数据的呈现方式对使用的便利程度影响很大。例如罗马数字的除法就比阿拉伯数字的除法困难很多。&lt;/p&gt;
+&lt;p&gt;在机器学习中也是如此。使用更好的呈现方式会让学习事半功倍。关于如何找到更好的呈现方式，可以参考Autoencoders。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/08/04/semi-supervised-learning/why-better-represerentation.png&#34;
+	width=&#34;1320&#34;
+	height=&#34;988&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;23&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>支持向量机</title>
+        <link>https://verrickt.github.io/2020/07/31/support-vector-machine/</link>
+        <pubDate>Fri, 31 Jul 2020 19:49:52 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/31/support-vector-machine/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;支持向量机(Support Vector Machine,SVM)是一个能求解通用二元分类问题的模型。SVM使用Kernel trick，使得自己在能够表示非线性函数的同时Loss是有闭式解的Convex function。也有人把SVM当作线性模型向神经网络过渡的中间阶段。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;svm&#34;&gt;SVM
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/What-is-SVM.png&#34;
+	width=&#34;509&#34;
+	height=&#34;329&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;What is SVM&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;154&#34;
+		data-flex-basis=&#34;371px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;对于
+$$
+D = {(x_1,y_1),(x_2,y_2)&amp;hellip;(x_n,y_n)} , y_i \in {-1,+1}&lt;/p&gt;
+&lt;p&gt;$$
+的分类问题，SVM试图在n维空间上找一个超平面，&lt;code&gt;wx+b&lt;/code&gt;，使得&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当wx_i+b≥1时，yi=+1&lt;/li&gt;
+&lt;li&gt;当wx_i+b≤1时，yi=-1&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;并且超平面应该离两侧最近的点都尽可能远。解出这一组w和b就解出了SVM。&lt;/p&gt;
+&lt;p&gt;其实如果在将w和b并在一起作为新的w,将x后接1,则SVM可以进一步简化为&lt;code&gt;wx&lt;/code&gt;:&lt;/p&gt;
+$$
+f(x)= \sum_i w_ix_i+b = \left[ \begin{array}{c} w \\ b
+\end{array} \right] \cdot
+\left[ \begin{array}{c} x \\ 1
+\end{array} \right]
+$$&lt;h3 id=&#34;hinge-loss&#34;&gt;Hinge loss
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/delta-loss.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;delta-loss&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;回到分类问题本身，通常Loss会选择在整个训练集上分类错误的次数：
+&lt;/p&gt;
+$$
+L(f)=\sum_i \delta(g(x^n) \not ={\hat{y}^n}) 
+$$&lt;p&gt;
+其中&lt;code&gt;δ&lt;/code&gt;函数的为真时值为1，反之值为0。
+正如&lt;a class=&#34;link&#34; href=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/&#34; &gt;对率回归&lt;/a&gt;中所说，
+在分类问题上使用这类函数是不利于训练的，因此希望找到一个函数
+&lt;/p&gt;
+$$
+l(f(x^n),\hat y^n)
+$$&lt;p&gt;
+来近似代替&lt;code&gt;δ&lt;/code&gt;函数。&lt;/p&gt;
+&lt;p&gt;hinge loss就是这样的一个函数。他是这么定义的：
+&lt;/p&gt;
+$$
+l(f(x^n),\hat y^n)=\max(0,1-\hat y^nf(x))
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/comparsion-of-loss.png&#34;
+	width=&#34;930&#34;
+	height=&#34;692&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;comparsion of loss&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;图中紫色的线就是hinge loss。横坐标1处，hinge loss把两条直线连接起来，就像是连接骨头的关节(hinge)，因此得名。&lt;/p&gt;
+&lt;p&gt;从图上可以看出&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MSE随着横坐标的增加loss反而增加，根本不适用&lt;/li&gt;
+&lt;li&gt;sigmoid+square loss对横坐标的变化不敏感(saturate)，训练起来也不好做&lt;/li&gt;
+&lt;li&gt;sigmoid+cross entropy会积极的将坐标点往右推，但其实只要横坐标超过了1就已经足够了&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/entropy-vs-hinge.png&#34;
+	width=&#34;927&#34;
+	height=&#34;691&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;entropy-vs-hinge&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;cross entropy好像完美主义者，而hinge loss会想着及格就好。既然在现实世界里两者的性能是一致的，我们也就乐得省下这些无畏的开销。&lt;/p&gt;
+&lt;h3 id=&#34;gradient-descent&#34;&gt;Gradient descent
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/gradient-descent.png&#34;
+	width=&#34;928&#34;
+	height=&#34;693&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;gradient-descent&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;hinge loss对w的偏微分后，得到梯度下降的公式
+&lt;/p&gt;
+$$
+w_{i+1}=w_i-\eta\sum_n c^n(w)x_i^n
+$$&lt;p&gt;
+其中
+&lt;/p&gt;
+$$
+c^n(w) = -\delta(\hat y^nf(x^n)&lt;1)\hat y^nx_i
+$$&lt;h3 id=&#34;soft-margin&#34;&gt;soft margin
+&lt;/h3&gt;&lt;p&gt;将整体的损失函数L
+&lt;/p&gt;
+$$
+L(f)=l(0,1-\hat y^nf(x)) + \lambda|w|_2=\sum_n \max(0,1-\hat y^nf(x)) + \lambda|w|_2
+$$&lt;p&gt;
+中的l用ε代替，得到下列形式
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/slack-variable.png&#34;
+	width=&#34;933&#34;
+	height=&#34;693&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;slack-variable&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+&lt;/p&gt;
+$$
+L = \sum_n\epsilon^n+\lambda|w|_2
+$$$$
+\hat y^nf(x) \ge1-\epsilon^n 
+$$&lt;p&gt;
+而不是硬性规定
+&lt;/p&gt;
+$$
+\hat y^nf(x) \ge1 
+$$&lt;p&gt;
+&lt;code&gt;ε&lt;/code&gt;作为边界条件的放松，被称作松弛变量(slack variable)&lt;/p&gt;
+&lt;h3 id=&#34;support-vector&#34;&gt;Support vector
+&lt;/h3&gt;&lt;p&gt;SVM的w是所有训练样本点的线性组合，并且多数点的系数都是0(sparsity)。&lt;/p&gt;
+&lt;p&gt;这个性质可以从KKT系数反映出来
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/traditonal-support-vector.png&#34;
+	width=&#34;751&#34;
+	height=&#34;533&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;traditonal-support-vector&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;140&#34;
+		data-flex-basis=&#34;338px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;当然，它也可以从另一个角度说明。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/support-vector.png&#34;
+	width=&#34;928&#34;
+	height=&#34;692&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;support-vector&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;
+考虑梯度下降的式子
+&lt;/p&gt;
+$$
+w_{i+1}=w_i-\eta\sum_n c^n(w)x_i^n
+$$&lt;p&gt;
+其中
+&lt;/p&gt;
+$$
+c^n(w)  =\frac{\partial l(f(x^n),\hat y^n)}{\partial f(x^n)}=-\delta(\hat y^nf(x^n)&lt;1)\hat y^nx_i
+$$&lt;p&gt;当w被初始化为0向量时，每一次参数更新加上了一个样本点的线性组合；而hinge loss有大约一半的定义域里微分是0，因此大部分系数会为0&lt;/p&gt;
+&lt;h2 id=&#34;kernel-method&#34;&gt;Kernel method
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/kernel-function.png&#34;
+	width=&#34;927&#34;
+	height=&#34;693&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;kernel function&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;既然w是X的一个线性组合，将其写作&lt;code&gt;w=Xα&lt;/code&gt;。
+带入f(x)
+&lt;/p&gt;
+$$
+f(x)=w^\top x = \sum_n \alpha_n(x^n \cdot x)
+$$&lt;p&gt;将x^n与x的内积用函数K(kernel function)表示，则
+&lt;/p&gt;
+$$
+f(x)=\sum_n \alpha_nK(x^n,x)
+$$&lt;p&gt;
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/kernel-trick.png&#34;
+	width=&#34;933&#34;
+	height=&#34;691&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;kernel trick&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;135&#34;
+		data-flex-basis=&#34;324px&#34;
+	
+&gt;
+将得到的f(x)带入loss，发现L(f)与x已经无关了，可以直接进行梯度下降。这就是Kernel trick
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/useful-kernel-trick.png&#34;
+	width=&#34;926&#34;
+	height=&#34;694&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;useful kenel trick&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;若我们先对x做feature transform &lt;code&gt;φ(x)&lt;/code&gt;，&lt;code&gt;φ(x)·φ(z)&lt;/code&gt;有时可以表示为K(x,z)。这即扩展了SVM的表述能力，也提高了效率。&lt;/p&gt;
+&lt;p&gt;在使用RBF Kernel时，可以在无穷维空间做内积&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/RBF-Kernel.png&#34;
+	width=&#34;933&#34;
+	height=&#34;696&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;RBF-Kernel&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;svm-and-neural-network&#34;&gt;SVM and Neural network
+&lt;/h2&gt;&lt;p&gt;SVM也可以被看作是有一层hidden unit的神经网络:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/SVM-as-NN.png&#34;
+	width=&#34;925&#34;
+	height=&#34;692&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;SVM-as-NN&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;每一个neural的weight是x^n与x的内积，所有neural的输出经过tanh后再以α为权值求和就得到输出了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/SVM-and-NN.png&#34;
+	width=&#34;928&#34;
+	height=&#34;689&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;SVM-and-NN&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+实际上，SVM也可以看作是一个神经网络。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Kernel function相当于是神经网络中做feature transform的hidden layer&lt;/li&gt;
+&lt;li&gt;SVM学到的分类器与神经网络的输出层学到的分类器是一致的。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
+        <title>主成分分析</title>
+        <link>https://verrickt.github.io/2020/07/31/principal-component-analysis/</link>
+        <pubDate>Fri, 31 Jul 2020 19:49:41 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/31/principal-component-analysis/</guid>
+        <description>&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;pca&#34;&gt;PCA
+&lt;/h2&gt;&lt;p&gt;PCA的想法很朴素。它试图找到一个线性变化W，使得经过变化后的向量&lt;code&gt;z=Wx&lt;/code&gt;在各个维度&lt;code&gt;z_i&lt;/code&gt;上都拥有最大的方差。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/maximum-variance.png&#34;
+	width=&#34;960&#34;
+	height=&#34;720&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;maximum variance&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;constraints&#34;&gt;Constraints
+&lt;/h2&gt;&lt;p&gt;仅仅要求方差最大而不做任何限制是不行的。我们总是可以让&lt;code&gt;w_i&lt;/code&gt;含有无穷从而使方差变为无穷大，但这没有意义。&lt;/p&gt;
+&lt;p&gt;因此限制&lt;code&gt;w_i&lt;/code&gt;的模是1。
+同样的，当找出使得第i维的方差最大的参数&lt;code&gt;w_i&lt;/code&gt;后，机器可以把这组参数&lt;code&gt;w_i&lt;/code&gt;用在第j维上来“偷懒”，因此限制任意的参数是垂直的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/constraint.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;constraint&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;dimension-reduction&#34;&gt;Dimension reduction
+&lt;/h2&gt;&lt;h3 id=&#34;to-1-dimension&#34;&gt;to 1 dimension
+&lt;/h3&gt;&lt;p&gt;先考虑一维的情况。
+&lt;/p&gt;
+$$
+z_1=w_1&#39;x,其中 (w_1&#39;)^\top w_1&#39;=1
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/z1-var.png&#34;
+	width=&#34;1296&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;z1_var&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;
+&lt;/p&gt;
+$$
+\mathrm{Var}(z_1)=\sum_{z_{i}}(z_1-\bar z)^2
+=\sum_x(w_1&#39;x-w_1&#39;\bar x)^2=\sum_x(w_1&#39;(x- \bar x))^2 \\
+=\sum_x(w_1&#39;)^\top(x- \bar x)(x- \bar x)^\top w_1&#39; \\
+=(w_1&#39;)^\top\left(\sum_x(x-\bar x)(x-\bar x)^\top\right)w_1&#39; \\
+=(w_1&#39;)^\top\mathrm{Cov}(x)w_1&#39;
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/w1-eigenvector.png&#34;
+	width=&#34;1305&#34;
+	height=&#34;969&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;w1-eigenvector&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;构造拉格朗日函数，其中S=Cov(x),
+&lt;/p&gt;
+$$
+L(w_1&#39;)=(w_1&#39;)^\top S w_1&#39;-\alpha((w_1&#39;)^\top w_1&#39;-1) \\
+\frac{\partial L}{\partial w}=0 \rArr Sw_1&#39;-\alpha w_1&#39;
+\rArr Sw_1&#39; = \alpha w_1&#39;
+\rArr \alpha是S的特征值,w&#39;是对应的特征向量
+$$&lt;p&gt;带回到上式
+&lt;/p&gt;
+$$
+(w_1&#39;)^\top\mathrm{Cov}(x)w_1&#39;
+= (w_1&#39;)^\top Sw_1&#39; = (w_1&#39;)^\top \alpha w_1&#39;
+= \alpha (w_1&#39;)^\top w_1&#39;=\alpha
+$$&lt;p&gt;
+&lt;code&gt;α&lt;/code&gt;的最大值，即是Cov(x)最大的特征值。此时的&lt;code&gt;w1&#39;&lt;/code&gt;为&lt;code&gt;α&lt;/code&gt;对应的特征向量&lt;/p&gt;
+&lt;p&gt;对于二元的情况也类似&lt;/p&gt;
+&lt;h3 id=&#34;to-2-dimensions&#34;&gt;to 2 dimensions
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/z2_lagrange_operator.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;980&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;z2_lagrange_operator&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;拉格朗日函数
+&lt;/p&gt;
+$$
+g(w_2)=(w_2&#39;)^\top S w_2 - \alpha((w_2&#39;)^\top w_2&#39; = 1) - \beta((w_2&#39;)^\top w_1&#39;)
+$$&lt;p&gt;
+而
+&lt;/p&gt;
+$$
+(w_2&#39;)^\top w_2&#39; = 1 \\
+(w_1&#39;)^\top w_2&#39; = 0 \\
+(w_1&#39;)^\top Sw_2&#39;=((w_1&#39;)^\top Sw_2&#39;)^\top
+=(w_2&#39;)^\top S^\top w_1  \\
+=(w_2&#39;)^\top S w_1 = (w_2&#39;)^\top \alpha w_1 \\
+=\alpha  (w_2&#39;)^\top w_1 = 0
+$$&lt;p&gt;
+所以系数拉格朗日函数的只剩下&lt;code&gt;β&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/z2_simplified.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;z2_simplified&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;β&lt;/code&gt;的最大值，即是Cov(x)第二大的特征值。此时的&lt;code&gt;w2&#39;&lt;/code&gt;为&lt;code&gt;β&lt;/code&gt;对应的特征向量&lt;/p&gt;
+&lt;h3 id=&#34;to-k-dimensions&#34;&gt;to k dimensions
+&lt;/h3&gt;&lt;p&gt;把PCA推广到k维，则&lt;code&gt;W&lt;/code&gt;是&lt;code&gt;Cov(X)&lt;/code&gt;的最大的k个特征值所对应的特征向量的行矩阵。&lt;/p&gt;
+&lt;h2 id=&#34;decorelation&#34;&gt;Decorelation
+&lt;/h2&gt;&lt;p&gt;PCA处理后的z矩阵的各个维度之间是没有相互关系的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/principal-component-analysis/decorelation.png&#34;
+	width=&#34;1303&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;decorelation&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+$$
+Cov(z)=\sum(z-\bar{z})(z-\bar{z})^\top
+=\sum_xW(x- \bar x)(x- \bar x)^\top W^\top
+=WCov(x)W^\top
+$$&lt;p&gt;
+将W展开，
+&lt;/p&gt;
+$$
+Cov(z)=WS\left[w^1,w^2...w^k\right] 
+$$&lt;p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;=W\left[Sw^1,Sw^2&amp;hellip;Sw^k\right]
+&lt;/p&gt;
+$$
+$$&lt;p&gt;=W\left[\lambda_1w^1,\lambda_2w^2&amp;hellip;
+\lambda_kw^k\right]&lt;br&gt;
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+=\left[w^1,w^2&amp;hellip;w^k\right]^\top
+\left[\lambda_1w^1,\lambda_2w^2&amp;hellip;\lambda_kw^k\right]
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+\forall i, (w^i)^\top w^i = 1
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+\forall i\not ={j}, (w^i)^\top w^j = 0
+&lt;/p&gt;
+$$
+因此
+$$&lt;p&gt;
+Cov(z)=diag(\lambda_1,\lambda_2,&amp;hellip;,\lambda_k)
+$$
+协方差矩阵为对角阵，所以不同分量之间没有线性的相关性。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>使用CUDA为Tensorflow加速</title>
+        <link>https://verrickt.github.io/2020/07/28/gpu-accelerated-tranining-with-cuda/</link>
+        <pubDate>Tue, 28 Jul 2020 21:39:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/28/gpu-accelerated-tranining-with-cuda/</guid>
+        <description>&lt;p&gt;梯度下降法大部分时间都在进行向量和矩阵运算。这些运算是天然可以并行化的。因此使用GPU进行运算会比CPU运算快得多。而常用的框架Tensorflow就通过CUDA提供了GPU运算的支持。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;根据&lt;a class=&#34;link&#34; href=&#34;https://www.tensorflow.org/install/gpu#windows_setup&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;官方页面&lt;/a&gt;，对软硬件有如下要求:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The following GPU-enabled devices are supported:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NVIDIA® GPU card with CUDA® architectures 3.5 or higher. See the list of CUDA®-enabled GPU cards.&lt;/li&gt;
+&lt;li&gt;For GPUs with unsupported CUDA® architectures, or to avoid JIT compilation from PTX, or to use different versions of the NVIDIA® libraries, see the Linux build from source guide.
+-On systems with NVIDIA® Ampere GPUs (CUDA architecture 8.0) or newer, kernels are JIT-compiled from PTX and TensorFlow can take over 30 minutes to start up. This overhead can be limited to the first start up by increasing the default JIT cache size with: &amp;rsquo;export CUDA_CACHE_MAXSIZE=2147483648&amp;rsquo; (see JIT Caching for details).
+-Packages do not contain PTX code except for the latest supported CUDA® architecture; therefore, TensorFlow fails to load on older GPUs when CUDA_FORCE_PTX_JIT=1 is set. (See Application Compatibility for details.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The following NVIDIA® software must be installed on your system:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NVIDIA® GPU drivers —CUDA® 10.1 requires 418.x or higher.&lt;/li&gt;
+&lt;li&gt;CUDA® Toolkit —TensorFlow supports CUDA® 10.1 (TensorFlow &amp;gt;= 2.1.0)&lt;/li&gt;
+&lt;li&gt;CUPTI ships with the CUDA® Toolkit.&lt;/li&gt;
+&lt;li&gt;cuDNN SDK 7.6&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;换句话说，只要不是上古时代的NVIDIA GPU，都可以进行运算。&lt;/p&gt;
+&lt;h2 id=&#34;踩坑&#34;&gt;踩坑
+&lt;/h2&gt;&lt;h3 id=&#34;tensorflow&#34;&gt;Tensorflow
+&lt;/h3&gt;&lt;p&gt;安装tensorflow后要还要安装tensorflow-gpu。tensorflow-gpu&lt;strong&gt;不&lt;/strong&gt;是tensorflow的替代者，而是支持运算GPU的模块。不要被网上的信息误导，两者都需要安装&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pip install tensorflow
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pip install tensorflow-gpu
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;cuda&#34;&gt;CUDA
+&lt;/h3&gt;&lt;p&gt;CUDA请一定安装10.1版本，更新的和更旧的版本都不支持。要去Archive里找。&lt;/p&gt;
+&lt;h3 id=&#34;cudnn&#34;&gt;cuDNN
+&lt;/h3&gt;&lt;p&gt;cuDNN请一定安装7.6版本，更新的和更旧的版本都不支持。
+cuDNN要先去注册NVIDIA developer再去Archive里找7.6的&lt;/p&gt;
+&lt;h3 id=&#34;coding&#34;&gt;Coding
+&lt;/h3&gt;&lt;p&gt;全部安装好后去跑hello world。tensorflow可能会卡在&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;I tensorflow/core/common_runtime/gpu/gpu_device.cc:1703] Adding visible gpu devices: 0
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;现在去泡杯咖啡，坐和放宽，大概过几个小时就好了。这么大的延迟只会第一次出现。原因似乎是因为GPU那边在做JIT🙃&lt;/p&gt;
+&lt;p&gt;等出现这一行&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;I tensorflow/core/common_runtime/gpu/gpu_device.cc:1247] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 1376 MB memory) -&amp;gt; physical GPU (device: 0, name: GeForce 840M, pci bus id: 0000:01:00.0, compute capability: 5.0)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;就说明成功了。&lt;/p&gt;
+&lt;p&gt;我的渣渣840M跑训练比CPU快了一个数量级;-)&lt;/p&gt;
+&lt;h2 id=&#34;吐槽&#34;&gt;吐槽
+&lt;/h2&gt;&lt;p&gt;已经2020年了，CUDA已经出到&lt;code&gt;11.0&lt;/code&gt;了的RC了，tensorflow居然还只支持2019年2月发布的&lt;code&gt;10.1&lt;/code&gt;。
+cuDNN同理，也用的是很老的版本。&lt;/p&gt;
+&lt;p&gt;CUDA作为NVIDIA家私有的一套API，形成了事实标准，这很不好。而AMD家的搞得叫做&lt;code&gt;ROCm&lt;/code&gt;的一套东西，很遗憾的还没成什么气候。&lt;code&gt;ROCm&lt;/code&gt;的tensorflow是官方版的一份&lt;a class=&#34;link&#34; href=&#34;https://github.com/ROCmSoftwarePlatform/tensorflow-upstream&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;fork&lt;/a&gt;，binary还是社区自己编译的，可以想象坑是无比的多。&lt;/p&gt;
+&lt;p&gt;希望开源的标准尽快取代掉私有的CUDA，让A家的GPU也能无痛的跑科学计算。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>循环神经网络</title>
+        <link>https://verrickt.github.io/2020/07/23/recurrent-neural-network/</link>
+        <pubDate>Thu, 23 Jul 2020 18:21:45 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/23/recurrent-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;Recurrent Neural network(RNN)是一种专门处理序列的神经网络。正如CNN可以轻易地处理大规模的“网格状”数据，RNN能够处理其他网络架构都无法处理的长的序列。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;why-rnn&#34;&gt;Why RNN
+&lt;/h2&gt;&lt;p&gt;考虑这样的问题：航空公司要从文字中提取顾客的目的地和出发地。&lt;/p&gt;
+&lt;p&gt;对于&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I&amp;rsquo;ll arrive from Shanghai to ShenZhen&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;目的地是ShenZhen，出发地是Shanghai&lt;/p&gt;
+&lt;p&gt;而对于&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I&amp;rsquo;ll arrive to Shanghai from ShenZhen&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;则目的地是Shanghai，出发地是ShenZhen。&lt;/p&gt;
+&lt;p&gt;使用基于地点在句中位置的方法无法解决问题。到底是出发地还是目的地，与前后的词语都有关。这些信息这称为Context(上下文)&lt;/p&gt;
+&lt;p&gt;若使用MLP，则需要在每个位置都重复的学会人类语言的规则，大量重复的参数不但使得计算代价激增，而且也显著增加over-fitting的几率。&lt;/p&gt;
+&lt;p&gt;因此，需要一种专门的结构来处理序列数据。RNN应运而生。&lt;/p&gt;
+&lt;h2 id=&#34;vanilla-rnn&#34;&gt;Vanilla-RNN
+&lt;/h2&gt;&lt;p&gt;RNN企图使用Memory(记忆)来解决问题：
+当前数据处理过程中隐藏单元的值被保留，下个数据处理时作为额外的输入，这样RNN就拥有了“记住”已经看过数据的能力。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/lemma-RNN.png&#34;
+	width=&#34;1309&#34;
+	height=&#34;980&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Network with memory&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;根据“记忆”的来自隐藏单元还是输出的不同，可以将RNN分为Elman network和Jordan network两种
+&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/vanilla-RNN.png&#34;
+	width=&#34;1303&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Vanilla RNN&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;现在的RNN只能往一个方向看，有时只“往前看”的网络并不能解决问题，我们还需要“往后看”。既往前看又往后看的RNN叫做bidirectional RNN(双向RNN)&lt;/p&gt;
+&lt;p&gt;这时只要训练两个RNN：一个从前往后，一个从后往前，再把他们的输出丢到另一个MLP去做处理就可以了
+&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/bidirectional-RNN.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;972&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;bidirectional RNN&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;explodingvanishing-gradients&#34;&gt;Exploding/Vanishing gradients
+&lt;/h2&gt;&lt;p&gt;RNN的性能十分出色，但训练的过程往往困难重重。其中一个重要的因素就是Exploding/Vanishing gradients(梯度爆炸/消失)。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/exploding-vanishing-gradient.png&#34;
+	width=&#34;1300&#34;
+	height=&#34;971&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;exploding-vanishing-gradient&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;
+在RNN中，t-1时刻的隐藏单元的输出会影响到t时刻的隐藏单元。
+&lt;/p&gt;
+$$
+h^{t}=Wh^{t-1}
+$$&lt;p&gt;重复使用这个式子，则
+&lt;/p&gt;
+$$
+h^{t}=W^t\prod_{i=1}^{i=t}h_{i}
+$$&lt;p&gt;若W可进行特征值分解，则
+&lt;/p&gt;
+$$
+W=Q^{\top}A Q
+\\
+W^t=Q^{\top}A^{t}Q
+$$&lt;ul&gt;
+&lt;li&gt;若W的特征值λ&amp;gt;1，则经过t次相乘后，λ^t的值会变得非常大(梯度爆炸)。&lt;/li&gt;
+&lt;li&gt;若λ&amp;lt;1，则经过t次相乘后，λ^t的值会变得非常接近零(梯度消失)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;梯度爆炸/消失对梯度下降法的干扰非常大，以至于训练过程中出现匪夷所思的结果
+&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/low-convergence.png&#34;
+	width=&#34;1284&#34;
+	height=&#34;753&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;匪夷所思&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;170&#34;
+		data-flex-basis=&#34;409px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;解决这个问题的关键在于给“记忆”可变的权重。&lt;/p&gt;
+&lt;h2 id=&#34;lstm&#34;&gt;LSTM
+&lt;/h2&gt;&lt;p&gt;Long short-term memory(长&lt;strong&gt;短期记忆&lt;/strong&gt;)是一个解决梯度爆炸/消失问题效果较好的方案。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/LSTM.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;972&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;LSTM&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;
+在LSTM中，在存储“记忆”的地方(cell)加上了三个gate：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;input gate&lt;/li&gt;
+&lt;li&gt;output gate&lt;/li&gt;
+&lt;li&gt;forget gate&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这些gate的控制信号经过sigmoid函数后得到的0~1之间的数值表示这些门“打开”的程度&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;input gate决定“记忆”是否接受新的输入&lt;/li&gt;
+&lt;li&gt;output gate决定“记忆”是否被读出&lt;/li&gt;
+&lt;li&gt;forget gate决定“记忆是否被遗忘”&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/LSTM-cell.png&#34;
+	width=&#34;1307&#34;
+	height=&#34;978&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;LSTM cell&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;图中&lt;code&gt;z&lt;/code&gt;是输入,&lt;code&gt;zi,zo,zf&lt;/code&gt;分别是上述三个gate的控制信号。
+设原来存储在“记忆”中的值为c,则新的值c&amp;rsquo;如此产生&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;输入z经过激活函数的值g(z)与input gate的值相乘，得到g(z)*f(zi)&lt;/li&gt;
+&lt;li&gt;原来“记忆”中的值c与forget gate的值相乘得到c*f(zf)&lt;/li&gt;
+&lt;li&gt;将输入与原“记忆”相加的结果作为新的记忆c&amp;rsquo;=g(z)&lt;em&gt;f(zi)+c&lt;/em&gt;f(zf)&lt;/li&gt;
+&lt;li&gt;新的值c&amp;rsquo;与output gate的值相乘得到c&amp;rsquo;*f(zo)，结果作为“记忆”的输出&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;其中zi,zo,zf是网络的参数，由训练过程中自己学得。将多个LSTM的cell连接起来，就得到了能够处理复杂问题的RNN。当然在实际使用中，zi,zo,和zf也可以接受网络其他部分的参数
+，这就要看具体的问题了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/23/recurrent-neural-network/Deep-LSTM.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Deep-LSTM.png&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>卷积神经网络</title>
+        <link>https://verrickt.github.io/2020/07/18/convolutional-neural-network/</link>
+        <pubDate>Sat, 18 Jul 2020 19:31:16 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/18/convolutional-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;任何一个机器学习的任务都可以被拆解为三步&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;找到一组函数(model)&lt;/li&gt;
+&lt;li&gt;找到评价函数好坏的标准(loss)&lt;/li&gt;
+&lt;li&gt;找出最好的函数(optimization)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;这三步在神经网络中同样成立。但在神经网络中，要找的不是一组函数，而是一种网络架构(architecture)。本文中的卷积神经网络(CNN)就是一种网络架构&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;根据universal approximation theorem，MLP已经足够表达任意函数。而在实际中，因为相邻层级的神经元之间的任意互联导致MLP容易过拟合。而在处理一些具有结构化的输入时，MLP中又会有大量的参数重复。为了解决这些问题，引入了CNN。&lt;/p&gt;
+&lt;h2 id=&#34;why-cnn&#34;&gt;Why CNN?
+&lt;/h2&gt;&lt;p&gt;考虑这样一个问题：如何让机器认出图片里的一张鸟？&lt;/p&gt;
+&lt;p&gt;回顾人类的思考过程，若图片中的物体具有鸟的基本特征，如喙、翅膀和爪，则认为它是鸟。在这个过程中，我们并不关心翅膀在图片中的位置：只要有喙就可以了。对翅膀和爪也是同样成立。&lt;/p&gt;
+&lt;p&gt;继续思考，怎么认出喙？喙可以由它的边界(geometry)来定义：两条斜线围成的尖尖的多西。翅膀和爪也可以有对应的边界来定义。同样的，我们并不关心边界出现的位置，只要它能确定这个物体是个喙就可以了。&lt;/p&gt;
+&lt;p&gt;实际上这就是CNN出现的动机之一：我们只关心一些模式是否出现，而不关心它们出现的位置。换句话说，我们所期待的模式会在图片的不同区域出现。&lt;/p&gt;
+&lt;p&gt;回到图像的例子上，人们发现了三个属性：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;比起整张图片，模式通常是比较小的&lt;/li&gt;
+&lt;li&gt;相同的模式会在不同的区域出现&lt;/li&gt;
+&lt;li&gt;对图片做subsampling(如删掉奇数行和偶数列)并不会改变图中的物体&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/properties.png&#34;
+	width=&#34;1296&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;properties&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;基于这三种属性，人们提出了convolution和pooling两种操作。convolution对应属性1、2，pooling对应属性3。convolution和pooling交替就是CNN的架构。&lt;/p&gt;
+&lt;h2 id=&#34;convolution&#34;&gt;Convolution
+&lt;/h2&gt;&lt;p&gt;Convolution的基础单位是filter(kernel)。filter是一个矩阵，用来检测模式
+考虑如下的情景
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/filter.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;filter&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;输入是&lt;code&gt;6*6&lt;/code&gt;的图片，filter是&lt;code&gt;3*3&lt;/code&gt;的矩阵。在图片的左上角找到一个与filter一样大的矩阵，做element-wise product，会得到一个数值。将filter往右移动一格，继续这个步骤，就又得到新的数值。移动的距离称为stride(步长)&lt;/p&gt;
+&lt;p&gt;filter通常比输入更小，而filter在移动的过程中可以在不同的位置上检测出对应的模式。这就体现了属性1和2。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/stride.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;stride&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;filter移动完毕后会得到一个新的矩阵。我们可以使用多个filter,将这些filter的输出放在一起会得到一个三维的张量，称为feature map.
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/feature-map.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;feature map&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/multi-channel.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;multi-channel&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+输入也不一定是黑白的。若输入彩色图片，则需要一个三维的张量来表示
+&lt;/p&gt;
+$$\mathrm{V}_{c,i,j}$$&lt;p&gt;
+这时的filter也是一个三维张量。
+这里的重点是，不管输入是什么样，filter的“z轴”要与输入的“z轴”一样高，然后在其他轴上以stride移动，得到的标量集合起来成为新的张量作为下一层的输入。
+Convolution得到的feature map会缩小，这可以补零(zero padding)来避免&lt;/p&gt;
+&lt;p&gt;实际中通过在MLP中共享参数来实现。使用了更少的参数来做同样的事情就不容易过拟合。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/shared-weight.png&#34;
+	width=&#34;1300&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;shared-weight&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;pooling&#34;&gt;Pooling
+&lt;/h2&gt;&lt;p&gt;Pooling的思路更简单了。对一些区域进行采样，得到一张更小的image,这就是属性3。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/before-pooling.png&#34;
+	width=&#34;1300&#34;
+	height=&#34;974&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;before-pooling&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;pooling有很多选择，可以取算术平均，可以取L2 norm。一般比较常见的是max pooling。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/after-pooling.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;978&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;after-pooling&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;通过pooling，网络就可以对输入中比较规律的变化不那么敏感。这称为invariance。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/invariance.png&#34;
+	width=&#34;802&#34;
+	height=&#34;472&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;invariance&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;169&#34;
+		data-flex-basis=&#34;407px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;flatten&#34;&gt;Flatten
+&lt;/h2&gt;&lt;p&gt;做完pooling后得到的是一个张量。把它“拉直”成一个向量，丢给MLP就可以实现我们所要做的事情了。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/whole-cnn.png&#34;
+	width=&#34;1308&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;whole&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;CNN并不只能用于图像处理，只要要处理的问题具有上述的三个属性，就可以用CNN来解决。
+下面是一些用CNN效果比较好的任务:
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/more-cnn.png&#34;
+	width=&#34;803&#34;
+	height=&#34;957&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;more cnn&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;83&#34;
+		data-flex-basis=&#34;201px&#34;
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>神经网络中的Regularization</title>
+        <link>https://verrickt.github.io/2020/07/15/regularization-of-neural-network/</link>
+        <pubDate>Wed, 15 Jul 2020 10:22:44 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/15/regularization-of-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;Deep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe&amp;hellip; Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;regularization是我们应对overfitting的常用手段。在比较简单的模型，例如linear-regresseion中，人对的capacity的估计通常比较准确，一般不需要做regularization。而在神经网络动辄成千上万个节点，数以百万的参数让估测capacity变得极为困难。正如花书所说，泛化性能最好的往往是复杂的模型加上合理的regularization而得到的&lt;/p&gt;
+&lt;h2 id=&#34;parameter-penalities&#34;&gt;Parameter Penalities
+&lt;/h2&gt;&lt;p&gt;正如三次式最高次的系数为零时退化为二次式，有越多的参数接近0，模型的capacity就越低，即「绑住手脚」。一般来说regularization不会考虑&lt;code&gt;bias&lt;/code&gt;，因为&lt;code&gt;bias&lt;/code&gt;对capacity的影响并不如&lt;code&gt;weight&lt;/code&gt;那么大，但有需要仍可以给&lt;code&gt;bias&lt;/code&gt;加上惩罚。&lt;/p&gt;
+&lt;p&gt;参数惩罚的思路是，给&lt;code&gt;Loss&lt;/code&gt;加上所有参数&lt;code&gt;θ&lt;/code&gt;的函数&lt;code&gt;Ω(θ)&lt;/code&gt;这一项，让模型更偏好于θ接近0的归纳假设。&lt;/p&gt;
+$$
+\hat{L}(\theta,\alpha)=L(\theta)+\alpha \Omega(\theta)
+$$&lt;h3 id=&#34;l2-norm&#34;&gt;L2 norm
+&lt;/h3&gt;&lt;p&gt;L2 norm中所选的函数Ω是
+&lt;/p&gt;
+$$\Omega(\theta)=\frac{1}{2}\theta^{\top}\theta$$&lt;p&gt;&lt;code&gt;Loss&lt;/code&gt;的梯度变为
+&lt;/p&gt;
+$$\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha\theta$$&lt;p&gt;带入梯度下降公式
+&lt;/p&gt;
+$$
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_\theta L - \alpha\epsilon \theta^N = (1-\alpha \epsilon)\theta ^N-\epsilon\nabla_\theta L
+$$&lt;p&gt;每次梯度下降更新参数时会把原来的参数&lt;strong&gt;乘&lt;/strong&gt;上一个固定的值&lt;code&gt;1-αε&lt;/code&gt;，使得θ接近于0&lt;/p&gt;
+&lt;h3 id=&#34;l1-norm&#34;&gt;L1 norm
+&lt;/h3&gt;&lt;p&gt;L1 norm中的函数Ω是&lt;/p&gt;
+$$
+\Omega(\theta)=\sum_{i=1}^N|\theta_i|
+$$&lt;p&gt;
+&lt;code&gt;Loss&lt;/code&gt;的梯度变为
+&lt;/p&gt;
+$$\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha \mathrm{sgn}(\theta)$$&lt;p&gt;带入梯度下降公式
+&lt;/p&gt;
+$$
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_{\theta}L-\alpha\epsilon \mathrm{sgn}(\theta^N) = \theta ^N-\epsilon\nabla_\theta L -\alpha\epsilon \mathrm{sgn}(\theta^N)
+$$&lt;p&gt;发现参数更新时会在每一个分量&lt;code&gt;i&lt;/code&gt;中&lt;strong&gt;减&lt;/strong&gt;掉一个固定值&lt;code&gt;αε*sgn(i)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;L2 norm中，每次都乘上一个小于1的数，当参数大于1时，减小的速度就非常快；当参数小于1时，减小的速度就比较慢。因此L2中最终各个参数比较接近，但不会出现很多0。&lt;/p&gt;
+&lt;p&gt;而L1 norm中，每次减小一个固定值。对很大的参数，减法的步长很小，减小的效果就不是很明显。而参数很小时，减法的步长相对很大，就很容易出现0。因此L1中很容易出现很大的参数和较多的0。&lt;/p&gt;
+&lt;p&gt;含较多0的矩阵叫做稀疏矩阵(Sparse matrix)，因此用L1能够得到比较稀疏的参数。&lt;/p&gt;
+&lt;h2 id=&#34;early-stopping&#34;&gt;Early stopping
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/15/regularization-of-neural-network/early-stopping.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;980&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;early stopping&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;early stopping的思路就更简单了。既然复杂的模型训练时会关注一些无关的特征，那干脆不要跑那么多次训练就好了。&lt;/p&gt;
+&lt;p&gt;early stopping的形式化描述：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Let n be the number of steps between evaluations.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Let p be the “patience,” the number of times to observe worsening validation set error before giving up. 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Let θ^o be the initial parameters. 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;θ ← θ^o 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;i ← 0 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;j ← 0 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;v ←∞ 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;θ∗ ← θ 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;i∗ ← i 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;while j &amp;lt; p do θ
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    Update by running the training algorithm for n steps. 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    i ← i + n
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    v&amp;#39; ← ValidationSetError(θ) 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    if v&amp;#39; &amp;lt; v then 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        j  ← 0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        θ∗ ← θ 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        i∗ ← i
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        v  ← v&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    else 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        j ← j + 1 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    end if
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;end while 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;hr&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nodes:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Best parameters are θ∗ , best number of training steps is i∗
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;ensemble&#34;&gt;Ensemble
+&lt;/h2&gt;&lt;p&gt;Ensemble认为，模型中出现的错误是随机的，那么使用&lt;strong&gt;同样&lt;/strong&gt;的数据训练出k个不同的模型，将它们的结果取平均就可以得到比较好的结果。&lt;/p&gt;
+&lt;p&gt;复杂模型error主要来自variance。从直觉上说，对多个模型取平均就能很好的抵消一部分variance。
+ensemble的坏处在于，它需要训练k个不同的模型，导致计算量大增。有时这样的计算量是无法承受的，因此希望有一个代价不那么大的ensemble方法，这就是dropout&lt;/p&gt;
+&lt;h3 id=&#34;dropout&#34;&gt;dropout
+&lt;/h3&gt;&lt;p&gt;dropout和以往的方法不同，它把当前训练的模型当作是很多模型的叠加：每次训练时，每个单元都有p的概率从网络中被移除，每次只针对这些被留下来的单元做参数的更新。有n个单元时，因为每一个单元都可以被留下/丢掉，这就可能产生2^N个不同的网络结构。dropout就认为当前的模型是这2^N个网络的ensemble。&lt;/p&gt;
+&lt;p&gt;下面是一个2层的神经网络。它有2个隐藏单元。dropout可以产生的网络由16个。使用dropout的网络经过一次训练后相当于训练了2^N个子网络，计算量的问题就这样解决了。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/15/regularization-of-neural-network/dropout.png&#34;
+	width=&#34;942&#34;
+	height=&#34;878&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;droupout&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;107&#34;
+		data-flex-basis=&#34;257px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;使用dropout的网络训练完成后，在测试时不再移除神经元，而是给网络整体的参数乘上1-p。
+一个直觉的解释：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;设w是dropout得到的参数，w&amp;#39;是训练时的参数。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;在训练时神经元有p的概率被丢弃，所以网络中实际神经元个数的期望是n*(1-p)。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;现在要让网络的输出尽可能的一致，则
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;n*w*(1-p) = n*w&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;即w&amp;#39;=w*(1-p)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/15/regularization-of-neural-network/linearity.png&#34;
+	width=&#34;1286&#34;
+	height=&#34;961&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;linearity&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;实际的分析发现，在整个网络是线性时，上面的论述是精确成立的，而加上激活函数的网络往往不是线性的。但实际使用上dropout的性能也确实比较接近ensemble的结果。为什么会这样我们不清楚，总之拿来主义了。世界各地有很多科学家也在探究背后的奥秘，希望有一天能找出一个精确的解释吧。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>后向传播-进阶版的梯度下降算法</title>
+        <link>https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/</link>
+        <pubDate>Sat, 11 Jul 2020 11:21:40 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;本文是&lt;a class=&#34;link&#34; href=&#34;http://speech.ee.ntu.edu.tw/~tlkagk/courses_ML20.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;NTU ML 2020&lt;/a&gt;中&lt;a class=&#34;link&#34; href=&#34;https://youtu.be/Dr-WRlEFefw&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;BackPropagation&lt;/a&gt;部分的笔记。&lt;/p&gt;
+&lt;p&gt;梯度下降是非常常用的优化算法。而在深度学习中，一个神经网络的参数动辄几百万，像线性模型那样人手工算好再告诉机器的方式已经不合适了，需要一种更高效的算法来计算梯度。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;后向传播是计算梯度的高效算法，它的理论基础是链式法则。
+&lt;/p&gt;
+$$
+p=\phi(x),q=\varphi(x),g=f(p,q) \\
+\frac{dg}{dx}=\frac{\partial g}{\partial p}\frac{dp
+}{dx}+\frac{\partial g}{\partial q}\frac{dq}{dx}
+$$&lt;hr&gt;
+&lt;p&gt;梯度下降的目标函数&lt;code&gt;total loss&lt;/code&gt;是各个example的和
+&lt;/p&gt;
+$$L(\theta)=\sum_{n=1}^N C^{n}(\theta)$$&lt;p&gt;所以只需能计算出其中一项的&lt;code&gt;loss&lt;/code&gt;就可求&lt;code&gt;total loss&lt;/code&gt;的梯度。&lt;/p&gt;
+&lt;p&gt;考虑如下的一个3x2的神经网络
+&lt;img src=&#34;https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/network_structure.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;network structure&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;第一层第一个神经元的参数&lt;code&gt;w1&lt;/code&gt;，输入激活函数的值&lt;code&gt;z=w1*x1+w2*x2+b1&lt;/code&gt;
+则由链式法则
+&lt;/p&gt;
+$$
+\frac{\partial L}{\partial w_1}=\frac{\partial L}{\partial z}\frac{\partial z}{\partial w_1}=\frac{\partial L}{\partial z}x_1
+$$&lt;p&gt;转化为求&lt;/p&gt;
+$$\frac{\partial L}{\partial z}$$&lt;p&gt;考虑该神经元的下一层，&lt;code&gt;z&lt;/code&gt;经过激活后的输出&lt;code&gt;a&lt;/code&gt;被当作下一层的输入：
+&lt;img src=&#34;https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/notions_backward_pass.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;973&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;backward-pass&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;
+则由链式法则，
+&lt;/p&gt;
+$$
+\frac{\partial L}{\partial z} = \frac{\partial L}{\partial a}\frac{\partial a}{\partial z}=\frac{\partial L}{\partial a}\sigma&#39;(z)
+$$&lt;p&gt;观察到&lt;code&gt;a&lt;/code&gt;已经变成了下一层网络的输入，问题又化为了最初求&lt;code&gt;loss&lt;/code&gt;对网络输入的微分，但问题的规模-求梯度的“层数”却减少了一层。思维敏锐的同学可能已经发现了，这是分治法。&lt;/p&gt;
+&lt;p&gt;让我们更进一步
+&lt;/p&gt;
+$$
+\frac{\partial L}{\partial a}=\frac{\partial L}{\partial z&#39;}\frac{\partial z&#39;}{\partial a}+\frac{\partial L}{\partial z&#39;&#39;}\frac{\partial z&#39;&#39;}{\partial a}
+= \frac{\partial L}{\partial z&#39;} w_3+ \frac{\partial L}{\partial z&#39;&#39;} w_4
+$$&lt;p&gt;
+从而
+&lt;/p&gt;
+$$
+\frac{\partial L}{\partial z}=\sigma&#39;(z) \left[\frac{\partial L}{\partial z&#39;} w_3+ \frac{\partial L}{\partial z&#39;&#39;} w_4 \right]
+$$&lt;p&gt;
+&lt;img src=&#34;https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/amplify.png&#34;
+	width=&#34;1296&#34;
+	height=&#34;980&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;amplify&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;317px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;看起来就像是一个以偏微分为输入,&lt;code&gt;y=σ&#39;(z)x&lt;/code&gt;为激活函数的神经元的输出&lt;/p&gt;
+&lt;p&gt;考虑所有激活函数的输入&lt;code&gt;z&lt;/code&gt;，当前层的偏微分&lt;code&gt;z&lt;/code&gt;与后一层之间的偏微分&lt;code&gt;z&#39;&lt;/code&gt;存在计算上的依赖关系。因此计算&lt;code&gt;loss&lt;/code&gt;对&lt;code&gt;z&lt;/code&gt;的偏微分时，要从后往前算。因此得名&lt;code&gt;backward pass&lt;/code&gt;。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/dependencies.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;dependencies&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;而计算本层神经元的输入&lt;code&gt;a&lt;/code&gt;时是从前往后算的，因此叫做&lt;code&gt;foreward pass&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/11/back-propagation-gradient-descent-improved/sum.png&#34;
+	width=&#34;1305&#34;
+	height=&#34;978&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;sum&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;总结一下，要计算L对参数&lt;code&gt;w&lt;/code&gt;的偏微分需要进行两个步骤：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;foreward pass. 算出L对当前层神经元的输入&lt;code&gt;a&lt;/code&gt;的偏微分。从前往后算。&lt;/li&gt;
+&lt;li&gt;backward pass. 计算出L对当前层激活函数的输入&lt;code&gt;z&lt;/code&gt;的偏微分。从后往前算。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;两者相乘，即得
+&lt;/p&gt;
+$$
+\frac{\partial L}{\partial w}
+$$</description>
+        </item>
+        <item>
+        <title>从分类到对率回归再到到神经网络</title>
+        <link>https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/</link>
+        <pubDate>Sat, 04 Jul 2020 22:01:07 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的是台湾大学2020机器学习的Classification&lt;a class=&#34;link&#34; href=&#34;https://youtu.be/fZAZUYEeIMg&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;1&lt;/a&gt;和&lt;a class=&#34;link&#34; href=&#34;https://youtu.be/hSXFuypLukA&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;2&lt;/a&gt;的笔记，奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;策略，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;分类&#34;&gt;分类
+&lt;/h2&gt;&lt;p&gt;在分类问题，我们要找一个函数f，f的输入是代表样本的向量，输出是一个代表类别的标量。将样本分为两类的叫做二元分类，多于两类的叫做多元分类。我们先考虑二元分类问题。&lt;/p&gt;
+&lt;h3 id=&#34;引例&#34;&gt;引例
+&lt;/h3&gt;&lt;p&gt;XCOM中面对的敌人有变种人(ADVENT)和外星人(Alien)两种，长老(The elder)送来了新的物种，现有训练资料变种人数据15组，外星人10组，你能据此帮助被关在外星人网络中充当首脑的人类指挥官分辨新物种的种类吗？&lt;/p&gt;
+&lt;p&gt;先考虑这个问题，蓝绿两个盒子，其中各有蓝绿球若干。从蓝盒子抽球的概率是1/3，从绿盒子抽球的概率是2/3。已知抽到了蓝球，问从蓝色盒子里抽到的概率是多少?
+&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/two_boxes.png&#34;
+	width=&#34;1306&#34;
+	height=&#34;972&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;两个盒子&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+$$
+P(蓝盒子)=\frac{1}{3} \\
+P(绿盒子)=\frac{2}{3} \\
+P(抽到蓝球|蓝盒子)=\frac{4}{5} \\
+P(绿盒子|抽到蓝球)=\frac{2}{5} \\
+P(抽到蓝球)=P(蓝盒子)P(抽到蓝球|蓝盒子)+P(绿盒子)P(绿盒子|抽到蓝球)=\frac{1*4}{3*5}*\frac{2*2}{3*5}=\frac{8}{15} \\
+P(蓝盒子|抽到蓝球)=\frac{P(抽到蓝球|蓝盒子)P(蓝盒子)}{P(抽到蓝球)}=\frac{\frac{1*4}{3*5}}{\frac{8}{15}}=\frac{1}{2} 
+$$&lt;h3 id=&#34;贝叶斯公式&#34;&gt;贝叶斯公式
+&lt;/h3&gt;&lt;p&gt;我们预测的依据是贝叶斯公式：
+&lt;/p&gt;
+$$P(A|B)=\frac{P(B|A)P(A)}{P(B)}$$&lt;p&gt;
+用C1表示敌人属于变种人，C2表示敌人属于外星人，那么&lt;/p&gt;
+$$P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))}$$&lt;p&gt;training set中一共有15组变种人，10组外星人。则
+&lt;/p&gt;
+$$
+P(C_1)=\frac{15}{15+10}=\frac{3}{5} \\
+P(C_2)=\frac{10}{15+10}=\frac{2}{5}
+$$&lt;p&gt;接下来是确定P(x|C1)。思考一下，testing-set上的数据我们的算法从来没有见过，那么P(x|C1)应该是0咯。可这样贝叶斯公式就变成0/0了，还怎么预测?&lt;/p&gt;
+&lt;h3 id=&#34;pc1x&#34;&gt;P(C1|x)
+&lt;/h3&gt;&lt;p&gt;在此，我们大胆假设，目前所见过的C1的example是由一个概率分布产生的，这样就可以对testing-set上没见过的数据了求概率了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/prior.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;先验&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这是课件的一张图，对于图中79个example，认为是一个Gaussian产生的，但好多个Gaussian都可以产生这样的点，具体是哪一个呢？这里使用极大似然的思想，就认为使得产生训练数据的概率最大的Gaussian好了&lt;/p&gt;
+&lt;p&gt;回到我们的例子，似然函数是
+&lt;/p&gt;
+$$
+L(\mu,\Sigma)=\prod_i^{15}f_{\mu,\Sigma}(x^i) \\
+f_{\mu,\Sigma}=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\}}
+\\
+\mu^*,\Sigma^*=\argmax_{\mu,\Sigma} L(\mu,\Sigma)
+$$&lt;p&gt;
+经过一番运算后，得到μ和Σ的闭式解:
+&lt;/p&gt;
+$$
+\mu^*=\frac{1}{15}\sum_{n=1}^{15}x^n
+\Sigma^*=\frac{1}{15}\sum_{n=1}^{15}(x^n-\mu^*)(x^n-\mu^*)^T
+$$&lt;p&gt;
+这样就得到了C1的分布&lt;code&gt;G1(μ,Σ)&lt;/code&gt;，同理可以得到C2的分布&lt;code&gt;G2(μ,Σ)&lt;/code&gt;，有了这两项就可以计算条件概率从而完成预测了。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;if(x|C1)&amp;gt;0.5 output ADVENT
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;else output ALIEN
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/res_1.png&#34;
+	width=&#34;720&#34;
+	height=&#34;541&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;结果&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;
+回到上课的例子，这个模型的效果并不好:(。&lt;/p&gt;
+&lt;p&gt;想到&lt;a class=&#34;link&#34; href=&#34;../../../06/26/machine-learning-basics-probability-and-information-theory/&#34; &gt;Probability&lt;/a&gt;中Gaussion的PS&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果用高斯分布来做分类问题，让分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;那就试试共用协方差矩阵吧&lt;/p&gt;
+&lt;h3 id=&#34;共用协方差矩阵&#34;&gt;共用协方差矩阵
+&lt;/h3&gt;&lt;p&gt;似然函数变为
+&lt;/p&gt;
+$$
+L(\mu_1,\mu_2,\Sigma)=\prod_i^{15}f_{\mu1,\Sigma}(x^i)\prod_{j=16}^{25}f_{\mu2,\Sigma}(x^i) \\
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/res_2.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;共用covariance-matrix&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;
+求解过程省略，来看一下结果，准确度一下子就上来了。这时发现分界线变成了一条直线。这与线性模型有关系吗？推一下看看&lt;/p&gt;
+&lt;h3 id=&#34;why-linear一些推导&#34;&gt;Why linear?一些推导
+&lt;/h3&gt;$$
+P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))} \\
+$$&lt;p&gt;
+上下同除以分子
+&lt;/p&gt;
+$$
+P(C_1|x)=\frac{1}{1+\frac{P({x|C_2})P(C_2)}{P(x|C_1)P(C_1)}}
+$$$$
+令z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}，
+则P(C_1|x)=\frac{1}{1+\exp(-z)}=\sigma(z) 
+$$&lt;p&gt;
+sigmoid函数就这样出现了!
+继续分解z
+&lt;/p&gt;
+$$
+z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}=\ln \frac{P({x|C_1})}{P(x|C_2)}+\ln\frac{P(C_1)}{P(C_2)} $$&lt;p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;\lg \frac{P(C_1)}{P(C_2)}=\lg \frac{\frac{N_1}{N_1+N_2}}{\frac{N_2}{N_1+N_2}}=\lg \frac{N_1}{N2}&lt;/p&gt;
+$$
+是个常数 
+$$&lt;p&gt;
+P(x|C_1)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)}} &lt;/p&gt;
+$$
+$$&lt;p&gt;
+P(x|C_2)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)}} &lt;/p&gt;
+$$
+带入，则
+$$&lt;p&gt;
+\ln \frac{P({x|C_1})}{P(x|C_2)} = \ln \frac{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)}}}{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)}}} &lt;/p&gt;
+$$
+$$&lt;p&gt;
+=\ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\ln \exp\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup &lt;/p&gt;
+$$
+$$&lt;p&gt;
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup &lt;/p&gt;
+$$
+$$&lt;p&gt;
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+z= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup + \lg \frac{N_1}{N2} $$&lt;/p&gt;
+&lt;p&gt;共用协方差矩阵时，
+&lt;/p&gt;
+$$\Sigma^1=\Sigma^2=\Sigma $$$$
+ \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} =0
+ x^T(\Sigma^1)^{-1}x - x^T(\Sigma^2)^{-1}x=0 $$&lt;p&gt;此时
+&lt;/p&gt;
+$$z = (\mu^1-\mu^2)^T\Sigma^{-1}x-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2} $$$$
+ 令w^T=(\mu^1-\mu^2)^T\Sigma^{-1},b=-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2}$$$$则z=w^T+b $$$$P(C_1|x)= \sigma(z)$$&lt;p&gt;
+是z的广义线性模型，给它一个名字，即logistic regression。&lt;/p&gt;
+&lt;p&gt;由
+&lt;/p&gt;
+$$\mu^2,\mu^2,\Sigma^1,\Sigma^2$$&lt;p&gt;
+得到w和b的模型称为生成模型(generative model)，因为各个x可以由一组分布生成出来。 直接找出w和b的模型称为判别模型(discriminative model)&lt;/p&gt;
+&lt;h2 id=&#34;logistic-regression&#34;&gt;logistic regression
+&lt;/h2&gt;&lt;h3 id=&#34;step1-find-a-function-set&#34;&gt;Step1, find a function set
+&lt;/h3&gt;&lt;p&gt;logistic regression问题中，我们要找一组参数w和b，σ(wTx+b)给出的值是x属于正例的概率。&lt;/p&gt;
+&lt;h3 id=&#34;step2-determine-goodness-of-function&#34;&gt;Step2, determine goodness of function
+&lt;/h3&gt;&lt;p&gt;这里使用似然函数
+&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/goodness.png&#34;
+	width=&#34;1275&#34;
+	height=&#34;787&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;loss&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;388px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;最小化对数似然函数(NLL)实际上就是最小化交叉熵&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/cross_entropy.png&#34;
+	width=&#34;1310&#34;
+	height=&#34;983&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;cross_entropy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step3-find-the-best-function&#34;&gt;Step3, find the best function
+&lt;/h3&gt;&lt;p&gt;梯度下降走你&lt;/p&gt;
+&lt;h3 id=&#34;why-likelihood-instead-of-mse&#34;&gt;Why likelihood instead of MSE?
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/MSE.png&#34;
+	width=&#34;1307&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;MSE&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;若使用MSE，则偏微分的值一直是0，无法进行梯度下降。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/cross_entropy_vs_MSE.png&#34;
+	width=&#34;1313&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;MSE&amp;cross entropy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;
+由图可见，在logistic regression这个问题上，交叉熵(极大似然)确实比MSE的梯度更大，更适合当作评价函数好坏的标准。&lt;/p&gt;
+&lt;h3 id=&#34;多元分类&#34;&gt;多元分类
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/multi-class_classification.png&#34;
+	width=&#34;1316&#34;
+	height=&#34;981&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Multiclass-classification&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h4 id=&#34;step-1&#34;&gt;Step 1
+&lt;/h4&gt;&lt;p&gt;以三元分类为例，要做三元分类，要找三组参数&lt;/p&gt;
+&lt;p&gt;$$
+C_1:w^1,b^1 \text{  } z_1=w^1x+b_1 \
+C_2:w^2,b^2 \text{  } z_2=w^2x+b_2 \
+C_3:w^3,b^3 \text{  } z_3=w^3x+b_3 \
+\mathrm{softmax}: \vec{z} \in \mathbb{R}^n\to \vec{y} \in\mathbb{R}^n \
+\text{}\\
+y_i = \frac{\exp{z_i}}{\sum_{i=1}^3}&lt;/p&gt;
+&lt;p&gt;$$&lt;/p&gt;
+&lt;h4 id=&#34;step-2&#34;&gt;Step 2
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/multi_class_loss.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;969&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Multiclass-Loss&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;把&lt;code&gt;z&lt;/code&gt;经过&lt;code&gt;softmax&lt;/code&gt;函数变换后得到的概率分布&lt;code&gt;y&lt;/code&gt;与真实值计算交叉熵，即为需要最小化的函数&lt;/p&gt;
+&lt;h4 id=&#34;step-3&#34;&gt;Step 3
+&lt;/h4&gt;&lt;p&gt;梯度下降&lt;/p&gt;
+&lt;h2 id=&#34;线性模型的限制&#34;&gt;线性模型的限制
+&lt;/h2&gt;&lt;p&gt;线性模型的函数是直线，而稍微复杂点的问题是无法用直线解决的。例如XOR问题&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/XOR.png&#34;
+	width=&#34;1297&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;XOR&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;317px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;feature-transformation&#34;&gt;feature transformation
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/feature_transformation.png&#34;
+	width=&#34;1308&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;feature transformation&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;通过对feature做一些处理，是有可能突破线性模型的限制的。
+但需要人工参与，而且没有一般规律。这就变成&lt;em&gt;人工&lt;/em&gt;学习而不是&lt;em&gt;机器&lt;/em&gt;学习了:(&lt;/p&gt;
+&lt;h3 id=&#34;feature-transformation-with-linear-unit&#34;&gt;feature transformation with linear unit
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/cascading_logistic_regression.png&#34;
+	width=&#34;1309&#34;
+	height=&#34;971&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;cascading_logistic_regression&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+但我们可以把feature transformation看作是一个线性的变化，这样就可以由logistic regression来解决。这样把多个logistic regression串起来，就可以对feature做复杂的变化。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/feature_transformation_with_linear_unit.png&#34;
+	width=&#34;1305&#34;
+	height=&#34;978&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;feature_transformation_with_linear_unit&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+上图是使用两个logistic regression进行feature transformation的结果，只要再接上一个logistic regression接收他俩的输出就可以进行分类了。&lt;/p&gt;
+&lt;h3 id=&#34;neural-network&#34;&gt;Neural network
+&lt;/h3&gt;&lt;p&gt;由此推广，把若干个线性模型串起来就可以实现很多复杂的功能。那么给logistic regression的单元起个新名字叫做神经元(neuron)，把它们互相连接形成的结构叫做神经网络(neural network)，瞬间就高大上起来了。&lt;/p&gt;
+&lt;p&gt;现在你可以骗麻瓜说「我们在模拟人类大脑的运作实现人工智慧」了;-)&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——纸上谈兵</title>
+        <link>https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/</link>
+        <pubDate>Fri, 03 Jul 2020 21:29:45 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对相关知识的补充会在实践后进行。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;what-is-machine-learning&#34;&gt;what is machine learning
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;the-task-t&#34;&gt;The Task T
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Classification&lt;/li&gt;
+&lt;li&gt;Regression&lt;/li&gt;
+&lt;li&gt;Structured output&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;the-performance-measure-p&#34;&gt;The performance measure P
+&lt;/h3&gt;&lt;p&gt;Usually we are interested in how well the machine learning algorithm performs
+on data that it has &lt;strong&gt;not&lt;/strong&gt; seen before, since this determines how well it will work when deployed in the real world. We therefore evaluate these performance measures using a &lt;strong&gt;test set&lt;/strong&gt; of data that is separate from the data used for training the machine learning system.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s often difficult to choose a performance measure that corresponds well to the desired behavior of the system for two reasons&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The performance measure can be difficult to decide. When performing a regression task, should we penalize the system more if it frequently makes medium-sized mistakes or if it rarely makes very large mistakes? These kinds of design choices depend on the application&lt;/li&gt;
+&lt;li&gt;we know what quantity we would ideally like to measure, but measuring it is impractical. Computing the actual probability value assigned to a specific point in space in many density estimation models is intractable&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;the-experience-e&#34;&gt;The Experience E
+&lt;/h3&gt;&lt;p&gt;Machine learning algorithms can be broadly categorized as unsupervised or supervised by what kind of experience they are allowed to have during the learning process.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Unsupervised learning algorithms experience a dataset containing many features, then learn useful properties of the structure of this dataset. In the context of deep learning, we usually want to learn the entire probability distribution that generated a dataset, whether explicitly as in density estimation or implicitly for tasks like synthesis or denoising. Some other unsupervised learning algorithms perform other roles, like clustering, which consists of dividing the dataset into clusters of similar examples.&lt;/li&gt;
+&lt;li&gt;Supervised learning algorithms experience a dataset containing features,but each example is also associated with a label or target.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Roughly speaking, unsupervised learning involves observing several examples
+of a random vector x, and attempting to implicitly or explicitly learn the probability distribution p(x), or some interesting properties of that distribution, while supervised learning involves observing several examples of a random vector x and an associated value or vector y, and learning to predict y from x, usually by estimating &lt;code&gt;p(y|x)&lt;/code&gt; The term supervised learning originates from the view of the target y being provided by an instructor or teacher who shows the machine learning system what to do. In unsupervised learning, there is no instructor or teacher, and the algorithm must learn to make sense of the data without this guide&lt;/p&gt;
+&lt;p&gt;Some machine learning algorithms do not just experience a fixed dataset. For
+example, &lt;strong&gt;reinforcement learning&lt;/strong&gt; algorithms interact with an environment, so there is a feedback loop between the learning system and its experiences&lt;/p&gt;
+&lt;h3 id=&#34;example-linear-regression&#34;&gt;Example: Linear regression
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;The task T: linear regression solves a regression problem. The goal is to build a system that can take a vector x ∈ R^n as input and predict the value of a scalar y ∈ R as its output.&lt;/li&gt;
+&lt;/ul&gt;
+$$\hat{y}=w^{\top}x+b$$&lt;p&gt;&lt;strong&gt;w&lt;/strong&gt; is a vector of the weights over different features.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;b&lt;/strong&gt; is the bias(not the bias in statistic)&lt;/p&gt;
+&lt;p&gt;Together ,&lt;strong&gt;w&lt;/strong&gt; and &lt;strong&gt;b&lt;/strong&gt; are called the &lt;strong&gt;parameters&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;y&lt;/strong&gt; is the &lt;strong&gt;label&lt;/strong&gt; of the data.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;y-hat&lt;/strong&gt; is the prediction value&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The performance measurement P:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;mean squared error(MSE)&lt;/p&gt;
+$$\mathrm{MSE_{test}}=\frac{1}{m}\sum_i(\hat{y}^{(test)}-y^{(test)})$$&lt;h2 id=&#34;capacity-overfitting-and-underfitting&#34;&gt;Capacity, Overfitting and Underfitting
+&lt;/h2&gt;&lt;p&gt;The central challenge in machine learning is that we must perform well on &lt;em&gt;new, previously unseen inputs&lt;/em&gt;—not just those on which our model was trained. The ability to perform well on previously unobserved inputs is called generalization.&lt;/p&gt;
+&lt;p&gt;The factors determining how well a machine learning algorithm will perform are its ability to:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Make the training error small.&lt;/li&gt;
+&lt;li&gt;Make the gap between training and test error small.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;These two factors are underfitting and overfitting. Underfitting occurs when the model is not able to obtain a sufficiently low error value on the training set. Overfitting occurs when the gap between the training error and test error is too large.&lt;/p&gt;
+&lt;p&gt;Informally, a model’s capacity is its ability to fit a wide variety of functions. Models with low capacity may struggle to fit the training set. Models with high capacity can overfit by memorizing properties of the training set that do not serve them well on the test set. Usually,the error mainly comes from bias in the case of underfitting and variance in the case of overfitting.
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/capacity.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Capacity&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/optimal_capacity.png&#34;
+	width=&#34;605&#34;
+	height=&#34;326&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Capacity,overfitting and underfitting&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;185&#34;
+		data-flex-basis=&#34;445px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;bayes-error&#34;&gt;Bayes error
+&lt;/h3&gt;&lt;p&gt;The error incurred by an oracle making predictions from the true distribution
+&lt;code&gt;p(x,y)&lt;/code&gt; is called the Bayes error.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Why are there errors if we know the true probability distribution ?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;because there may still be some noise in the distribution&lt;/p&gt;
+&lt;h3 id=&#34;how-about-training-size&#34;&gt;How about training size
+&lt;/h3&gt;&lt;p&gt;Training and generalization error vary as the size of the training set varies.
+Expected generalization error can never increase as the number of training examples increases. For non-parametric models, more data yields better generalization until the best possible error is achieved. Any fixed parametric model with less than optimal capacity will asymptote to an error value that exceeds the Bayes error. See figure
+5.4 for an illustration. Note that it is possible for the model to have optimal
+capacity and yet still have a large gap between training and generalization error. In this situation, we may be able to reduce this gap by gathering more training examples.
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/training_set_size_and_errors.png&#34;
+	width=&#34;595&#34;
+	height=&#34;282&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;The effect of the training dataset size on the train and test error&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;210&#34;
+		data-flex-basis=&#34;506px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;hyperparameters&#34;&gt;Hyperparameters
+&lt;/h3&gt;&lt;p&gt;hyperparameters are use to control the behavior of the learning algorithm.&lt;/p&gt;
+&lt;p&gt;Eg. In linear regression, we could use a model&lt;/p&gt;
+$$\hat{y}=b+\sum_i^kw_ix^i$$&lt;p&gt;&lt;strong&gt;k&lt;/strong&gt; controls degree of the polynomial,which acts as a &lt;em&gt;capacity hyperparameter&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Why hyperparameters?&lt;/p&gt;
+&lt;p&gt;Sometimes a setting is chosen to be a hyperparameter that the learning algorithm does not learn because it is difficult to optimize. The setting must be a hyperparameter because it is not appropriate to learn that hyperparameter on the training set. This applies to all hyperparameters that control model capacity(e.g:&lt;strong&gt;k&lt;/strong&gt;). If learned on the training set, such hyperparameters would always choose the maximum possible model capacity, resulting in overfitting&lt;/p&gt;
+&lt;p&gt;How to adjust hyperparameters?&lt;/p&gt;
+&lt;p&gt;Validation set!&lt;/p&gt;
+&lt;h3 id=&#34;regularization&#34;&gt;Regularization
+&lt;/h3&gt;&lt;p&gt;We can give a learning algorithm a preference for one solution in its
+hypothesis space to another. This means that both functions are eligible, but one is preferred.(即西瓜书提到的归纳假设)&lt;/p&gt;
+&lt;p&gt;For example, we can modify the training criterion for linear regression to include
+&lt;strong&gt;weight decay&lt;/strong&gt;&lt;/p&gt;
+$$J(w)=\mathrm{MSE_{train}}+\lambda w^\top w$$&lt;p&gt;where λ is a value chosen ahead of time that controls the strength of our preference for smaller weights. in this sense, λ is also a hyperparameter
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/weight_decay.png&#34;
+	width=&#34;677&#34;
+	height=&#34;311&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;weight_decay&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;217&#34;
+		data-flex-basis=&#34;522px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;frequentist-vs-baysian&#34;&gt;Frequentist vs baysian
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;Frequentist  statistics:
+we assume that the true parameter value θ is fixed but unknown, while the point estimate θ_hat is a function of the data. Since the data is drawn from a random process, any function of the data is random. Therefore θ_hat is a random variable&lt;/li&gt;
+&lt;li&gt;Bayesian Statistics:
+the dataset is directly observed and so is not random. On the other hand, the true parameter θ is unknown or uncertain and thus is represented as a random variable. Before observing the data, we represent our knowledge of θ using &lt;em&gt;the prior probability distribution&lt;/em&gt;, &lt;strong&gt;p(θ)&lt;/strong&gt;. Generally, the machine learning practitioner selects a prior distribution that is quite broad (i.e. with high entropy) to reflect a high degree of uncertainty in the value of θ before observing any data&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;maximum-likelihood&#34;&gt;Maximum likelihood
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;最大似然估计：使得现有观测值出现概率最大的参数θ
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The maximum likelihood estimator for is defined as
+&lt;/p&gt;
+$$\theta_{ML}=\argmax _\theta\prod_{i=1}^mp_{model}(x^i;\theta)$$&lt;p&gt;
+log-likelihood estimator
+&lt;/p&gt;
+$$\theta_{ML}=\argmax _\theta\sum_{i=1}^m\log p_{model}(x^i;\theta)$$&lt;p&gt;观察KL-Divergence:
+&lt;/p&gt;
+$$D_{KL}(\hat{p}_{data}\|p_{model})=\mathbb{E}_{x\sim \hat{p}_{data}}[\log \hat{p}_{data}(x) - \log \hat{p}_{model}(x)]$$&lt;p&gt;为了最小化KL-Divergence，只需最小化&lt;/p&gt;
+$$- \mathbb{E}_{x\sim \hat{p}_{data}} \log \hat{p}_{model}(x)]$$&lt;p&gt;这与最大化log-likelihood是&lt;strong&gt;等价&lt;/strong&gt;的&lt;/p&gt;
+&lt;h2 id=&#34;simple-machine-learning-algorithm&#34;&gt;Simple machine learning algorithm
+&lt;/h2&gt;&lt;h3 id=&#34;svm&#34;&gt;SVM
+&lt;/h3&gt;&lt;p&gt;One of the most influential approaches to supervised learning is the support vector machine  This model is similar to logistic regression in that it is driven by a linear function
+&lt;/p&gt;
+$$y=w^\top x+b$$&lt;p&gt;
+. The SVM predicts that the positive class is present when y is positive. Likewise, it predicts that the negative class is present when y is negative.&lt;/p&gt;
+&lt;p&gt;One key innovation associated with support vector machines is the kernel trick. The kernel trick consists of observing that many machine learning algorithms can be written exclusively in terms of dot products between examples. For example, it can be shown that the linear function used by the support vector machine can be re-written as&lt;/p&gt;
+$$w^\top x+b=b+\sum_i^m \alpha_i x^\top x^{(i)}$$&lt;p&gt;where x^i is a training example and α is a vector of coefficients.Rewriting the learning algorithm this way allows us to replace x by the output of a given feature function φ(x) and the dot product with a function k(x,x^i) = φ(x)· φ(x^i) called a kernel.&lt;/p&gt;
+&lt;p&gt;The most commonly used kernel is the &lt;strong&gt;Gaussian kernel&lt;/strong&gt;
+&lt;/p&gt;
+$$k(u,v)=\mathbin{N}(u-v;0;\sigma^2I)$$&lt;p&gt;this kernel is also known as the radial basis function (RBF) kernel. The Gaussian kernel is performing a kind of template matching. A training example x associated with training label y becomes a template for class y. When a test point x&amp;rsquo; is near x according to Euclidean distance, the Gaussian kernel has a large response, indicating that x&amp;rsquo; is very similar to the x template. The model then puts a large weight on the associated training label y. Overall, the prediction will combine many such training labels weighted by the similarity of the corresponding training examples&lt;/p&gt;
+&lt;h3 id=&#34;gradient-descent-improved-stochastic-gradient-descent&#34;&gt;Gradient descent improved: stochastic gradient descent
+&lt;/h3&gt;&lt;p&gt;Idea:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;take a step over a &amp;lsquo;minibatch&amp;rsquo; instead of observing the whole training-set&lt;/li&gt;
+&lt;li&gt;step cost does not depend on size of training set, thus achieving convergence much faster.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A recurring problem in machine learning is that large training sets are necessary
+for good generalization, but large training sets are also more computationally expensive.&lt;/p&gt;
+&lt;p&gt;the insight of stochastic gradient descent is that the gradient is an expectation.
+The expectation may be approximately estimated using a small set of samples. Specifically, on each step of the algorithm, we can sample a &lt;strong&gt;minibatch&lt;/strong&gt; of examples&lt;/p&gt;
+&lt;p&gt;For a fixed model size, the cost per SGD update does not depend on the training set size m. In practice, we often use a larger model as the training set size increases, but we are not forced to do so. The number of updates required to reach convergence usually increases with training set size. However, as m approaches infinity, the model will eventually converge to its best possible test error before SGD has sampled every example in the training set. Increasing m further will not extend the amount of training time needed to reach the model’s best possible test error. From this point of view, one can argue that the asymptotic cost of training a model with SGD is O(1) as a function of m&lt;/p&gt;
+&lt;h2 id=&#34;why-deep-learning&#34;&gt;Why deep learning?
+&lt;/h2&gt;&lt;h3 id=&#34;curse-of-dimensionality&#34;&gt;curse of dimensionality
+&lt;/h3&gt;&lt;p&gt;Many machine learning problems become exceedingly difficult when the number of dimensions in the data is high.&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;dimension&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;number of states&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;2&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n^2&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;3&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n^3&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Traditional machine learning algorithm can&amp;rsquo;t distinguish a state that&amp;rsquo;s not seen in the training set.&lt;/p&gt;
+&lt;h3 id=&#34;local-constancy-and-smoothness-regularization&#34;&gt;Local Constancy and Smoothness Regularization
+&lt;/h3&gt;&lt;p&gt;In order to generalize well, machine learning algorithms need to be guided by prior beliefs about what kind of function they should learn.&lt;/p&gt;
+&lt;p&gt;Among the most widely used of these implicit “priors” is the smoothness
+prior or local constancy prior. This prior states that the function we learn should not change very much within a small region.
+Many simpler algorithms rely exclusively on this prior to generalize well, and
+as a result they &lt;em&gt;fail&lt;/em&gt; to scale to the statistical challenges involved in solving AIlevel tasks.&lt;/p&gt;
+&lt;h3 id=&#34;how-do-we-deal-with-curse-of-dimensionality&#34;&gt;How do we deal with curse of dimensionality?
+&lt;/h3&gt;&lt;p&gt;The key insight is that a very large number of regions, e.g., O(2^k), can be defined with O(k) examples, so long as we introduce some &lt;strong&gt;dependencies&lt;/strong&gt; between the regions via additional assumptions about the underlying data generating distribution&lt;/p&gt;
+&lt;p&gt;The core idea in deep learning is that we assume that the data was generated by the composition of factors or features, potentially at multiple levels in a hierarchy.&lt;/p&gt;
+&lt;h3 id=&#34;manifold-learning--manifold-hypothesis&#34;&gt;Manifold Learning &amp;amp; manifold hypothesis
+&lt;/h3&gt;&lt;p&gt;Manifold learning algorithms  assuming that most of R^n
+consists of &lt;strong&gt;invalid inputs&lt;/strong&gt;, and that interesting inputs occur only along
+a collection of manifolds containing a small subset of points.&lt;/p&gt;
+&lt;p&gt;manifold hypothesis:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;probability distribution over images, text strings, and sounds that occur in real life is highly concentrated.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;we can also imagine such neighborhoods and transformations, at least informally. In the case of images, we can certainly think of many possible transformations that allow us to trace out a manifold in image space: we can gradually dim or brighten the lights, gradually move or rotate objects in the image, gradually alter the colors on the surfaces of objects&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;流形假说:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;大部分有结构的数据的分布函数并不是分散的，而是集中聚集在某些范围。
+支持证据：随机取像素试图产生而期待其产生日常生活中的照片的概率是微乎其微的。随机取字母指望它生成一篇文章的概率也是微乎其微的。所以有结构的数据的分布函数必然是在某个范围内聚集，而在大部分区域分散
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/noise.png&#34;
+	width=&#34;771&#34;
+	height=&#34;843&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;noise&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;91&#34;
+		data-flex-basis=&#34;219px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;在流形的表面移动，将可以得到流形所代表的全部数据。如在代表人脸的流形上移动，A点代表微笑的人，B点代表流泪的人。若从直线直接过去，则在A，B中间点所对应的数据可能不是人脸；若从流形的表面移动到B，则数据一直都是人脸。（微笑-&amp;gt;皱眉-&amp;gt;哭泣）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;请参考&lt;a class=&#34;link&#34; href=&#34;https://www.youtube.com/watch?v=BePQBWPnYuE&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Youtube视频：My understanding of the Manifold Hypothesis | Machine learning&lt;/a&gt;&lt;/p&gt;
+&lt;iframe  maxwidth=&#34;100%&#34;  width=&#34;560&#34; height=&#34;315&#34; src=&#34;https://www.youtube.com/embed/BePQBWPnYuE&#34; style=&#34;max-width:100%&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——数值计算</title>
+        <link>https://verrickt.github.io/2020/06/28/machine-learning-basics-numerical-computation/</link>
+        <pubDate>Sun, 28 Jun 2020 11:00:27 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/28/machine-learning-basics-numerical-computation/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的数值计算知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;source-of-errors&#34;&gt;Source of errors
+&lt;/h2&gt;&lt;h3 id=&#34;overflow-and-underflow&#34;&gt;Overflow and Underflow
+&lt;/h3&gt;&lt;p&gt;计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。&lt;/p&gt;
+&lt;p&gt;接近零的非零数值因为舍入变为0称为Underflow。&lt;/p&gt;
+&lt;p&gt;超出表示范围的wrap-around称为Overflow&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;positive-overflow 指超过范围的正数被截断为负数&lt;/li&gt;
+&lt;li&gt;negative-overflow 指超过范围的负数被截断为正数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;poor-conditioning&#34;&gt;Poor Conditioning
+&lt;/h3&gt;&lt;p&gt;Condition指输入的微小变化引起函数值变化的剧烈程度。计算机中的数字是有表示范围的，因此Condition大的函数会遇到很多问题。&lt;/p&gt;
+&lt;p&gt;对于&lt;/p&gt;
+$$f(\mathbf{x})=A_{-1}\mathbf{x},A \in \mathbb{R}^{nxn}$$&lt;p&gt;
+如果A可以做特征值分解，那么f的condition number定义为
+&lt;/p&gt;
+$$\max{i,j}\left|\frac{\lambda_i}{\lambda_j}\right|$$&lt;h2 id=&#34;optimization&#34;&gt;Optimization
+&lt;/h2&gt;&lt;p&gt;解出使函数f(x)取得最大值/最小值的x的过程称为优化(optimization)。求f(x)最大值可以用求-f(x)的最小值实现，因此主要讨论求最小值。&lt;/p&gt;
+&lt;h3 id=&#34;naive-gradient-descent&#34;&gt;naive gradient descent
+&lt;/h3&gt;&lt;p&gt;梯度(gradient)给出了函数增长最快的方向，那么沿着梯度的反方向就可以将函数值减少。梯度下降法(gradient descent)就是采用这个思路一种方法:&lt;/p&gt;
+$$
+x^{i+1} = x^{i} - \epsilon \nabla_xf(x)
+$$&lt;p&gt;
+其中ε是学习率(learning rate)。一般来说ε有两种取法&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;设为一个固定的很小的常量&lt;/li&gt;
+&lt;li&gt;取多个ε，选其中让f(x-ε∇f(x))最小的那个ε。这种方法又称为line search&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;beyond-the-gradient-jacobian-and-hessian-matrices&#34;&gt;Beyond the Gradient: Jacobian and Hessian Matrices
+&lt;/h3&gt;&lt;p&gt;对于一个输入和输出都是向量的函数f，含有它的所有偏微分的矩阵称为雅可比矩阵(Jacobian matrix)&lt;/p&gt;
+$$f:\mathbb{R^m} \to \mathbb{R^n}$$$$J_{i,j}=\frac{\partial}{\partial x_j}f(x)_i 其中J \in \mathbb{R^{n\times m}}$$&lt;p&gt;同样的，含有f的所有二阶偏微分的矩阵称为海希矩阵(Hessian matrix)&lt;/p&gt;
+$$\mathbf{}{H}(f)(x)_{i,j}=\frac{\partial ^2}{\partial x_i \partial x_j}f(x)
+$$&lt;p&gt;海希矩阵就是梯度的雅可比矩阵。&lt;/p&gt;
+&lt;p&gt;当二阶偏微分连续时，微分运算符具有交换律，即
+&lt;/p&gt;
+$$H_{i,j}=H_{j,i}$$&lt;p&gt;机器学习中大部分函数f都具有连续的二阶偏微分，因此海希矩阵是实对称矩阵，因而可以做特征值分解，并且U是正交矩阵。&lt;/p&gt;
+&lt;p&gt;f对某个单位向量u方向u的二阶偏微分由
+&lt;/p&gt;
+$$u^{\top} Hu$$&lt;p&gt;给出。&lt;/p&gt;
+&lt;p&gt;在x0处对f做二阶泰勒展开&lt;/p&gt;
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$&lt;p&gt;H为海希矩阵，g为梯度。当采用学习率ε时，梯度下降的新坐标是x0-εg，带入泰勒展开，有&lt;/p&gt;
+$$f(x^0-\epsilon g) \approx f(x^0) - \epsilon g^{\top}g+\frac{1}{2}\epsilon^2g^{\top}Hg$$&lt;p&gt;当最后一项小于等于零时，ε可以任选。当最后一项大于零时，有&lt;/p&gt;
+$$\epsilon^*=\frac{g^{\top}g}{g^{\top}Hg}$$&lt;p&gt;时下降最快。最坏情况下，g与H重合，因此学习率的数量级由
+&lt;/p&gt;
+$$\frac{1}{\lambda_{\max}}$$&lt;p&gt;
+决定。&lt;/p&gt;
+&lt;p&gt;学习率设的过大或过小都会造成问题，这可以由海希矩阵解决。其中最简单的就是&lt;strong&gt;牛顿法&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;牛顿法的步骤基本思路是，在x点做二阶泰勒展开。&lt;/p&gt;
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$&lt;p&gt;
+解出函数的critical point&lt;/p&gt;
+$$x^*=x^0-H(f)(x^0)^{-1}\nabla_xf(x^0)$$&lt;p&gt;f是正定二次函数时，一次就找到了最低点。当f不是二次函数但是可以用二次函数局部近似时，多次迭代x*即可。&lt;/p&gt;
+&lt;p&gt;牛顿法只适用于解最小值，而梯度下降没有这个限制。&lt;/p&gt;
+&lt;p&gt;只用到梯度的优化算法，如梯度下降，叫做一阶优化算法。使用海希矩阵的算法，如牛顿法，叫做二阶优化算法。&lt;/p&gt;
+&lt;h3 id=&#34;constrained-optimization&#34;&gt;Constrained optimization
+&lt;/h3&gt;&lt;p&gt;有时我们希望在某集合S上而不是R^n上找出函数的最大/最小值，这叫做constrainted optimization(受限优化)。落在s中的点称为feasible point(可行点)&lt;/p&gt;
+&lt;p&gt;KKT方法是一个受限优化问题的通用方法。使用KKT方法，首先定义广义拉格朗日函数。&lt;/p&gt;
+&lt;p&gt;为了定义广义拉格朗日函数，首先需要将S定义为函数的集合&lt;/p&gt;
+$$\mathbb{S}=\{x| \forall i,g^{(i)}(x)=0 \text{ and } \forall j,h^{(j)}(x) \le0 \}$$&lt;p&gt;
+含有g(i)的方程称为equality constraints，含有h(j)的方程称为inequality constraints。&lt;/p&gt;
+&lt;p&gt;对于每个函数，定义λi和αj。他们叫做KKT乘数。&lt;/p&gt;
+&lt;p&gt;现在定义广义拉格朗日函数&lt;/p&gt;
+$$L(x,\lambda,\alpha)=f(x)+\sum_i \lambda_i g^{(i)}(x)+\sum_j \alpha_jh^{(j)}(x)$$&lt;p&gt;接下来在广义拉格朗日函数上使用非受限优化算法，就可以解决受限优化算法了。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——概率论与信息论</title>
+        <link>https://verrickt.github.io/2020/06/26/machine-learning-basics-probability-and-information-theory/</link>
+        <pubDate>Fri, 26 Jun 2020 22:25:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/26/machine-learning-basics-probability-and-information-theory/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的概率论知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;probability&#34;&gt;Probability
+&lt;/h2&gt;&lt;h3 id=&#34;conditional-probability&#34;&gt;Conditional probability
+&lt;/h3&gt;$$P(A|B)=\frac{P(AB)}{P(B)}$$&lt;p&gt;Chain rule/product rule of conditiona probability&lt;/p&gt;
+$$P(x^{(1)},...,x^{(n)})=P(x^{(1)})\prod_{i=2}^{n}P(x^{1}|x^{(1)},...,x^{(n)})$$&lt;p&gt;eg
+&lt;/p&gt;
+$$P(a,b,c)=P(a|b,c)P(b,c)$$$$P(b,c)=P(b|c)P(c)$$$$P(a,b,c)=P(a|b,c)P(b|c)P(c)$$&lt;h3 id=&#34;independence&#34;&gt;Independence
+&lt;/h3&gt;&lt;p&gt;Indenpendence:&lt;/p&gt;
+$$\forall x \in x,y \in y,p(x=x,y=y)=p(x=x)p(y=y)$$&lt;p&gt;则x,y互相独立。记作
+&lt;/p&gt;
+$$x \perp y $$&lt;p&gt;Conditional independent:
+&lt;/p&gt;
+$$\forall x \in x,y \in y ,z\in z,p(x=x,y=y|z=z)=p(x=x|z=z)p(y=y|z=z)$$&lt;p&gt;
+称x,y在z下相互独立，记作
+&lt;/p&gt;
+$$x \perp y \mid z$$&lt;h3 id=&#34;covariance&#34;&gt;Covariance
+&lt;/h3&gt;$$Cov(f(x),g(y))=\mathbb{E}[(f(x))-\mathbb{E}[f(x)])(g(x))-\mathbb{E}[g(x)]]$$&lt;p&gt;协方差值越高，意味着f和g的变化非常大，并且同时距离各自的均值很远。如果协方差是正值，那么f和g倾向于同时相对大的值。如果是负值，则一个取高值的同时另一个取低值。&lt;/p&gt;
+&lt;p&gt;向量
+&lt;/p&gt;
+$$x \in \mathbb{R}^n$$&lt;p&gt;
+的covariance matrix(协方差矩阵)是一个&lt;code&gt;nxn&lt;/code&gt;的方阵，其中
+&lt;/p&gt;
+$$Cov(x)_{i,j}=Cov(x_i,x_j)$$&lt;p&gt;
+对于对角线的元素，
+&lt;/p&gt;
+$$Cov(x_i,x_i)=Var(x_i)$$&lt;h3 id=&#34;gaussian-distribution&#34;&gt;Gaussian Distribution
+&lt;/h3&gt;&lt;p&gt;高斯分布，又称正态分布。
+概率密度函数(PDF):
+&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\sigma)=\sqrt{\frac{1}{2 \pi \sigma^2}}exp(-\frac{1}{2\sigma^2}(x-\mu)^2)$$&lt;p&gt;计算概率密度时，经常要取σ的平方倒数，工程中常使用另一个参数β∈(0,∞)表示高斯分布的&lt;strong&gt;精准度&lt;/strong&gt;
+&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\beta^{-1})=\sqrt{\frac{\beta}{2 \pi \sigma^2}}exp(-\frac{1}{2}\beta(x-\mu)^2)$$&lt;p&gt;高斯分布的特点&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;现实中很多复杂的系统可以由高斯分布建模（&lt;strong&gt;中心极限定理&lt;/strong&gt;）&lt;/li&gt;
+&lt;li&gt;在方差相同的所有分布中，高斯分布在实数范围上的“不确定度”最高。换句话说，高斯分布是所有分布中对样本做出最少先验假设的&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;N维高斯分布：&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\Sigma)=\sqrt{\frac{1}{(2\pi)^n det(\Sigma)}}exp(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu))$$&lt;p&gt;其中Σ是正定对称矩阵。μ是矢量形式的分布均值，Σ给出分布的协方差矩阵。为了便于计算，对于N维高斯分布，常用&lt;strong&gt;准确度矩阵β&lt;/strong&gt;作为参数：&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\beta^{-1})=\sqrt{\frac{det(\beta)}{(2\pi)^n }}exp(-\frac{1}{2}(x-\mu)^T\beta(x-\mu))$$&lt;p&gt;实践上通常将协方差矩阵固定为对角阵。更简单的方式是将&lt;strong&gt;isotropic matrix&lt;/strong&gt;作为协方差矩阵，其中&lt;strong&gt;isotropic matrix&lt;/strong&gt;指标量数乘单位矩阵的结果。&lt;/p&gt;
+&lt;h3 id=&#34;dirac-delta-distribution--empirical-distribution&#34;&gt;Dirac delta distribution &amp;amp; empirical distribution
+&lt;/h3&gt;&lt;p&gt;有时我们希望所有的概率密度都聚集在一个点附近。这可以通过Dirac delta函数
+&lt;code&gt;$$\delta(x)$$&lt;/code&gt;实现：
+&lt;/p&gt;
+$$p(x)=\delta(x-\mu)$$&lt;p&gt;Dirac delta分布常常被用作empirical distribution（经验分布）的一个组件：&lt;/p&gt;
+$$\hat{p}(x)=\frac{1}{m}\sum_{i=1}^m\delta(x-x^{(i)})$$&lt;p&gt;empirical distribution在全部m个点
+&lt;/p&gt;
+$$x^{(1)},...x^{(m)}$$&lt;p&gt;
+上放置
+&lt;/p&gt;
+$$\frac{1}{m}$$&lt;p&gt;
+概率密度&lt;/p&gt;
+&lt;h3 id=&#34;mixture-distribution&#34;&gt;Mixture distribution
+&lt;/h3&gt;&lt;p&gt;用其他简单的概率分布来定义概率分布是十分普遍的，混合分布（mixture distribution)就是这样一种方式。混合分布由好几个组件(component)组成。每次采样时，由一个多重分布的结果选择组件标识(component identity)，由此最终结果是由哪一个分布给出的。&lt;/p&gt;
+$$P(x)=\sum_iP(c=i)P(x\mid c=i)$$&lt;p&gt;其中P(c)是所有组件上的多重分布。&lt;/p&gt;
+&lt;p&gt;一种常见且强大的混合模型是高斯混合模型。高斯混合模型所有组件都是高斯分布，他们具有不同的参数&lt;code&gt;μ&lt;/code&gt;和&lt;code&gt;Σ&lt;/code&gt;。有些分布可以增加限制，如所有组件共用协方差矩阵等。&lt;/p&gt;
+&lt;p&gt;高斯混合分布是概率密度的通用近似方式。具有足够分量的高斯混合模型可以用任何特定的非零误差量来近似任何平滑密度。&lt;/p&gt;
+&lt;p&gt;PS，如果用高斯分布来做分类问题，让两个分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。&lt;/p&gt;
+&lt;h3 id=&#34;latent-variable&#34;&gt;Latent variable
+&lt;/h3&gt;&lt;p&gt;隐含变量（Latent variable)指无法直接观测的随机变量。混合分布中的组件标识变量c就是隐含变量。&lt;/p&gt;
+$$P(x,c)=P(x\mid c)P(c)$$&lt;p&gt;隐含变量的分布&lt;code&gt;P(c)&lt;/code&gt;和条件分布&lt;code&gt;P(x|c)&lt;/code&gt;共同决定了&lt;code&gt;P(x)&lt;/code&gt;的分布。尽管&lt;code&gt;P(x)&lt;/code&gt;可以在没有隐含变量的条件下被计算出来。&lt;/p&gt;
+&lt;h3 id=&#34;useful-properties-of-common-functions&#34;&gt;Useful properties of Common Functions
+&lt;/h3&gt;&lt;p&gt;logistic sigmoid:
+&lt;/p&gt;
+$$\sigma(x)=\frac{1}{1+exp(-x)}$$&lt;p&gt;softplus:
+&lt;/p&gt;
+$$\zeta(x)=log(1+exp(x))$$&lt;blockquote&gt;
+&lt;p&gt;why the name softplus?&lt;br&gt;
+It&amp;rsquo;s a &amp;ldquo;softeded&amp;rdquo; version of x^=max(0,x)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;bayes-rule&#34;&gt;Bayes&amp;rsquo; Rule
+&lt;/h3&gt;&lt;p&gt;已知&lt;code&gt;P(y|x)&lt;/code&gt;和&lt;code&gt;P(x)&lt;/code&gt;求&lt;code&gt;P(x|y)&lt;/code&gt;时可以使用贝叶斯公式：&lt;/p&gt;
+$$P(x|y)=\frac{P(x)P(y \mid x)}{P(y)}$$&lt;p&gt;
+其中
+&lt;/p&gt;
+$$P(y)=\sum_xP(y \mid x)P(x)$$&lt;h3 id=&#34;prior-probability-and-posterior-probability&#34;&gt;prior-probability and posterior-probability
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;prior-probability
+即先验概率。指根据以往经验和分析得到的概率&lt;/li&gt;
+&lt;li&gt;posterior-probability
+后验概率是在考虑和给出相关证据或数据后所得到的条件概率&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;考虑bayes&amp;rsquo; Rule&lt;/p&gt;
+$$P(\theta \mid x)=\frac{P(x\mid\theta)P(\theta)}{P(x)}$$&lt;ul&gt;
+&lt;li&gt;θ：parameter&lt;/li&gt;
+&lt;li&gt;x：observed value&lt;/li&gt;
+&lt;li&gt;P(x)：evidence&lt;/li&gt;
+&lt;li&gt;P(θ)：prior&lt;/li&gt;
+&lt;li&gt;P(x|θ)：likelihood&lt;/li&gt;
+&lt;li&gt;P(θ|x)：posterior&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;pdf-of-y-where-ygx&#34;&gt;PDF of y where y=g(x)
+&lt;/h3&gt;&lt;p&gt;假设有现随机变量x，y，其中y=g(x)，求y的PDF&lt;/p&gt;
+&lt;p&gt;PDF根据pdf的定义,
+&lt;/p&gt;
+$$P(x)_{x \in \delta}=\int_{x}p(x)dx$$&lt;p&gt;
+p(x)dx为x落在某一邻域δ内的概率。现保留该属性，则有&lt;/p&gt;
+$$|p_y(g(x))dy|=|p_x(x)dx|$$$$p_y(y)=p_x(g^{-1}(y))\mid \frac{\partial x}{\partial y} \mid$$$$p_x(x)=p_y(g(x))\mid \frac{\partial g(x)}{\partial y} \mid$$&lt;p&gt;考虑高维情况，x与y为向量，定义雅可比矩阵J，其中
+&lt;/p&gt;
+$$J_{i,j}=\frac{\partial x_i}{\partial y_j}$$&lt;p&gt;则&lt;/p&gt;
+$$p_x(x)=p_y(g(x))\mid \det \left\{ \frac{\partial g(x)}{\partial x}\right\} \mid$$&lt;h2 id=&#34;information-theory&#34;&gt;Information theory
+&lt;/h2&gt;&lt;p&gt;basic assemption:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Likely events should have low information content, and in the extreme case, events that are guaranteed to happen should have no information content whatsoever.&lt;/li&gt;
+&lt;li&gt;Less likely events should have higher information content.&lt;/li&gt;
+&lt;li&gt;Independent events should have additive information. For example, finding out that a tossed coin has come up as heads twice should convey twice as much information as finding out that a tossed coin has come up as heads once.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;self-information--shanon-entropy&#34;&gt;Self-information &amp;amp; Shanon entropy
+&lt;/h3&gt;&lt;p&gt;单一事件所含的信息，单位为nat
+&lt;/p&gt;
+$$I(x)=-\log P(x)$$&lt;p&gt;整个概率分布上的不确定性，即香农熵&lt;/p&gt;
+$$H(x)=E_{x\sim P}[I(x)]=-\mathbb{E}_{x\sim P}[\log P(x)]$$&lt;p&gt;也记作H(P).&lt;/p&gt;
+&lt;p&gt;当P(x)和Q(x)为相同随机变量x的分部时，两种分布间的“距离”用
+Kullback-Leibler (KL) divergence定义：
+&lt;/p&gt;
+$$D_{KL}(P\|Q)=\mathbb{E}_{x\sim P}\left[\log\frac{P(x)}{Q(x)}\right]=\mathbb{E}_{x\sim p}[\log P(x) - \log Q(x)]$$&lt;p&gt;the value means the extra amount of information
+needed to send a message containing symbols drawn from probability distribution P, when we use a code that was designed to minimize the length of messages drawn from probability distribution .&lt;/p&gt;
+&lt;p&gt;KL divergence&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;non-negarive&lt;/li&gt;
+&lt;li&gt;not symmetric
+$$D_{KL}(P\|Q)\not ={D_{KL}(Q\|P)}$$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;与KL divergence密切相关的一种度量是cross-entropy
+定义为
+&lt;/p&gt;
+$$
+H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)$$&lt;p&gt;Minimizing the cross-entropy with respect to Q is equivalent to minimizing the KL divergence, because Q does not participate in the omitted term.&lt;/p&gt;
+&lt;h3 id=&#34;structed-probabilistic-models&#34;&gt;Structed Probabilistic Models
+&lt;/h3&gt;&lt;p&gt;机器学习中的参数成千上万，使用含有这么多参数的分布不切实际。根据条件概率的乘法公式，可以把大分布拆成小分布的乘积（这一过程叫factorization)。当使用CS中的图来表示这种&lt;code&gt;factorization&lt;/code&gt;时，就把模型称为structured probabilistic model或graphical model。structed probabilistic model分为两类，分别使用DAG和UAG。&lt;/p&gt;
+&lt;h4 id=&#34;dag&#34;&gt;DAG
+&lt;/h4&gt;&lt;p&gt;Directed models use graphs with directed edges, and they represent factorizations into conditional probability distributions,  Specifically, a directed model contains one factor for every random variable xi in the distribution&lt;/p&gt;
+$$p(\mathbf{x})=\prod_ip(x_i|Pa\mathcal{G}(x_i))$$&lt;p&gt;where&lt;/p&gt;
+$$Pa\mathcal{G}(x_i)$$&lt;p&gt;is the parents of xi.&lt;/p&gt;
+&lt;h4 id=&#34;uag&#34;&gt;UAG
+&lt;/h4&gt;&lt;p&gt;Undirected models use graphs with undirected edges, and they represent
+factorizations into a set of functions; unlike in the directed case, these functions are usually not probability distributions of any kind. &lt;strong&gt;Any&lt;/strong&gt; set of nodes that are all &lt;strong&gt;connected to each other&lt;/strong&gt; in G is called a &lt;strong&gt;&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Clique_%28graph_theory%29&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;clique&lt;/a&gt;&lt;/strong&gt;. Each clique Ci in an undirected model is associated with a factor φi . These factors are just functions, not probability distributions. The output of each factor must be non-negative, but there is no constraint that the factor must sum or integrate to 1 like a probability distribution.&lt;/p&gt;
+&lt;p&gt;The probability of a configuration of random variables is proportional to the
+product of all of these factors—assignments that result in larger factor values are more likely. Of course, there is no guarantee that this product will sum to 1. We therefore divide by a normalizing constant Z, defined to be the sum or integral over all states of the product of the φ functions, in order to obtain a normalized probability distribution:&lt;/p&gt;
+$$p(x)=\frac{1}{Z}\prod_i\phi^{(i)}(\mathcal{C}^{(i)})$$&lt;p&gt;DAG和UAG都是描述概率分布的方法，他们并不是互斥的概率分布。使用DAG还是UAG并不是概率分布的属性，而是某种特定&lt;strong&gt;描述方式&lt;/strong&gt;的属性&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——线性代数</title>
+        <link>https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/</link>
+        <pubDate>Wed, 24 Jun 2020 09:38:56 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的线性代数知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;concepts&#34;&gt;Concepts
+&lt;/h2&gt;&lt;h3 id=&#34;tensor&#34;&gt;Tensor
+&lt;/h3&gt;&lt;p&gt;矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。
+向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。
+表示张量A的一个分量&lt;/p&gt;
+$$A_{i,j,k}$$&lt;h3 id=&#34;identify-matrix&#34;&gt;Identify matrix
+&lt;/h3&gt;&lt;p&gt;Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。&lt;/p&gt;
+&lt;h3 id=&#34;matrix-inversion&#34;&gt;matrix inversion
+&lt;/h3&gt;&lt;p&gt;花书定义：
+&lt;/p&gt;
+$$A^{-1}A=I$$&lt;p&gt;并&lt;strong&gt;未限定&lt;/strong&gt;A为方阵，并且是左逆&lt;/p&gt;
+&lt;p&gt;花书也定义了右逆
+&lt;/p&gt;
+$$AA^{-1}=I$$&lt;p&gt;同样&lt;strong&gt;未限定&lt;/strong&gt;A为方阵&lt;/p&gt;
+&lt;p&gt;而后说明，&lt;strong&gt;方阵&lt;/strong&gt;的左逆和右逆是相同的&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For square matrices, the left inverse and right inverse are equal&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;而课本认为&lt;strong&gt;非方阵&lt;/strong&gt;没有逆矩阵。对左逆和右逆也不做显式区分。&lt;/p&gt;
+&lt;p&gt;在花书接下来提到逆矩阵时，这可能是一个坑点&lt;/p&gt;
+&lt;h3 id=&#34;singular-matrix&#34;&gt;Singular matrix
+&lt;/h3&gt;&lt;p&gt;非&lt;strong&gt;满秩&lt;/strong&gt;的&lt;strong&gt;方阵&lt;/strong&gt;称为奇异矩阵。&lt;/p&gt;
+&lt;h3 id=&#34;norms&#34;&gt;Norms
+&lt;/h3&gt;&lt;p&gt;又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。&lt;/p&gt;
+&lt;p&gt;正式定义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;f(x) = 0 ⇒ x = 0&lt;/li&gt;
+&lt;li&gt;f(x+y) ≤ f(x) + f(y)(三角不等式)&lt;/li&gt;
+&lt;li&gt;∀α∈R,f(αx) = |α|f(x)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;常用的范式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;L2 norm
+向量与原点的距离&lt;/li&gt;
+&lt;/ul&gt;
+$$||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}$$&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Squared L2 norm
+L2 norm的平方形式，某些情况下易于分析和计算&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;L1 norm
+&lt;/p&gt;
+$$||x||_1=\sum_{i} |x_i|$$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;max norm
+&lt;/p&gt;
+$$||x||_{\infty }={\max} |x_i|$$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Frobenius norm
+计算矩阵的“大小”&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+$$||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}$$&lt;h2 id=&#34;operations&#34;&gt;Operations
+&lt;/h2&gt;&lt;h3 id=&#34;decomposition&#34;&gt;Decomposition
+&lt;/h3&gt;&lt;p&gt;将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。&lt;/p&gt;
+&lt;h4 id=&#34;eigendecomposition&#34;&gt;Eigendecomposition
+&lt;/h4&gt;&lt;p&gt;基于特征值和特征向量分解。与课本相同，不再赘述。&lt;/p&gt;
+&lt;h4 id=&#34;singular-value-decompositionsvd&#34;&gt;Singular value decomposition(SVD)
+&lt;/h4&gt;&lt;p&gt;又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。&lt;/p&gt;
+&lt;p&gt;对于一个&lt;code&gt;m*n&lt;/code&gt;的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：
+&lt;/p&gt;
+$$A=UDV^T$$&lt;ul&gt;
+&lt;li&gt;U是大小&lt;code&gt;m*m&lt;/code&gt;的正交矩阵&lt;/li&gt;
+&lt;li&gt;D是大小&lt;code&gt;m*n&lt;/code&gt;的对角矩阵&lt;/li&gt;
+&lt;li&gt;V是大小&lt;code&gt;n*n&lt;/code&gt;的正交矩阵&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;D中对角线的元素称为A的奇异值。U的列向量称为A的&lt;strong&gt;左&lt;/strong&gt;奇异向量，V的列向量称为A的&lt;strong&gt;右&lt;/strong&gt;奇异向量&lt;/p&gt;
+&lt;p&gt;A的奇异值分解可以理解为「A的函数」的特征值分解：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A的左奇异值向量是AA^T的特征向量。&lt;/li&gt;
+&lt;li&gt;A的右奇异值向量是A^TA的特征向量&lt;/li&gt;
+&lt;li&gt;A的非零奇异值是A^TA的特征值，也是AA^T的特征值&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下&lt;/p&gt;
+&lt;h3 id=&#34;the-moore-penrose-pseudoinverse&#34;&gt;The Moore-Penrose Pseudoinverse
+&lt;/h3&gt;&lt;p&gt;又称摩尔－彭若斯广义逆（好长的名字&amp;hellip;）&lt;/p&gt;
+$$A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}$$&lt;p&gt;实际上，一般用
+&lt;/p&gt;
+$$A^+=VD^+U^T$$&lt;p&gt;
+来计算广义逆&lt;/p&gt;
+&lt;p&gt;U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。&lt;/p&gt;
+&lt;p&gt;当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。&lt;/p&gt;
+&lt;p&gt;若x无解，Ax给出了L2范式中y-Ax的最小值&lt;/p&gt;
+&lt;h3 id=&#34;trace&#34;&gt;Trace
+&lt;/h3&gt;&lt;p&gt;又称迹，是矩阵主对角线元素的和。&lt;/p&gt;
+$$\mathrm{Tr}(A)=\sum_i{A_{i,i}}$$&lt;p&gt;迹和矩阵乘法可以代替一些需要求和符号的操作：
+&lt;/p&gt;
+$$||A||_F=\sqrt{\mathrm{Tr(AA^T)}}$$&lt;p&gt;矩阵的迹具有循环不变性：&lt;/p&gt;
+$$\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}$$&lt;p&gt;更通用来说，
+&lt;/p&gt;
+$$\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})$$</description>
+        </item>
+        
+    </channel>
+</rss>

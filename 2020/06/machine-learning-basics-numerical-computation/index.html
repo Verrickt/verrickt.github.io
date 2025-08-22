@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\r前言\r本文的主体是机器学习中所用到的数值计算知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。\nSource of errors\rOverflow and Underflow\r计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。\n">
+<title>机器学习基础——数值计算</title>
+
+<link rel='canonical' href='http://localhost:1313/2020/06/machine-learning-basics-numerical-computation/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="机器学习基础——数值计算">
+<meta property='og:description' content="\r前言\r本文的主体是机器学习中所用到的数值计算知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。\nSource of errors\rOverflow and Underflow\r计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。\n">
+<meta property='og:url' content='http://localhost:1313/2020/06/machine-learning-basics-numerical-computation/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='Numberical computation' /><meta property='article:tag' content='The flower book' /><meta property='article:published_time' content='2020-06-28T11:00:27&#43;00:00'/><meta property='article:modified_time' content='2020-06-28T11:00:27&#43;00:00'/>
+<meta name="twitter:title" content="机器学习基础——数值计算">
+<meta name="twitter:description" content="\r前言\r本文的主体是机器学习中所用到的数值计算知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。\nSource of errors\rOverflow and Underflow\r计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#source-of-errors">Source of errors</a>
+      <ol>
+        <li><a href="#overflow-and-underflow">Overflow and Underflow</a></li>
+        <li><a href="#poor-conditioning">Poor Conditioning</a></li>
+      </ol>
+    </li>
+    <li><a href="#optimization">Optimization</a>
+      <ol>
+        <li><a href="#naive-gradient-descent">naive gradient descent</a></li>
+        <li><a href="#beyond-the-gradient-jacobian-and-hessian-matrices">Beyond the Gradient: Jacobian and Hessian Matrices</a></li>
+        <li><a href="#constrained-optimization">Constrained optimization</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2020/06/machine-learning-basics-numerical-computation/">机器学习基础——数值计算</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 28, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 4 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h2 id="前言">前言
+</h2><p>本文的主体是机器学习中所用到的数值计算知识，因此奉行<a class="link" href="https://en.wikipedia.org/wiki/Lazy_evaluation"  target="_blank" rel="noopener"
+    >Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
+<!-- more -->
+<h2 id="source-of-errors">Source of errors
+</h2><h3 id="overflow-and-underflow">Overflow and Underflow
+</h3><p>计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。</p>
+<p>接近零的非零数值因为舍入变为0称为Underflow。</p>
+<p>超出表示范围的wrap-around称为Overflow</p>
+<ul>
+<li>positive-overflow 指超过范围的正数被截断为负数</li>
+<li>negative-overflow 指超过范围的负数被截断为正数</li>
+</ul>
+<h3 id="poor-conditioning">Poor Conditioning
+</h3><p>Condition指输入的微小变化引起函数值变化的剧烈程度。计算机中的数字是有表示范围的，因此Condition大的函数会遇到很多问题。</p>
+<p>对于</p>
+$$f(\mathbf{x})=A_{-1}\mathbf{x},A \in \mathbb{R}^{nxn}$$<p>
+如果A可以做特征值分解，那么f的condition number定义为
+</p>
+$$\max{i,j}\left|\frac{\lambda_i}{\lambda_j}\right|$$<h2 id="optimization">Optimization
+</h2><p>解出使函数f(x)取得最大值/最小值的x的过程称为优化(optimization)。求f(x)最大值可以用求-f(x)的最小值实现，因此主要讨论求最小值。</p>
+<h3 id="naive-gradient-descent">naive gradient descent
+</h3><p>梯度(gradient)给出了函数增长最快的方向，那么沿着梯度的反方向就可以将函数值减少。梯度下降法(gradient descent)就是采用这个思路一种方法:</p>
+$$
+x^{i+1} = x^{i} - \epsilon \nabla_xf(x)
+$$<p>
+其中ε是学习率(learning rate)。一般来说ε有两种取法</p>
+<ul>
+<li>设为一个固定的很小的常量</li>
+<li>取多个ε，选其中让f(x-ε∇f(x))最小的那个ε。这种方法又称为line search</li>
+</ul>
+<h3 id="beyond-the-gradient-jacobian-and-hessian-matrices">Beyond the Gradient: Jacobian and Hessian Matrices
+</h3><p>对于一个输入和输出都是向量的函数f，含有它的所有偏微分的矩阵称为雅可比矩阵(Jacobian matrix)</p>
+$$f:\mathbb{R^m} \to \mathbb{R^n}$$$$J_{i,j}=\frac{\partial}{\partial x_j}f(x)_i 其中J \in \mathbb{R^{n\times m}}$$<p>同样的，含有f的所有二阶偏微分的矩阵称为海希矩阵(Hessian matrix)</p>
+$$\mathbf{}{H}(f)(x)_{i,j}=\frac{\partial ^2}{\partial x_i \partial x_j}f(x)
+$$<p>海希矩阵就是梯度的雅可比矩阵。</p>
+<p>当二阶偏微分连续时，微分运算符具有交换律，即
+</p>
+$$H_{i,j}=H_{j,i}$$<p>机器学习中大部分函数f都具有连续的二阶偏微分，因此海希矩阵是实对称矩阵，因而可以做特征值分解，并且U是正交矩阵。</p>
+<p>f对某个单位向量u方向u的二阶偏微分由
+</p>
+$$u^{\top} Hu$$<p>给出。</p>
+<p>在x0处对f做二阶泰勒展开</p>
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$<p>H为海希矩阵，g为梯度。当采用学习率ε时，梯度下降的新坐标是x0-εg，带入泰勒展开，有</p>
+$$f(x^0-\epsilon g) \approx f(x^0) - \epsilon g^{\top}g+\frac{1}{2}\epsilon^2g^{\top}Hg$$<p>当最后一项小于等于零时，ε可以任选。当最后一项大于零时，有</p>
+$$\epsilon^*=\frac{g^{\top}g}{g^{\top}Hg}$$<p>时下降最快。最坏情况下，g与H重合，因此学习率的数量级由
+</p>
+$$\frac{1}{\lambda_{\max}}$$<p>
+决定。</p>
+<p>学习率设的过大或过小都会造成问题，这可以由海希矩阵解决。其中最简单的就是<strong>牛顿法</strong></p>
+<p>牛顿法的步骤基本思路是，在x点做二阶泰勒展开。</p>
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$<p>
+解出函数的critical point</p>
+$$x^*=x^0-H(f)(x^0)^{-1}\nabla_xf(x^0)$$<p>f是正定二次函数时，一次就找到了最低点。当f不是二次函数但是可以用二次函数局部近似时，多次迭代x*即可。</p>
+<p>牛顿法只适用于解最小值，而梯度下降没有这个限制。</p>
+<p>只用到梯度的优化算法，如梯度下降，叫做一阶优化算法。使用海希矩阵的算法，如牛顿法，叫做二阶优化算法。</p>
+<h3 id="constrained-optimization">Constrained optimization
+</h3><p>有时我们希望在某集合S上而不是R^n上找出函数的最大/最小值，这叫做constrainted optimization(受限优化)。落在s中的点称为feasible point(可行点)</p>
+<p>KKT方法是一个受限优化问题的通用方法。使用KKT方法，首先定义广义拉格朗日函数。</p>
+<p>为了定义广义拉格朗日函数，首先需要将S定义为函数的集合</p>
+$$\mathbb{S}=\{x| \forall i,g^{(i)}(x)=0 \text{ and } \forall j,h^{(j)}(x) \le0 \}$$<p>
+含有g(i)的方程称为equality constraints，含有h(j)的方程称为inequality constraints。</p>
+<p>对于每个函数，定义λi和αj。他们叫做KKT乘数。</p>
+<p>现在定义广义拉格朗日函数</p>
+$$L(x,\lambda,\alpha)=f(x)+\sum_i \lambda_i g^{(i)}(x)+\sum_j \alpha_jh^{(j)}(x)$$<p>接下来在广义拉格朗日函数上使用非受限优化算法，就可以解决受限优化算法了。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/numberical-computation/">Numberical Computation</a>
+        
+            <a href="/tags/the-flower-book/">The Flower Book</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/2020/06/machine-learning-basics-probability-and-information-theory/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——概率论与信息论</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/06/machine-learning-basics-linear-algebra/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——线性代数</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

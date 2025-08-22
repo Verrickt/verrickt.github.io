@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>CNN on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/cnn/</link>
+        <description>Recent content in CNN on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Sat, 18 Jul 2020 19:31:16 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/cnn/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>卷积神经网络</title>
+        <link>https://verrickt.github.io/2020/07/18/convolutional-neural-network/</link>
+        <pubDate>Sat, 18 Jul 2020 19:31:16 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/18/convolutional-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;任何一个机器学习的任务都可以被拆解为三步&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;找到一组函数(model)&lt;/li&gt;
+&lt;li&gt;找到评价函数好坏的标准(loss)&lt;/li&gt;
+&lt;li&gt;找出最好的函数(optimization)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;这三步在神经网络中同样成立。但在神经网络中，要找的不是一组函数，而是一种网络架构(architecture)。本文中的卷积神经网络(CNN)就是一种网络架构&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;根据universal approximation theorem，MLP已经足够表达任意函数。而在实际中，因为相邻层级的神经元之间的任意互联导致MLP容易过拟合。而在处理一些具有结构化的输入时，MLP中又会有大量的参数重复。为了解决这些问题，引入了CNN。&lt;/p&gt;
+&lt;h2 id=&#34;why-cnn&#34;&gt;Why CNN?
+&lt;/h2&gt;&lt;p&gt;考虑这样一个问题：如何让机器认出图片里的一张鸟？&lt;/p&gt;
+&lt;p&gt;回顾人类的思考过程，若图片中的物体具有鸟的基本特征，如喙、翅膀和爪，则认为它是鸟。在这个过程中，我们并不关心翅膀在图片中的位置：只要有喙就可以了。对翅膀和爪也是同样成立。&lt;/p&gt;
+&lt;p&gt;继续思考，怎么认出喙？喙可以由它的边界(geometry)来定义：两条斜线围成的尖尖的多西。翅膀和爪也可以有对应的边界来定义。同样的，我们并不关心边界出现的位置，只要它能确定这个物体是个喙就可以了。&lt;/p&gt;
+&lt;p&gt;实际上这就是CNN出现的动机之一：我们只关心一些模式是否出现，而不关心它们出现的位置。换句话说，我们所期待的模式会在图片的不同区域出现。&lt;/p&gt;
+&lt;p&gt;回到图像的例子上，人们发现了三个属性：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;比起整张图片，模式通常是比较小的&lt;/li&gt;
+&lt;li&gt;相同的模式会在不同的区域出现&lt;/li&gt;
+&lt;li&gt;对图片做subsampling(如删掉奇数行和偶数列)并不会改变图中的物体&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/properties.png&#34;
+	width=&#34;1296&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;properties&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;基于这三种属性，人们提出了convolution和pooling两种操作。convolution对应属性1、2，pooling对应属性3。convolution和pooling交替就是CNN的架构。&lt;/p&gt;
+&lt;h2 id=&#34;convolution&#34;&gt;Convolution
+&lt;/h2&gt;&lt;p&gt;Convolution的基础单位是filter(kernel)。filter是一个矩阵，用来检测模式
+考虑如下的情景
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/filter.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;filter&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;输入是&lt;code&gt;6*6&lt;/code&gt;的图片，filter是&lt;code&gt;3*3&lt;/code&gt;的矩阵。在图片的左上角找到一个与filter一样大的矩阵，做element-wise product，会得到一个数值。将filter往右移动一格，继续这个步骤，就又得到新的数值。移动的距离称为stride(步长)&lt;/p&gt;
+&lt;p&gt;filter通常比输入更小，而filter在移动的过程中可以在不同的位置上检测出对应的模式。这就体现了属性1和2。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/stride.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;stride&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;filter移动完毕后会得到一个新的矩阵。我们可以使用多个filter,将这些filter的输出放在一起会得到一个三维的张量，称为feature map.
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/feature-map.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;feature map&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/multi-channel.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;multi-channel&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+输入也不一定是黑白的。若输入彩色图片，则需要一个三维的张量来表示
+&lt;/p&gt;
+$$\mathrm{V}_{c,i,j}$$&lt;p&gt;
+这时的filter也是一个三维张量。
+这里的重点是，不管输入是什么样，filter的“z轴”要与输入的“z轴”一样高，然后在其他轴上以stride移动，得到的标量集合起来成为新的张量作为下一层的输入。
+Convolution得到的feature map会缩小，这可以补零(zero padding)来避免&lt;/p&gt;
+&lt;p&gt;实际中通过在MLP中共享参数来实现。使用了更少的参数来做同样的事情就不容易过拟合。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/shared-weight.png&#34;
+	width=&#34;1300&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;shared-weight&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;pooling&#34;&gt;Pooling
+&lt;/h2&gt;&lt;p&gt;Pooling的思路更简单了。对一些区域进行采样，得到一张更小的image,这就是属性3。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/before-pooling.png&#34;
+	width=&#34;1300&#34;
+	height=&#34;974&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;before-pooling&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;pooling有很多选择，可以取算术平均，可以取L2 norm。一般比较常见的是max pooling。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/after-pooling.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;978&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;after-pooling&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;通过pooling，网络就可以对输入中比较规律的变化不那么敏感。这称为invariance。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/invariance.png&#34;
+	width=&#34;802&#34;
+	height=&#34;472&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;invariance&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;169&#34;
+		data-flex-basis=&#34;407px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;flatten&#34;&gt;Flatten
+&lt;/h2&gt;&lt;p&gt;做完pooling后得到的是一个张量。把它“拉直”成一个向量，丢给MLP就可以实现我们所要做的事情了。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/whole-cnn.png&#34;
+	width=&#34;1308&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;whole&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;CNN并不只能用于图像处理，只要要处理的问题具有上述的三个属性，就可以用CNN来解决。
+下面是一些用CNN效果比较好的任务:
+&lt;img src=&#34;https://verrickt.github.io/2020/07/18/convolutional-neural-network/more-cnn.png&#34;
+	width=&#34;803&#34;
+	height=&#34;957&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;more cnn&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;83&#34;
+		data-flex-basis=&#34;201px&#34;
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

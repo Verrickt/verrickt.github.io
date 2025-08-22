@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="值类型与引用类型\rC#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。\nSync block index 与 Type object pointer\r读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现lock,Monitor等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。\n">
+<title>引用类型的开销</title>
+
+<link rel='canonical' href='https://verrickt.github.io/2018/07/19/overhead-of-reference-types/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="引用类型的开销">
+<meta property='og:description' content="值类型与引用类型\rC#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。\nSync block index 与 Type object pointer\r读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现lock,Monitor等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。\n">
+<meta property='og:url' content='https://verrickt.github.io/2018/07/19/overhead-of-reference-types/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='C#' /><meta property='article:tag' content='reference type' /><meta property='article:tag' content='overhead' /><meta property='article:published_time' content='2018-07-19T20:26:05&#43;00:00'/><meta property='article:modified_time' content='2018-07-19T20:26:05&#43;00:00'/>
+<meta name="twitter:title" content="引用类型的开销">
+<meta name="twitter:description" content="值类型与引用类型\rC#中的类型分为引用类型和值类型。使用struct或enum关键字修饰的类型定义是值类型，使用class或delegate关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。\nSync block index 与 Type object pointer\r读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现lock,Monitor等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#值类型与引用类型">值类型与引用类型</a></li>
+    <li><a href="#sync-block-index-与-type-object-pointer">Sync block index 与 Type object pointer</a></li>
+    <li><a href="#特殊的类型-数组">特殊的类型-数组</a></li>
+    <li><a href="#使用windbg">使用WinDBG</a></li>
+    <li><a href="#clr20-下的数组">CLR2.0 下的数组</a>
+      <ol>
+        <li><a href="#systemstring"><code>System.String[]</code></a></li>
+        <li><a href="#systemint32"><code>System.Int32[]</code></a></li>
+      </ol>
+    </li>
+    <li><a href="#clr-40下的数组">CLR 4.0下的数组</a>
+      <ol>
+        <li><a href="#systemstring-1"><code>System.String[]</code></a></li>
+        <li><a href="#systemint32-1"><code>System.Int32[]</code></a></li>
+      </ol>
+    </li>
+    <li><a href="#总结">总结</a></li>
+    <li><a href="#参考">参考</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2018/07/19/overhead-of-reference-types/">引用类型的开销</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 19, 2018</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 8 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="值类型与引用类型">值类型与引用类型
+</h2><p>C#中的类型分为引用类型和值类型。使用<code>struct</code>或<code>enum</code>关键字修饰的类型定义是值类型，使用<code>class</code>或<code>delegate</code>关键字修饰的类型是引用类型。引用类型和值类型各有限制，分别适用于不同的场景。不同于C++，C#中的值类型只能分配在栈上*1，引用类型只能分配在GC堆上。C#中的GC是精确式GC，这就对GC堆上的指针有了一些要求。这是引用类型有开销的原因之一。</p>
+<h2 id="sync-block-index-与-type-object-pointer">Sync block index 与 Type object pointer
+</h2><p>读过C# vir CLR的同学会知道，引用类型的开销是Sync blockindex和Type object pointer。他们的长度是都是一个字长。即在32位CLR上是4字节，在64位CLR上是8字节。Sync block index在CLR中是用于实现<code>lock</code>,<code>Monitor</code>等线程同步原语，Type object pointer是指向当前对象运行时类型信息的一个指针。Sync block index与Type object pointer只在CLR层面存在，对C#程序来说是透明的。但是CLR将它们暴封装后露C#，例如线程同步原语和反射API。</p>
+<h2 id="特殊的类型-数组">特殊的类型-数组
+</h2><p>C#中绝大部分类型的大小在编译期就可以确定，只要把对应的成员的大小相加即可</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SizeOf(T) = T.GetFields.Select(f=&gt;f.IsClass?WordSize:Sizeof(f)).Sum();
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>数组是个很特殊的存在，特殊在它的大小是与元素的类型和数量有关。数组的内存布局包含了所有的元素。(另一个这样的类型是<code>string</code>)。<code>byte[4]</code>和<code>byte[3]</code>的类型都是<code>byte[]</code>，然而它们的大小却不一样。我们这次就好仔细观察下数组</p>
+<h2 id="使用windbg">使用WinDBG
+</h2><p>WinDBG是Windows下常用的Debugger。虽然是以调试非托管代码设计，但是加上相关的插件以后也可以用来调试托管代码。SOS.dll是一个提供托管代码调试支持的的插件。它同时支持CLR和CoreCLR。</p>
+<p>安装好WinDBG后，就可以开始调试了。简单起见，这里使用如下代码。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-csharp" data-lang="csharp"><span class="line"><span class="cl"><span class="k">namespace</span> <span class="nn">SOSFromEE</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">class</span> <span class="nc">Program</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">const</span> <span class="kt">int</span> <span class="n">Length</span> <span class="p">=</span> <span class="m">10</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kd">static</span> <span class="k">void</span> <span class="n">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">var</span> <span class="n">ints</span> <span class="p">=</span> <span class="n">Enumerable</span><span class="p">.</span><span class="n">Range</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">Length</span><span class="p">).</span><span class="n">ToArray</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">var</span> <span class="n">strs</span> <span class="p">=</span> <span class="n">ints</span><span class="p">.</span><span class="n">Select</span><span class="p">(</span><span class="n">i</span> <span class="p">=&gt;</span> <span class="n">i</span><span class="p">.</span><span class="n">ToString</span><span class="p">()).</span><span class="n">ToArray</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Console</span><span class="p">.</span><span class="n">ReadLine</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">GC</span><span class="p">.</span><span class="n">KeepAlive</span><span class="p">(</span><span class="n">ints</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">GC</span><span class="p">.</span><span class="n">KeepAlive</span><span class="p">(</span><span class="n">strs</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Console</span><span class="p">.</span><span class="n">Read</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在WinDBG中选择Launch对应的可执行程序即可。
+在第一个断点时CLR还没有加载，我们继续让程序运行，等到不再出现ModLoad相关的提示时就可以让程序暂停了。
+我们在这时加载SOS扩展。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="o">.</span><span class="n">loadby</span> <span class="n">sos</span> <span class="n">CLRNameHere</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>sos后跟的是CLR的名称</p>
+<ul>
+<li>
+<p>CLR2.0(.Net framework 3.5及以前)是mscorwks</p>
+</li>
+<li>
+<p>CLR4.0(.Net framework 4.0及以后)是clr</p>
+</li>
+<li>
+<p>.net core是 coreclr</p>
+</li>
+</ul>
+<p>加载模块的过程中需要从微软的服务器上下载相关的pdb文件。由于你懂的原因需要很长时间</p>
+<h2 id="clr20-下的数组">CLR2.0 下的数组
+</h2><p>我们首先在32位的CLR2.0下观察。</p>
+<p>首先使用<code>.loadby sos mscorwks</code>加载<code>SOS</code>扩展模块。</p>
+<p><code>!dumpheap -type TypeNameHere</code>命令可以查看当前托管堆上类型名为<code>TypeNameHere</code>的对象。</p>
+<h3 id="systemstring"><code>System.String[]</code>
+</h3><p>我们先看看<code>String[]</code>都有哪些:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumpheap -type System.String[]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> Address       MT     Size
+</span></span><span class="line"><span class="cl">03591390 78ae46e4       80     
+</span></span><span class="line"><span class="cl">..........................
+</span></span><span class="line"><span class="cl">total 17 objects
+</span></span><span class="line"><span class="cl">Statistics:
+</span></span><span class="line"><span class="cl">      MT    Count    TotalSize Class Name
+</span></span><span class="line"><span class="cl">78ae46e4       17          676 System.Object[]
+</span></span><span class="line"><span class="cl">Total 17 objects
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>Address</code>显示的是对象在托管堆中的地址，<code>Method Table</code>就是上文中说的Type object pointer了。</p>
+<p>我们查看下位于地址<code>03591390</code>的<code>String[]</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumparray 03591390
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Name: System.String[]
+</span></span><span class="line"><span class="cl">MethodTable: 78ae46e4
+</span></span><span class="line"><span class="cl">EEClass: 788cda74
+</span></span><span class="line"><span class="cl">Size: 80(0x50) bytes
+</span></span><span class="line"><span class="cl">Array: Rank 1, Number of elements 16, Type CLASS
+</span></span><span class="line"><span class="cl">Element Methodtable: 78b10f14
+</span></span><span class="line"><span class="cl">[0] 035911c8
+</span></span><span class="line"><span class="cl">[1] 03591250
+</span></span><span class="line"><span class="cl">[2] null
+</span></span><span class="line"><span class="cl">[3] null
+</span></span><span class="line"><span class="cl">[4] null
+</span></span><span class="line"><span class="cl">[5] null
+</span></span><span class="line"><span class="cl">[6] null
+</span></span><span class="line"><span class="cl">[7] null
+</span></span><span class="line"><span class="cl">[8] null
+</span></span><span class="line"><span class="cl">[9] null
+</span></span><span class="line"><span class="cl">[10] null
+</span></span><span class="line"><span class="cl">[11] null
+</span></span><span class="line"><span class="cl">[12] null
+</span></span><span class="line"><span class="cl">[13] null
+</span></span><span class="line"><span class="cl">[14] null
+</span></span><span class="line"><span class="cl">[15] null
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到这个数组一共有16个元素，元素的类型是<code>string</code>。</p>
+<p>我们再来看看<code>03591390</code>位置的内存布局</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; dd 03591390 -0x4
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">0359138c  00000000 78ae46e4 00000010 78b10f14
+</span></span><span class="line"><span class="cl">0359139c  035911c8 03591250 00000000 00000000
+</span></span><span class="line"><span class="cl">035913ac  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">035913bc  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">035913cc  00000000 00000000 00000000 00000000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>dd 03591390 -0x4</code>告诉WinDBG从<code>03591390</code>向前偏移4个字节的位置开始展示内存。之所以向前偏移4个字节是为了展示引用类型的开销。<code>0359138c</code>位置的值<code>00000000</code>是Sync block index，位于<code>03591390</code>的<code>78ae46e4</code>看起来有点摸不着头脑，在WinDBG的输出中查找后发现是<code>System.String[]</code>的<code>MethodTable</code>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Name: System.String[]
+</span></span><span class="line"><span class="cl">MethodTable: 78ae46e4
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>MethodTable</code>是CLR级别的概念，对应到这里就是Type Object Pointer。
+GC堆上的对象往前偏４字节就能得到Sync block index，接下来是对象的Type object pointer。为了叙述方便，下文统称为对象头:)</p>
+<p>由此推测，对象头长度是两个字长。起始位置为当前指针的位置往前偏移一个字长。有兴趣的同学可以在64位CLR上自行验证。</p>
+<p>数组的长度是16(0x10)，地址<code>03591395</code>的值就是它。</p>
+<p>地址<code>03591388</code>的<code>78b10f14</code>不知道是什么。没关系，CTRF+F查找后发现它在上文出现过。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Element Methodtable: 78b10f14
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>应该是<code>String</code>的<code>Method table</code>。</p>
+<p><code>dump</code>一下<code>System.String</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumpheap -type System.String
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      MT    Count    TotalSize Class Name
+</span></span><span class="line"><span class="cl">78b10f14      154         6224 System.String
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>看来猜得没错。总结一下，引用类型的数组有4字长的开销，分别是2字长的对象头，1字长的长度，1字长的元素类型指针</p>
+<p>接下来看看值类型数组的布局</p>
+<h3 id="systemint32"><code>System.Int32[]</code>
+</h3><p>老样子，首先先找到堆上的<code>Int32[]</code>.</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumpheap -type System.Int32[]
+</span></span><span class="line"><span class="cl"> Address       MT     Size
+</span></span><span class="line"><span class="cl">03591e50 78b130b0      296     
+</span></span><span class="line"><span class="cl">................................
+</span></span><span class="line"><span class="cl">total 18 objects
+</span></span><span class="line"><span class="cl">Statistics:
+</span></span><span class="line"><span class="cl">      MT    Count    TotalSize Class Name
+</span></span><span class="line"><span class="cl">78b130b0       18         1440 System.Int32[]
+</span></span><span class="line"><span class="cl">Total 18 objects
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>dump一下相关属性</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">!dumparray 03591e50 
+</span></span><span class="line"><span class="cl">Name: System.Int32[]
+</span></span><span class="line"><span class="cl">MethodTable: 78b130b0
+</span></span><span class="line"><span class="cl">EEClass: 788ce6a8
+</span></span><span class="line"><span class="cl">Size: 296(0x128) bytes
+</span></span><span class="line"><span class="cl">Array: Rank 1, Number of elements 71, Type Int32
+</span></span><span class="line"><span class="cl">Element Methodtable: 78b13160
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>查看内存布局</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; dd 03591e50 -0x4
+</span></span><span class="line"><span class="cl">03591e4c  00000000 78b130b0 00000047 00000000
+</span></span><span class="line"><span class="cl">03591e5c  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">03591e6c  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">03591e7c  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">03591e8c  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">03591e9c  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">03591eac  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">03591ebc  00000000 00000000 00000000 00000000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>首先<code>Int32[]</code>也有对象头和长度的开销，但是却没有元素类型指针的开销。</p>
+<p>有心的同学可能已经发现了，<code>Int32[]</code>明确指出了元素的类型，而<code>String[]</code>却没有。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">!dumparray 03591390
+</span></span><span class="line"><span class="cl">Name: System.String[]
+</span></span><span class="line"><span class="cl">MethodTable: 78ae46e4
+</span></span><span class="line"><span class="cl">EEClass: 788cda74
+</span></span><span class="line"><span class="cl">Size: 80(0x50) bytes
+</span></span><span class="line"><span class="cl">Array: Rank 1, Number of elements 16, Type *CLASS*
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">!dumparray 03591e50 
+</span></span><span class="line"><span class="cl">Name: System.Int32[]
+</span></span><span class="line"><span class="cl">MethodTable: 78b130b0
+</span></span><span class="line"><span class="cl">EEClass: 788ce6a8
+</span></span><span class="line"><span class="cl">Size: 296(0x128) bytes
+</span></span><span class="line"><span class="cl">Array: Rank 1, Number of elements 71, Type *Int32*
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>String[]</code>的<code>Type</code>是个<code>CLASS</code>而不是<code>String</code>，难道说System.String[]是个&rsquo;假的&rsquo;的字符串数组？</p>
+<p>&hellip;.</p>
+<p>&hellip;.</p>
+<p>&hellip;.</p>
+<p>恭喜你猜对了。
+使用<code>!objsize</code>命令发现<code>String[]</code>是个带了层皮的<code>Object[]</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">!objsize 03591e50 
+</span></span><span class="line"><span class="cl">sizeof(03591e50) =          296 (       0x128) bytes (System.Int32[])
+</span></span><span class="line"><span class="cl">0:006&gt; !objsize 03591390 
+</span></span><span class="line"><span class="cl">sizeof(03591390) =          392 (       0x188) bytes (System.Object[])
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>C# in depth中对泛型有这样的描述</p>
+<blockquote>
+<p>对于一个泛型类<code>MyGeneric&lt;T&gt;</code>，对于<code>T</code>的是引用类型的情况，JIT只会为其生成一份代码;对于<code>T</code>是值类型的情况，则为每一个不同的<code>T</code>生成各自的代码。其中的原因是，在JIT运行时，指针的长度总是固定的，因而可以共用一套代码相同的代码。而值类型的长度是不确定的，因此需要为每个值类型单独生成代码。</p>
+</blockquote>
+<p>这里可能也是相同的原因吧。指针的长度相同，因而才需要储存元素的类型指针，实现类型检查。而值类型的代码不共用，所以不需要储存元素的类型指针。</p>
+<p>本来到已经可以结束了，可是我在32位的CLR4.0观察到的结果却不太一样。</p>
+<h2 id="clr-40下的数组">CLR 4.0下的数组
+</h2><p>与CLR 2.0不同，CLR 4.0下加载<code>SOS</code>的名字是clr</p>
+<p><code>.loadby sos clr</code></p>
+<h3 id="systemstring-1"><code>System.String[]</code>
+</h3><p>首先<code>dumpheap</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumpheap -type System.String[]
+</span></span><span class="line"><span class="cl"> Address       MT     Size
+</span></span><span class="line"><span class="cl">02531590 6979dfe0       84     
+</span></span><span class="line"><span class="cl">...........................
+</span></span><span class="line"><span class="cl">Statistics:
+</span></span><span class="line"><span class="cl">      MT    Count    TotalSize Class Name
+</span></span><span class="line"><span class="cl">6979dfe0       24          912 System.String[]
+</span></span><span class="line"><span class="cl">Total 24 objects
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后是<code>dumparray</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Name:        System.String[]
+</span></span><span class="line"><span class="cl">MethodTable: 6979dfe0
+</span></span><span class="line"><span class="cl">EEClass:     69374b80
+</span></span><span class="line"><span class="cl">Size:        84(0x54) bytes
+</span></span><span class="line"><span class="cl">Array:       Rank 1, Number of elements 18, Type CLASS
+</span></span><span class="line"><span class="cl">Element Methodtable: 6979d488
+</span></span><span class="line"><span class="cl">[0] 02531254
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后<code>dd</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; dd 02531590 -0x4
+</span></span><span class="line"><span class="cl">0253158c  00000000 6979dfe0 00000012 02531254
+</span></span><span class="line"><span class="cl">0253159c  025312d8 00000000 00000000 02531568
+</span></span><span class="line"><span class="cl">025315ac  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">025315bc  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">025315cc  00000000 00000000 00000000 00000000
+</span></span><span class="line"><span class="cl">025315dc  00000000 00000000 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>位于<code>02531598</code>的值<code>02531254</code>是第一个元素的值而不是<code>String</code>的<code>Method Table</code>!</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">!dumpheap -type String
+</span></span><span class="line"><span class="cl">Statistics:
+</span></span><span class="line"><span class="cl">      MT    Count    TotalSize Class Name
+</span></span><span class="line"><span class="cl">6979d488      193         5932 System.String
+</span></span><span class="line"><span class="cl">Total 224 objects
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>CLR 4.0把<code>Method Table</code>去掉了？</p>
+<p>经过简单的算术，确实是这样的
+18个元素，占据空间18*4=72。</p>
+<p>对象头和数组大小占据2*4+4=12</p>
+<p>84=72+12，跟<code>dumparray</code>出来的值一样。(有兴趣的同学根据上文中CLR2.0的数据计算下)</p>
+<p><code>!objsize</code>也确认了我们的猜测</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !objsize 02531590
+</span></span><span class="line"><span class="cl">sizeof(02531590) = 428 (0x1ac) bytes (System.String[])
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="systemint32-1"><code>System.Int32[]</code>
+</h3><p><code>!dumpheap</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumpheap -type System.Int32[]
+</span></span><span class="line"><span class="cl"> Address       MT     Size
+</span></span><span class="line"><span class="cl">02531f1c 6979f2a0      300     
+</span></span><span class="line"><span class="cl">.............................. 
+</span></span><span class="line"><span class="cl">Statistics:
+</span></span><span class="line"><span class="cl">      MT    Count    TotalSize Class Name
+</span></span><span class="line"><span class="cl">6979f2a0       20          844 System.Int32[]
+</span></span><span class="line"><span class="cl">Total 20 objects
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>!dumparray</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; !dumparray 02531f1c 
+</span></span><span class="line"><span class="cl">Name:        System.Int32[]
+</span></span><span class="line"><span class="cl">MethodTable: 6979f2a0
+</span></span><span class="line"><span class="cl">EEClass:     693752d8
+</span></span><span class="line"><span class="cl">Size:        300(0x12c) bytes
+</span></span><span class="line"><span class="cl">Array:       Rank 1, Number of elements 72, Type Int32
+</span></span><span class="line"><span class="cl">Element Methodtable: 6979f2dc
+</span></span><span class="line"><span class="cl">[0] 02531f24
+</span></span><span class="line"><span class="cl">[1] 02531f28
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>dd</code>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">0:006&gt; dd 02531f1c -0x4
+</span></span><span class="line"><span class="cl">02531f18  00000000 6979f2a0 00000048 00000003
+</span></span><span class="line"><span class="cl">02531f28  00000007 0000000b 00000011 00000017
+</span></span><span class="line"><span class="cl">02531f38  0000001d 00000025 0000002f 0000003b
+</span></span><span class="line"><span class="cl">02531f48  00000047 00000059 0000006b 00000083
+</span></span><span class="line"><span class="cl">02531f58  000000a3 000000c5 000000ef 00000125
+</span></span><span class="line"><span class="cl">02531f68  00000161 000001af 00000209 00000277
+</span></span><span class="line"><span class="cl">02531f78  000002f9 00000397 0000044f 0000052f
+</span></span><span class="line"><span class="cl">02531f88  0000063d 0000078b 0000091d 00000af1
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>值类型数组倒是没有什么变化。</p>
+<h2 id="总结">总结
+</h2><p>C#中引用类型有2个字长的对象头开销。分别是Sync block index和Type Object Pointer。数组是特殊的类型，它的大小与包含的元素相关，因此具有额外的开销。</p>
+<ul>
+<li>
+<p>在CLR 2.0下</p>
+<ul>
+<li>引用类型的数组包含额外的2字长的开销。分别是长度和元素的类型指针</li>
+<li>值类型的数组包含长度的额外开销开销。大小是一个字长。</li>
+</ul>
+</li>
+<li>
+<p>在CLR 4.0和CoreCLR中</p>
+<ul>
+<li>引用类型和值类型的数组包含长度的额外开销开销。大小是一个字长。</li>
+</ul>
+</li>
+</ul>
+<p>限于篇幅，CoreCLR的情况不再赘述，还请读者自行验证。</p>
+<p>/*其实本来看到Stackoverflow的回答只是想自己验证下的，但是自己动手的结果和答案里提到的不太一样，查了原因发现答案里用的是CLR2.0，我自己用的是CLR4.0。这就挖出来了CLR实现的更改。CoreCLR里使用的是CLR4.0里的规则。目前还不清楚MS为何要改实现*/</p>
+<h2 id="参考">参考
+</h2><ul>
+<li><a class="link" href="https://stackoverflow.com/questions/1589669/overhead-of-a-net-array"  target="_blank" rel="noopener"
+    >Overhead of a .NET array?</a></li>
+<li><a class="link" href="https://docs.microsoft.com/en-us/dotnet/framework/tools/sos-dll-sos-debugging-extension"  target="_blank" rel="noopener"
+    >SOS.dll (SOS Debugging Extension)</a></li>
+</ul>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/c%23/">C#</a>
+        
+            <a href="/tags/reference-type/">Reference Type</a>
+        
+            <a href="/tags/overhead/">Overhead</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

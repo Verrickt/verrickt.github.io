@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="「一杯茶一包烟，一个BUG调一天」—— 题记\n最近在做MIT 6.S081的Lab Locks的Buffer cache，大致要求是实现一个LRU缓存队列，用于文件系统的块缓存(block cache)，在保证线程安全的前提下尽可能的实现高吞吐量。\n实验给原始代码是基于双向链表的LRU队列，用了一个自旋锁保护链表和其中所有元素的值，可想而知这个自旋锁的竞争非常激烈 实验给了很多提示，比如将缓存改成哈希表，用链地址解决冲突；给每个bucket配一个锁，不同bucket里的元素互不影响，可以并发执行；用时间戳记录访问时间，避免反向遍历；\n">
+<title>记一次kernel panic调试</title>
+
+<link rel='canonical' href='http://localhost:1313/%E8%AE%B0%E4%B8%80%E6%AC%A1kernel-panic%E8%B0%83%E8%AF%95/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="记一次kernel panic调试">
+<meta property='og:description' content="「一杯茶一包烟，一个BUG调一天」—— 题记\n最近在做MIT 6.S081的Lab Locks的Buffer cache，大致要求是实现一个LRU缓存队列，用于文件系统的块缓存(block cache)，在保证线程安全的前提下尽可能的实现高吞吐量。\n实验给原始代码是基于双向链表的LRU队列，用了一个自旋锁保护链表和其中所有元素的值，可想而知这个自旋锁的竞争非常激烈 实验给了很多提示，比如将缓存改成哈希表，用链地址解决冲突；给每个bucket配一个锁，不同bucket里的元素互不影响，可以并发执行；用时间戳记录访问时间，避免反向遍历；\n">
+<meta property='og:url' content='http://localhost:1313/%E8%AE%B0%E4%B8%80%E6%AC%A1kernel-panic%E8%B0%83%E8%AF%95/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2022-07-28T16:31:38&#43;00:00'/><meta property='article:modified_time' content='2022-07-28T16:31:38&#43;00:00'/>
+<meta name="twitter:title" content="记一次kernel panic调试">
+<meta name="twitter:description" content="「一杯茶一包烟，一个BUG调一天」—— 题记\n最近在做MIT 6.S081的Lab Locks的Buffer cache，大致要求是实现一个LRU缓存队列，用于文件系统的块缓存(block cache)，在保证线程安全的前提下尽可能的实现高吞吐量。\n实验给原始代码是基于双向链表的LRU队列，用了一个自旋锁保护链表和其中所有元素的值，可想而知这个自旋锁的竞争非常激烈 实验给了很多提示，比如将缓存改成哈希表，用链地址解决冲突；给每个bucket配一个锁，不同bucket里的元素互不影响，可以并发执行；用时间戳记录访问时间，避免反向遍历；\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#round-1--printf">Round 1 —— Printf</a></li>
+    <li><a href="#round-2--mypanic">Round 2 —— MyPanic</a></li>
+    <li><a href="#round-3--gdb">Round 3 —— GDB</a></li>
+    <li><a href="#结论教训">结论&amp;教训</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/%E8%AE%B0%E4%B8%80%E6%AC%A1kernel-panic%E8%B0%83%E8%AF%95/">记一次kernel panic调试</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 28, 2022</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 7 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>「一杯茶一包烟，一个BUG调一天」—— 题记</p>
+<p>最近在做MIT 6.S081的Lab Locks的Buffer cache，大致要求是实现一个LRU缓存队列，用于文件系统的块缓存(block cache)，在保证线程安全的前提下尽可能的实现高吞吐量。<br>
+实验给原始代码是基于双向链表的LRU队列，用了一个自旋锁保护链表和其中所有元素的值，可想而知这个自旋锁的竞争非常激烈
+实验给了很多提示，比如将缓存改成哈希表，用链地址解决冲突；给每个bucket配一个锁，不同bucket里的元素互不影响，可以并发执行；用时间戳记录访问时间，避免反向遍历；</p>
+<!-- more -->
+<p>有如下几种情况，按序号递增顺序依次处理：</p>
+<ol>
+<li>buffer已存在：获取当前bucket的锁，遍历链表，找到该buffer后返回；</li>
+<li>buffer不存在，但当前bucket中有空余的buffer：遍历当前bucket的链表，按照LRU个空余的buffer，分配给当前请求并返回；</li>
+<li>buffer不存在，当前bucket无空余，但其他bucket有: 依次遍历整个哈希表，从其他bucket那里“偷”一个空余的buffer，分配给当前请求并返回；</li>
+<li>buffer不存在，且整张哈希表均无空余buffer: 真实的OS会分配额外的buffer以响应请求，然而xv6只是个用于教学的OS，在这种情况下直接kernel panic，死给你看；</li>
+</ol>
+<p>代码还算好写，调通了以后本应该万事大吉，可是内核在<code>usertest</code>的<code>manywrites</code>函数制造的满负载的情况下挂了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">test manywrites: 
+</span></span><span class="line"><span class="cl">panic: sched locks
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>来看看发出该panic的代码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Switch to scheduler.  Must hold only p-&gt;lock
+</span></span></span><span class="line"><span class="cl"><span class="c1">// and have changed proc-&gt;state. Saves and restores
+</span></span></span><span class="line"><span class="cl"><span class="c1">// intena because intena is a property of this
+</span></span></span><span class="line"><span class="cl"><span class="c1">// kernel thread, not this CPU. It should
+</span></span></span><span class="line"><span class="cl"><span class="c1">// be proc-&gt;intena and proc-&gt;noff, but that would
+</span></span></span><span class="line"><span class="cl"><span class="c1">// break in the few places where a lock is held but
+</span></span></span><span class="line"><span class="cl"><span class="c1">// there&#39;s no process.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span>
+</span></span><span class="line"><span class="cl"><span class="nf">sched</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">intena</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">struct</span> <span class="n">proc</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nf">myproc</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nf">holding</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">panic</span><span class="p">(</span><span class="s">&#34;sched p-&gt;lock&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="nf">mycpu</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">noff</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">panic</span><span class="p">(</span><span class="s">&#34;sched locks&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">state</span> <span class="o">==</span> <span class="n">RUNNING</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">panic</span><span class="p">(</span><span class="s">&#34;sched running&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="nf">intr_get</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">panic</span><span class="p">(</span><span class="s">&#34;sched interruptible&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">intena</span> <span class="o">=</span> <span class="nf">mycpu</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">intena</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">swtch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">,</span> <span class="o">&amp;</span><span class="nf">mycpu</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">mycpu</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">intena</span> <span class="o">=</span> <span class="n">intena</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>sched</code>是一个C函数，检查一系列不变式(invariants)后调用汇编子例程<code>swtch</code>进行上下文切换。自旋锁(spinlock)，顾名思义，是一种基于忙等(busy waiting)的进程同步机制。自旋锁的设计、实现以及使用必须十分小心，持有自旋锁时进行中断处理、进程调度等操作稍有不慎就会导致<strong>死锁</strong>。</p>
+<blockquote>
+<p>Some xv6 spinlocks protect data that is used by both threads and interrupt handlers. For example, the clockintr timer interrupt handler might increment ticks (kernel/trap.c:163) at about the same time that a kernel thread reads ticks in sys_sleep (kernel/sysproc.c:64). The lock tickslock serializes the two accesses.</p>
+</blockquote>
+<blockquote>
+<p>The interaction of spinlocks and interrupts raises a potential danger. Suppose sys_sleep holds tickslock, and its CPU is interrupted by a timer interrupt. clockintr would try to acquire tickslock, see it was held, and wait for it to be released. In this situation, tickslock will never be released: only sys_sleep can release it, but sys_sleep will not continue running until clockintr returns. So the CPU will deadlock, and any code that needs either lock will also freeze</p>
+</blockquote>
+<p>因此xv6选择了简单粗暴的方式：若处理机持有自旋锁，则在该处理机上关闭中断</p>
+<blockquote>
+<p>To avoid this situation, if a spinlock is used by an interrupt handler, a CPU must never hold that lock with interrupts enabled. Xv6 is more conservative: when a CPU acquires any lock, xv6 always disables interrupts on that CPU. Interrupts may still occur on other CPUs, so an interrupt’s acquire can wait for a thread to release a spinlock; just not on the same CPU.</p>
+</blockquote>
+<p>明白了这些之后回来看代码，<code>mycpu()-&gt;noff</code>是当前自旋锁的嵌套层数。每次<code>acquire</code>锁时+1，<code>release</code>时-1，当<code>noff==0</code>时恢复原有的中断状态。</p>
+<p>xv6是一个支持多处理机的内核，多个调度器在不同处理机上同时执行，因此进程控制块(即<code>p</code>)也需要由一个自旋锁保护，这个锁就是<code>p-&gt;lock</code>。其由<code>swtch</code>切换到的调度器释放，获取<code>p-&gt;lock</code>时<code>noff=1</code>。<code>panic:sched locks</code>代表了这时持有了额外的自旋锁。调试的主要思路就时要把它找出来。</p>
+<h2 id="round-1--printf">Round 1 —— Printf
+</h2><p>既然是持有了额外的锁，那<code>acquire</code>和<code>release</code>操作时把锁的名字打出来，就很容易定位没有被<code>release</code>的锁了。xv6为了方便调试，给每个自旋锁留了名字，并且还在内核态实现了<code>printf</code>函数，代码实现起来非常方便</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span>
+</span></span><span class="line"><span class="cl"><span class="nf">acquire</span><span class="p">(</span><span class="k">struct</span> <span class="n">spinlock</span> <span class="o">*</span><span class="n">lk</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Acquire %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">lk</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">....</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span>
+</span></span><span class="line"><span class="cl"><span class="nf">release</span><span class="p">(</span><span class="k">struct</span> <span class="n">spinlock</span> <span class="o">*</span><span class="n">lk</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;Release %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">lk</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">....</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>make clean &amp;&amp; make qemu</code>编译运行，熟悉的终端并没有出来，看了一眼<code>printf</code>，发现它扭头又调用了<code>acquire</code>，循环调用爆栈后死于缺页中断，<code>Printf</code>大法堂堂失败。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span>
+</span></span><span class="line"><span class="cl"><span class="nf">printf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">fmt</span><span class="p">,</span> <span class="p">...)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">va_list</span> <span class="n">ap</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">locking</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">char</span> <span class="o">*</span><span class="n">s</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">locking</span> <span class="o">=</span> <span class="n">pr</span><span class="p">.</span><span class="n">locking</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="n">locking</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">acquire</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pr</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">   <span class="p">....</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="round-2--mypanic">Round 2 —— MyPanic
+</h2><p>Print不管用只好另辟蹊径了。或许可以在<code>panic</code>的时候打印出当前处理机持有的锁?可是<code>panic</code>的方法签名并不具备这样的扩展性，并且<code>panic</code>已经在kernel的其他地方大量使用了，改签名牵一发而动全身。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span>
+</span></span><span class="line"><span class="cl"><span class="nf">panic</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">pr</span><span class="p">.</span><span class="n">locking</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;panic: &#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">panicked</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// freeze uart output from other CPUs
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">for</span><span class="p">(;;)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>那换个思路，写一个<code>MyPanic</code>，将挂掉时的名字用栈传入，打印所有锁的名字后最终调用<code>panic</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">MyPanic</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">s</span><span class="p">,</span><span class="kt">char</span><span class="o">*</span> <span class="n">stack</span><span class="p">[],</span><span class="kt">int</span> <span class="n">top</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;locks: </span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">top</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">panic</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>省略全局变量定义、使用、makefile的若干踩坑，总之失败了。原因是</p>
+<ol>
+<li>当前CPU上由<code>acquire</code>保存的锁的名字会被其他CPU其他锁的<code>release</code>顶掉，让栈顶保的名字失去意义；</li>
+<li>栈本身也要加锁保护..就绕了一圈又绕回来&hellip;</li>
+</ol>
+<h2 id="round-3--gdb">Round 3 —— GDB
+</h2><p>你永远可以相信GDB，这不，走投无路的我来了。</p>
+<p><code>b panic</code>打上断点，然后<code>bt</code>得到调用栈，嗯？为啥<code>sleeplock</code>出问题了？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#0  panic (s=s@entry=0x80008240 &#34;sched locks&#34;) at kernel/printf.c:124
+</span></span><span class="line"><span class="cl">#1  0x0000000080001632 in sched () at kernel/proc.c:483
+</span></span><span class="line"><span class="cl">#2  0x00000000800016cc in sleep (chan=chan@entry=0x800171e0 &lt;bcache+32736&gt;, 
+</span></span><span class="line"><span class="cl">    lk=lk@entry=0x800171e8 &lt;bcache+32744&gt;) at kernel/proc.c:547
+</span></span><span class="line"><span class="cl">#3  0x0000000080003c16 in acquiresleep (lk=lk@entry=0x800171e0 &lt;bcache+32736&gt;)
+</span></span><span class="line"><span class="cl">    at kernel/sleeplock.c:26
+</span></span><span class="line"><span class="cl">#4  0x0000000080002618 in bget (blockno=&lt;optimized out&gt;, dev=2147578312) at kernel/bio.c:134
+</span></span><span class="line"><span class="cl">#5  bread (dev=dev@entry=1, blockno=&lt;optimized out&gt;) at kernel/bio.c:212
+</span></span><span class="line"><span class="cl">#6  0x0000000080002a54 in balloc (dev=&lt;optimized out&gt;) at kernel/fs.c:72
+</span></span><span class="line"><span class="cl">#7  0x0000000080002b9e in bmap (ip=ip@entry=0x8001b298 &lt;itable+320&gt;, bn=bn@entry=3)
+</span></span><span class="line"><span class="cl">    at kernel/fs.c:386
+</span></span><span class="line"><span class="cl">#8  0x000000008000336c in writei (ip=0x8001b298 &lt;itable+320&gt;, user_src=user_src@entry=1, 
+</span></span><span class="line"><span class="cl">    src=src@entry=51776, off=3072, n=n@entry=3072) at kernel/fs.c:499
+</span></span><span class="line"><span class="cl">#9  0x000000008000406e in filewrite (f=0x8001cf58 &lt;ftable+112&gt;, addr=48704, n=&lt;optimized out&gt;)
+</span></span><span class="line"><span class="cl">    at kernel/file.c:164
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>sleeplock</code>是xv6实现的另一个内核态同步机制，类似信号量(<code>Mutex</code>)。<code>sleeplock</code>与<code>spinlock</code>的最大区别在于<code>sleeplock</code>会让出处理机。
+在块上的写入非常耗时，为了节省资源，xv6在块缓存(block cache)上用了<code>sleeplock</code>。<code>sleeplock</code>的<code>acquiresleep</code>调用<code>sleep</code>将当前进程设置为阻塞态后调用调度器<code>sched</code>进行上下文切换，而在切换的过程中出现了kernel panic，这很合理。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">buf</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">valid</span><span class="p">;</span>   <span class="c1">// has data been read from disk?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">int</span> <span class="n">disk</span><span class="p">;</span>    <span class="c1">// does disk &#34;own&#34; buf?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">uint</span> <span class="n">dev</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">uint</span> <span class="n">blockno</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">struct</span> <span class="n">sleeplock</span> <span class="n">lock</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">uint</span> <span class="n">refcnt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>bget</code>函数在LRU的队列中返回一个被锁住的<code>buf</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">struct</span> <span class="n">buf</span><span class="o">*</span>
+</span></span><span class="line"><span class="cl"><span class="nf">bget</span><span class="p">(</span><span class="n">uint</span> <span class="n">dev</span><span class="p">,</span> <span class="n">uint</span> <span class="n">blockno</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">...</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">acquire</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bcache</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Is the block already cached?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">for</span><span class="p">(</span><span class="n">b</span> <span class="o">=</span> <span class="n">bcache</span><span class="p">.</span><span class="n">hashtable</span><span class="p">[</span><span class="n">no</span><span class="p">].</span><span class="n">next</span><span class="p">;</span> <span class="n">b</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="n">bcache</span><span class="p">.</span><span class="n">hashtable</span><span class="p">[</span><span class="n">no</span><span class="p">];</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span><span class="p">(</span><span class="n">b</span><span class="o">-&gt;</span><span class="n">dev</span> <span class="o">==</span> <span class="n">dev</span> <span class="o">&amp;&amp;</span> <span class="n">b</span><span class="o">-&gt;</span><span class="n">blockno</span> <span class="o">==</span> <span class="n">blockno</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">      <span class="n">b</span><span class="o">-&gt;</span><span class="n">refcnt</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">acquiresleep</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">release</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bcache</span><span class="p">.</span><span class="n">hashlock</span><span class="p">[</span><span class="n">no</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">b</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>眼尖的读者可能已经看出来了，在<code>acquiresleep</code>前，当前处理机还持有了<code>bcache.lock</code>和<code>bcache.hashlock[no]</code>这两个锁。这就是问题的原因么？</p>
+<p>对比原版代码，好像确实是顺序反了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl">  <span class="nf">release</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bcache</span><span class="p">.</span><span class="n">lock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">acquiresleep</span><span class="p">(</span><span class="o">&amp;</span><span class="n">b</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>将<code>acquiresleep</code>放到<code>release</code>之后顺利的通过了测试点，所以就是顺序的问题！</p>
+<p>重读课本6.4章<code>Deadlock and lock ordering</code>，果然上锁顺序的重要性已经被不止一次强调了</p>
+<blockquote>
+<p>If a code path through the kernel must hold several locks at the same time, it is important that all code paths acquire those locks in the same order. If they don’t, there is a risk of deadlock&hellip;.<br>
+To avoid such deadlocks, all code paths must acquire locks in the same order. The need for a global lock acquisition order means that locks are  effectively part of each function’s specification: <strong>callers must invoke functions in a way that causes locks to be acquired in the agreed-on order</strong>&hellip;<br>
+Honoring a global deadlock-avoiding order can be surprisingly difficult.
+the danger of deadlock is often a constraint on how fine-grained one can make a locking scheme, since more locks often means more opportunity for deadlock&hellip;<br>
+<strong>The need to avoid deadlock is often a major factor in kernel implementation</strong>.</p>
+</blockquote>
+<h2 id="结论教训">结论&amp;教训
+</h2><ol>
+<li>上锁顺序(lock ordering)是内核中避免死锁的重要手段</li>
+<li>设计一个全局的上锁顺序是非常困难的。</li>
+<li>上锁顺序需要程序员的显示注意(explicit attention)，稍有不慎就会死锁</li>
+<li><del>GDB必秒printf<del></li>
+</ol>
+<hr>
+<p>最后来个随堂小测，请指出下列输出的产生方式</p>
+<ul>
+<li>一个程序员遇到了一个问题，两个现在问题有他了他决定，用多线程解决。</li>
+<li>一个程序员遇到了一个问题，他决定用多线程解决，现在他有两个问题了</li>
+<li></li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

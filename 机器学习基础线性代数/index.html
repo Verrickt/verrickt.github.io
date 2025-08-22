@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\r前言\r本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。\nConcepts\rTensor\r矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。 向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 表示张量A的一个分量\n">
+<title>机器学习基础——线性代数</title>
+
+<link rel='canonical' href='http://localhost:1313/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="机器学习基础——线性代数">
+<meta property='og:description' content="\r前言\r本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。\nConcepts\rTensor\r矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。 向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 表示张量A的一个分量\n">
+<meta property='og:url' content='http://localhost:1313/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='Linear algebra' /><meta property='article:tag' content='The flower book' /><meta property='article:published_time' content='2020-06-24T09:38:56&#43;00:00'/><meta property='article:modified_time' content='2020-06-24T09:38:56&#43;00:00'/>
+<meta name="twitter:title" content="机器学习基础——线性代数">
+<meta name="twitter:description" content="\r前言\r本文的主体是机器学习中所用到的线性代数知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。\nConcepts\rTensor\r矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。 向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。 表示张量A的一个分量\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#concepts">Concepts</a>
+      <ol>
+        <li><a href="#tensor">Tensor</a></li>
+        <li><a href="#identify-matrix">Identify matrix</a></li>
+        <li><a href="#matrix-inversion">matrix inversion</a></li>
+        <li><a href="#singular-matrix">Singular matrix</a></li>
+        <li><a href="#norms">Norms</a></li>
+      </ol>
+    </li>
+    <li><a href="#operations">Operations</a>
+      <ol>
+        <li><a href="#decomposition">Decomposition</a>
+          <ol>
+            <li><a href="#eigendecomposition">Eigendecomposition</a></li>
+            <li><a href="#singular-value-decompositionsvd">Singular value decomposition(SVD)</a></li>
+          </ol>
+        </li>
+        <li><a href="#the-moore-penrose-pseudoinverse">The Moore-Penrose Pseudoinverse</a></li>
+        <li><a href="#trace">Trace</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/">机器学习基础——线性代数</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 24, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 3 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h2 id="前言">前言
+</h2><p>本文的主体是机器学习中所用到的线性代数知识，因此奉行<a class="link" href="https://en.wikipedia.org/wiki/Lazy_evaluation"  target="_blank" rel="noopener"
+    >Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
+<!-- more -->
+<h2 id="concepts">Concepts
+</h2><h3 id="tensor">Tensor
+</h3><p>矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。
+向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。
+表示张量A的一个分量</p>
+$$A_{i,j,k}$$<h3 id="identify-matrix">Identify matrix
+</h3><p>Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。</p>
+<h3 id="matrix-inversion">matrix inversion
+</h3><p>花书定义：
+</p>
+$$A^{-1}A=I$$<p>并<strong>未限定</strong>A为方阵，并且是左逆</p>
+<p>花书也定义了右逆
+</p>
+$$AA^{-1}=I$$<p>同样<strong>未限定</strong>A为方阵</p>
+<p>而后说明，<strong>方阵</strong>的左逆和右逆是相同的</p>
+<blockquote>
+<p>For square matrices, the left inverse and right inverse are equal</p>
+</blockquote>
+<p>而课本认为<strong>非方阵</strong>没有逆矩阵。对左逆和右逆也不做显式区分。</p>
+<p>在花书接下来提到逆矩阵时，这可能是一个坑点</p>
+<h3 id="singular-matrix">Singular matrix
+</h3><p>非<strong>满秩</strong>的<strong>方阵</strong>称为奇异矩阵。</p>
+<h3 id="norms">Norms
+</h3><p>又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。</p>
+<p>正式定义：</p>
+<ul>
+<li>f(x) = 0 ⇒ x = 0</li>
+<li>f(x+y) ≤ f(x) + f(y)(三角不等式)</li>
+<li>∀α∈R,f(αx) = |α|f(x)</li>
+</ul>
+<p>常用的范式:</p>
+<ul>
+<li>L2 norm
+向量与原点的距离</li>
+</ul>
+$$||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}$$<ul>
+<li>
+<p>Squared L2 norm
+L2 norm的平方形式，某些情况下易于分析和计算</p>
+</li>
+<li>
+<p>L1 norm
+</p>
+$$||x||_1=\sum_{i} |x_i|$$</li>
+<li>
+<p>max norm
+</p>
+$$||x||_{\infty }={\max} |x_i|$$</li>
+<li>
+<p>Frobenius norm
+计算矩阵的“大小”</p>
+</li>
+</ul>
+$$||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}$$<h2 id="operations">Operations
+</h2><h3 id="decomposition">Decomposition
+</h3><p>将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。</p>
+<h4 id="eigendecomposition">Eigendecomposition
+</h4><p>基于特征值和特征向量分解。与课本相同，不再赘述。</p>
+<h4 id="singular-value-decompositionsvd">Singular value decomposition(SVD)
+</h4><p>又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。</p>
+<p>对于一个<code>m*n</code>的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：
+</p>
+$$A=UDV^T$$<ul>
+<li>U是大小<code>m*m</code>的正交矩阵</li>
+<li>D是大小<code>m*n</code>的对角矩阵</li>
+<li>V是大小<code>n*n</code>的正交矩阵</li>
+</ul>
+<p>D中对角线的元素称为A的奇异值。U的列向量称为A的<strong>左</strong>奇异向量，V的列向量称为A的<strong>右</strong>奇异向量</p>
+<p>A的奇异值分解可以理解为「A的函数」的特征值分解：</p>
+<ul>
+<li>A的左奇异值向量是AA^T的特征向量。</li>
+<li>A的右奇异值向量是A^TA的特征向量</li>
+<li>A的非零奇异值是A^TA的特征值，也是AA^T的特征值</li>
+</ul>
+<p>SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下</p>
+<h3 id="the-moore-penrose-pseudoinverse">The Moore-Penrose Pseudoinverse
+</h3><p>又称摩尔－彭若斯广义逆（好长的名字&hellip;）</p>
+$$A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}$$<p>实际上，一般用
+</p>
+$$A^+=VD^+U^T$$<p>
+来计算广义逆</p>
+<p>U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。</p>
+<p>当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。</p>
+<p>若x无解，Ax给出了L2范式中y-Ax的最小值</p>
+<h3 id="trace">Trace
+</h3><p>又称迹，是矩阵主对角线元素的和。</p>
+$$\mathrm{Tr}(A)=\sum_i{A_{i,i}}$$<p>迹和矩阵乘法可以代替一些需要求和符号的操作：
+</p>
+$$||A||_F=\sqrt{\mathrm{Tr(AA^T)}}$$<p>矩阵的迹具有循环不变性：</p>
+$$\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}$$<p>更通用来说，
+</p>
+$$\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})$$
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/linear-algebra/">Linear Algebra</a>
+        
+            <a href="/tags/the-flower-book/">The Flower Book</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="前言\r主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。\n">
+<title>主成分分析</title>
+
+<link rel='canonical' href='https://verrickt.github.io/2020/07/31/principal-component-analysis/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="主成分分析">
+<meta property='og:description' content="前言\r主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。\n">
+<meta property='og:url' content='https://verrickt.github.io/2020/07/31/principal-component-analysis/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='PCA' /><meta property='article:published_time' content='2020-07-31T19:49:41&#43;00:00'/><meta property='article:modified_time' content='2020-07-31T19:49:41&#43;00:00'/>
+<meta name="twitter:title" content="主成分分析">
+<meta name="twitter:description" content="前言\r主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#pca">PCA</a></li>
+    <li><a href="#constraints">Constraints</a></li>
+    <li><a href="#dimension-reduction">Dimension reduction</a>
+      <ol>
+        <li><a href="#to-1-dimension">to 1 dimension</a></li>
+        <li><a href="#to-2-dimensions">to 2 dimensions</a></li>
+        <li><a href="#to-k-dimensions">to k dimensions</a></li>
+      </ol>
+    </li>
+    <li><a href="#decorelation">Decorelation</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2020/07/31/principal-component-analysis/">主成分分析</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 31, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 2 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="前言">前言
+</h2><script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<p>主成分分析(Principal component analysis,PCA)是一种常用的无监督学习算法。经过PCA后的数据会在它所处理的维度上会不相关(decorelation)。 而PCA所选的维度又通常比本来的维度要小，因此也可以用来做降维处理。</p>
+<!-- more -->
+<h2 id="pca">PCA
+</h2><p>PCA的想法很朴素。它试图找到一个线性变化W，使得经过变化后的向量<code>z=Wx</code>在各个维度<code>z_i</code>上都拥有最大的方差。</p>
+<p><img src="/2020/07/31/principal-component-analysis/maximum-variance.png"
+	width="960"
+	height="720"
+	
+	loading="lazy"
+	
+		alt="maximum variance"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="320px"
+	
+></p>
+<h2 id="constraints">Constraints
+</h2><p>仅仅要求方差最大而不做任何限制是不行的。我们总是可以让<code>w_i</code>含有无穷从而使方差变为无穷大，但这没有意义。</p>
+<p>因此限制<code>w_i</code>的模是1。
+同样的，当找出使得第i维的方差最大的参数<code>w_i</code>后，机器可以把这组参数<code>w_i</code>用在第j维上来“偷懒”，因此限制任意的参数是垂直的。</p>
+<p><img src="/2020/07/31/principal-component-analysis/constraint.png"
+	width="1298"
+	height="977"
+	
+	loading="lazy"
+	
+		alt="constraint"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="318px"
+	
+></p>
+<h2 id="dimension-reduction">Dimension reduction
+</h2><h3 id="to-1-dimension">to 1 dimension
+</h3><p>先考虑一维的情况。
+</p>
+$$
+z_1=w_1'x,其中 (w_1')^\top w_1'=1
+$$<p><img src="/2020/07/31/principal-component-analysis/z1-var.png"
+	width="1296"
+	height="977"
+	
+	loading="lazy"
+	
+		alt="z1_var"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="318px"
+	
+>
+</p>
+$$
+\mathrm{Var}(z_1)=\sum_{z_{i}}(z_1-\bar z)^2
+=\sum_x(w_1'x-w_1'\bar x)^2=\sum_x(w_1'(x- \bar x))^2 \\
+=\sum_x(w_1')^\top(x- \bar x)(x- \bar x)^\top w_1' \\
+=(w_1')^\top\left(\sum_x(x-\bar x)(x-\bar x)^\top\right)w_1' \\
+=(w_1')^\top\mathrm{Cov}(x)w_1'
+$$<p><img src="/2020/07/31/principal-component-analysis/w1-eigenvector.png"
+	width="1305"
+	height="969"
+	
+	loading="lazy"
+	
+		alt="w1-eigenvector"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="323px"
+	
+></p>
+<p>构造拉格朗日函数，其中S=Cov(x),
+</p>
+$$
+L(w_1')=(w_1')^\top S w_1'-\alpha((w_1')^\top w_1'-1) \\
+\frac{\partial L}{\partial w}=0 \rArr Sw_1'-\alpha w_1'
+\rArr Sw_1' = \alpha w_1'
+\rArr \alpha是S的特征值,w'是对应的特征向量
+$$<p>带回到上式
+</p>
+$$
+(w_1')^\top\mathrm{Cov}(x)w_1'
+= (w_1')^\top Sw_1' = (w_1')^\top \alpha w_1'
+= \alpha (w_1')^\top w_1'=\alpha
+$$<p>
+<code>α</code>的最大值，即是Cov(x)最大的特征值。此时的<code>w1'</code>为<code>α</code>对应的特征向量</p>
+<p>对于二元的情况也类似</p>
+<h3 id="to-2-dimensions">to 2 dimensions
+</h3><p><img src="/2020/07/31/principal-component-analysis/z2_lagrange_operator.png"
+	width="1301"
+	height="980"
+	
+	loading="lazy"
+	
+		alt="z2_lagrange_operator"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="318px"
+	
+></p>
+<p>拉格朗日函数
+</p>
+$$
+g(w_2)=(w_2')^\top S w_2 - \alpha((w_2')^\top w_2' = 1) - \beta((w_2')^\top w_1')
+$$<p>
+而
+</p>
+$$
+(w_2')^\top w_2' = 1 \\
+(w_1')^\top w_2' = 0 \\
+(w_1')^\top Sw_2'=((w_1')^\top Sw_2')^\top
+=(w_2')^\top S^\top w_1  \\
+=(w_2')^\top S w_1 = (w_2')^\top \alpha w_1 \\
+=\alpha  (w_2')^\top w_1 = 0
+$$<p>
+所以系数拉格朗日函数的只剩下<code>β</code>.</p>
+<p><img src="/2020/07/31/principal-component-analysis/z2_simplified.png"
+	width="1298"
+	height="977"
+	
+	loading="lazy"
+	
+		alt="z2_simplified"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="318px"
+	
+></p>
+<p><code>β</code>的最大值，即是Cov(x)第二大的特征值。此时的<code>w2'</code>为<code>β</code>对应的特征向量</p>
+<h3 id="to-k-dimensions">to k dimensions
+</h3><p>把PCA推广到k维，则<code>W</code>是<code>Cov(X)</code>的最大的k个特征值所对应的特征向量的行矩阵。</p>
+<h2 id="decorelation">Decorelation
+</h2><p>PCA处理后的z矩阵的各个维度之间是没有相互关系的。</p>
+<p><img src="/2020/07/31/principal-component-analysis/decorelation.png"
+	width="1303"
+	height="976"
+	
+	loading="lazy"
+	
+		alt="decorelation"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="320px"
+	
+></p>
+$$
+Cov(z)=\sum(z-\bar{z})(z-\bar{z})^\top
+=\sum_xW(x- \bar x)(x- \bar x)^\top W^\top
+=WCov(x)W^\top
+$$<p>
+将W展开，
+</p>
+$$
+Cov(z)=WS\left[w^1,w^2...w^k\right] 
+$$<p>
+$$</p>
+<p>=W\left[Sw^1,Sw^2&hellip;Sw^k\right]
+</p>
+$$
+$$<p>=W\left[\lambda_1w^1,\lambda_2w^2&hellip;
+\lambda_kw^k\right]<br>
+</p>
+$$
+$$<p>
+=\left[w^1,w^2&hellip;w^k\right]^\top
+\left[\lambda_1w^1,\lambda_2w^2&hellip;\lambda_kw^k\right]
+</p>
+$$
+$$<p>
+\forall i, (w^i)^\top w^i = 1
+</p>
+$$
+$$<p>
+\forall i\not ={j}, (w^i)^\top w^j = 0
+</p>
+$$
+因此
+$$<p>
+Cov(z)=diag(\lambda_1,\lambda_2,&hellip;,\lambda_k)
+$$
+协方差矩阵为对角阵，所以不同分量之间没有线性的相关性。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/pca/">PCA</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/2020/07/23/recurrent-neural-network/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">循环神经网络</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/07/18/convolutional-neural-network/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">卷积神经网络</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/07/15/regularization-of-neural-network/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">神经网络中的Regularization</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/07/11/back-propagation-gradient-descent-improved/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">后向传播-进阶版的梯度下降算法</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/07/04/from-logistic-regression-to-neural-network/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">从分类到对率回归再到到神经网络</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

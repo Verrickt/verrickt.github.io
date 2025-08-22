@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Neural Network on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/neural-network/</link>
+        <description>Recent content in Neural Network on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Sat, 04 Jul 2020 22:01:07 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/neural-network/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>从分类到对率回归再到到神经网络</title>
+        <link>https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/</link>
+        <pubDate>Sat, 04 Jul 2020 22:01:07 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的是台湾大学2020机器学习的Classification&lt;a class=&#34;link&#34; href=&#34;https://youtu.be/fZAZUYEeIMg&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;1&lt;/a&gt;和&lt;a class=&#34;link&#34; href=&#34;https://youtu.be/hSXFuypLukA&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;2&lt;/a&gt;的笔记，奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;策略，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;分类&#34;&gt;分类
+&lt;/h2&gt;&lt;p&gt;在分类问题，我们要找一个函数f，f的输入是代表样本的向量，输出是一个代表类别的标量。将样本分为两类的叫做二元分类，多于两类的叫做多元分类。我们先考虑二元分类问题。&lt;/p&gt;
+&lt;h3 id=&#34;引例&#34;&gt;引例
+&lt;/h3&gt;&lt;p&gt;XCOM中面对的敌人有变种人(ADVENT)和外星人(Alien)两种，长老(The elder)送来了新的物种，现有训练资料变种人数据15组，外星人10组，你能据此帮助被关在外星人网络中充当首脑的人类指挥官分辨新物种的种类吗？&lt;/p&gt;
+&lt;p&gt;先考虑这个问题，蓝绿两个盒子，其中各有蓝绿球若干。从蓝盒子抽球的概率是1/3，从绿盒子抽球的概率是2/3。已知抽到了蓝球，问从蓝色盒子里抽到的概率是多少?
+&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/two_boxes.png&#34;
+	width=&#34;1306&#34;
+	height=&#34;972&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;两个盒子&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+$$
+P(蓝盒子)=\frac{1}{3} \\
+P(绿盒子)=\frac{2}{3} \\
+P(抽到蓝球|蓝盒子)=\frac{4}{5} \\
+P(绿盒子|抽到蓝球)=\frac{2}{5} \\
+P(抽到蓝球)=P(蓝盒子)P(抽到蓝球|蓝盒子)+P(绿盒子)P(绿盒子|抽到蓝球)=\frac{1*4}{3*5}*\frac{2*2}{3*5}=\frac{8}{15} \\
+P(蓝盒子|抽到蓝球)=\frac{P(抽到蓝球|蓝盒子)P(蓝盒子)}{P(抽到蓝球)}=\frac{\frac{1*4}{3*5}}{\frac{8}{15}}=\frac{1}{2} 
+$$&lt;h3 id=&#34;贝叶斯公式&#34;&gt;贝叶斯公式
+&lt;/h3&gt;&lt;p&gt;我们预测的依据是贝叶斯公式：
+&lt;/p&gt;
+$$P(A|B)=\frac{P(B|A)P(A)}{P(B)}$$&lt;p&gt;
+用C1表示敌人属于变种人，C2表示敌人属于外星人，那么&lt;/p&gt;
+$$P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))}$$&lt;p&gt;training set中一共有15组变种人，10组外星人。则
+&lt;/p&gt;
+$$
+P(C_1)=\frac{15}{15+10}=\frac{3}{5} \\
+P(C_2)=\frac{10}{15+10}=\frac{2}{5}
+$$&lt;p&gt;接下来是确定P(x|C1)。思考一下，testing-set上的数据我们的算法从来没有见过，那么P(x|C1)应该是0咯。可这样贝叶斯公式就变成0/0了，还怎么预测?&lt;/p&gt;
+&lt;h3 id=&#34;pc1x&#34;&gt;P(C1|x)
+&lt;/h3&gt;&lt;p&gt;在此，我们大胆假设，目前所见过的C1的example是由一个概率分布产生的，这样就可以对testing-set上没见过的数据了求概率了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/prior.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;先验&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这是课件的一张图，对于图中79个example，认为是一个Gaussian产生的，但好多个Gaussian都可以产生这样的点，具体是哪一个呢？这里使用极大似然的思想，就认为使得产生训练数据的概率最大的Gaussian好了&lt;/p&gt;
+&lt;p&gt;回到我们的例子，似然函数是
+&lt;/p&gt;
+$$
+L(\mu,\Sigma)=\prod_i^{15}f_{\mu,\Sigma}(x^i) \\
+f_{\mu,\Sigma}=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\}}
+\\
+\mu^*,\Sigma^*=\argmax_{\mu,\Sigma} L(\mu,\Sigma)
+$$&lt;p&gt;
+经过一番运算后，得到μ和Σ的闭式解:
+&lt;/p&gt;
+$$
+\mu^*=\frac{1}{15}\sum_{n=1}^{15}x^n
+\Sigma^*=\frac{1}{15}\sum_{n=1}^{15}(x^n-\mu^*)(x^n-\mu^*)^T
+$$&lt;p&gt;
+这样就得到了C1的分布&lt;code&gt;G1(μ,Σ)&lt;/code&gt;，同理可以得到C2的分布&lt;code&gt;G2(μ,Σ)&lt;/code&gt;，有了这两项就可以计算条件概率从而完成预测了。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;if(x|C1)&amp;gt;0.5 output ADVENT
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;else output ALIEN
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/res_1.png&#34;
+	width=&#34;720&#34;
+	height=&#34;541&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;结果&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;
+回到上课的例子，这个模型的效果并不好:(。&lt;/p&gt;
+&lt;p&gt;想到&lt;a class=&#34;link&#34; href=&#34;../../../06/26/machine-learning-basics-probability-and-information-theory/&#34; &gt;Probability&lt;/a&gt;中Gaussion的PS&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果用高斯分布来做分类问题，让分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;那就试试共用协方差矩阵吧&lt;/p&gt;
+&lt;h3 id=&#34;共用协方差矩阵&#34;&gt;共用协方差矩阵
+&lt;/h3&gt;&lt;p&gt;似然函数变为
+&lt;/p&gt;
+$$
+L(\mu_1,\mu_2,\Sigma)=\prod_i^{15}f_{\mu1,\Sigma}(x^i)\prod_{j=16}^{25}f_{\mu2,\Sigma}(x^i) \\
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/res_2.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;共用covariance-matrix&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
+	
+&gt;
+求解过程省略，来看一下结果，准确度一下子就上来了。这时发现分界线变成了一条直线。这与线性模型有关系吗？推一下看看&lt;/p&gt;
+&lt;h3 id=&#34;why-linear一些推导&#34;&gt;Why linear?一些推导
+&lt;/h3&gt;$$
+P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))} \\
+$$&lt;p&gt;
+上下同除以分子
+&lt;/p&gt;
+$$
+P(C_1|x)=\frac{1}{1+\frac{P({x|C_2})P(C_2)}{P(x|C_1)P(C_1)}}
+$$$$
+令z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}，
+则P(C_1|x)=\frac{1}{1+\exp(-z)}=\sigma(z) 
+$$&lt;p&gt;
+sigmoid函数就这样出现了!
+继续分解z
+&lt;/p&gt;
+$$
+z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}=\ln \frac{P({x|C_1})}{P(x|C_2)}+\ln\frac{P(C_1)}{P(C_2)} $$&lt;p&gt;
+$$&lt;/p&gt;
+&lt;p&gt;\lg \frac{P(C_1)}{P(C_2)}=\lg \frac{\frac{N_1}{N_1+N_2}}{\frac{N_2}{N_1+N_2}}=\lg \frac{N_1}{N2}&lt;/p&gt;
+$$
+是个常数 
+$$&lt;p&gt;
+P(x|C_1)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)}} &lt;/p&gt;
+$$
+$$&lt;p&gt;
+P(x|C_2)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)}} &lt;/p&gt;
+$$
+带入，则
+$$&lt;p&gt;
+\ln \frac{P({x|C_1})}{P(x|C_2)} = \ln \frac{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)}}}{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)}}} &lt;/p&gt;
+$$
+$$&lt;p&gt;
+=\ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\ln \exp\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup &lt;/p&gt;
+$$
+$$&lt;p&gt;
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup &lt;/p&gt;
+$$
+$$&lt;p&gt;
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup
+&lt;/p&gt;
+$$
+$$&lt;p&gt;
+z= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup + \lg \frac{N_1}{N2} $$&lt;/p&gt;
+&lt;p&gt;共用协方差矩阵时，
+&lt;/p&gt;
+$$\Sigma^1=\Sigma^2=\Sigma $$$$
+ \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} =0
+ x^T(\Sigma^1)^{-1}x - x^T(\Sigma^2)^{-1}x=0 $$&lt;p&gt;此时
+&lt;/p&gt;
+$$z = (\mu^1-\mu^2)^T\Sigma^{-1}x-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2} $$$$
+ 令w^T=(\mu^1-\mu^2)^T\Sigma^{-1},b=-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2}$$$$则z=w^T+b $$$$P(C_1|x)= \sigma(z)$$&lt;p&gt;
+是z的广义线性模型，给它一个名字，即logistic regression。&lt;/p&gt;
+&lt;p&gt;由
+&lt;/p&gt;
+$$\mu^2,\mu^2,\Sigma^1,\Sigma^2$$&lt;p&gt;
+得到w和b的模型称为生成模型(generative model)，因为各个x可以由一组分布生成出来。 直接找出w和b的模型称为判别模型(discriminative model)&lt;/p&gt;
+&lt;h2 id=&#34;logistic-regression&#34;&gt;logistic regression
+&lt;/h2&gt;&lt;h3 id=&#34;step1-find-a-function-set&#34;&gt;Step1, find a function set
+&lt;/h3&gt;&lt;p&gt;logistic regression问题中，我们要找一组参数w和b，σ(wTx+b)给出的值是x属于正例的概率。&lt;/p&gt;
+&lt;h3 id=&#34;step2-determine-goodness-of-function&#34;&gt;Step2, determine goodness of function
+&lt;/h3&gt;&lt;p&gt;这里使用似然函数
+&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/goodness.png&#34;
+	width=&#34;1275&#34;
+	height=&#34;787&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;loss&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;388px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;最小化对数似然函数(NLL)实际上就是最小化交叉熵&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/cross_entropy.png&#34;
+	width=&#34;1310&#34;
+	height=&#34;983&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;cross_entropy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step3-find-the-best-function&#34;&gt;Step3, find the best function
+&lt;/h3&gt;&lt;p&gt;梯度下降走你&lt;/p&gt;
+&lt;h3 id=&#34;why-likelihood-instead-of-mse&#34;&gt;Why likelihood instead of MSE?
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/MSE.png&#34;
+	width=&#34;1307&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;MSE&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;若使用MSE，则偏微分的值一直是0，无法进行梯度下降。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/cross_entropy_vs_MSE.png&#34;
+	width=&#34;1313&#34;
+	height=&#34;976&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;MSE&amp;cross entropy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;
+由图可见，在logistic regression这个问题上，交叉熵(极大似然)确实比MSE的梯度更大，更适合当作评价函数好坏的标准。&lt;/p&gt;
+&lt;h3 id=&#34;多元分类&#34;&gt;多元分类
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/multi-class_classification.png&#34;
+	width=&#34;1316&#34;
+	height=&#34;981&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Multiclass-classification&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h4 id=&#34;step-1&#34;&gt;Step 1
+&lt;/h4&gt;&lt;p&gt;以三元分类为例，要做三元分类，要找三组参数&lt;/p&gt;
+&lt;p&gt;$$
+C_1:w^1,b^1 \text{  } z_1=w^1x+b_1 \
+C_2:w^2,b^2 \text{  } z_2=w^2x+b_2 \
+C_3:w^3,b^3 \text{  } z_3=w^3x+b_3 \
+\mathrm{softmax}: \vec{z} \in \mathbb{R}^n\to \vec{y} \in\mathbb{R}^n \
+\text{}\\
+y_i = \frac{\exp{z_i}}{\sum_{i=1}^3}&lt;/p&gt;
+&lt;p&gt;$$&lt;/p&gt;
+&lt;h4 id=&#34;step-2&#34;&gt;Step 2
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/multi_class_loss.png&#34;
+	width=&#34;1302&#34;
+	height=&#34;969&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Multiclass-Loss&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;把&lt;code&gt;z&lt;/code&gt;经过&lt;code&gt;softmax&lt;/code&gt;函数变换后得到的概率分布&lt;code&gt;y&lt;/code&gt;与真实值计算交叉熵，即为需要最小化的函数&lt;/p&gt;
+&lt;h4 id=&#34;step-3&#34;&gt;Step 3
+&lt;/h4&gt;&lt;p&gt;梯度下降&lt;/p&gt;
+&lt;h2 id=&#34;线性模型的限制&#34;&gt;线性模型的限制
+&lt;/h2&gt;&lt;p&gt;线性模型的函数是直线，而稍微复杂点的问题是无法用直线解决的。例如XOR问题&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/XOR.png&#34;
+	width=&#34;1297&#34;
+	height=&#34;979&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;XOR&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;317px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;feature-transformation&#34;&gt;feature transformation
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/feature_transformation.png&#34;
+	width=&#34;1308&#34;
+	height=&#34;977&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;feature transformation&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;通过对feature做一些处理，是有可能突破线性模型的限制的。
+但需要人工参与，而且没有一般规律。这就变成&lt;em&gt;人工&lt;/em&gt;学习而不是&lt;em&gt;机器&lt;/em&gt;学习了:(&lt;/p&gt;
+&lt;h3 id=&#34;feature-transformation-with-linear-unit&#34;&gt;feature transformation with linear unit
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/cascading_logistic_regression.png&#34;
+	width=&#34;1309&#34;
+	height=&#34;971&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;cascading_logistic_regression&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+但我们可以把feature transformation看作是一个线性的变化，这样就可以由logistic regression来解决。这样把多个logistic regression串起来，就可以对feature做复杂的变化。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/feature_transformation_with_linear_unit.png&#34;
+	width=&#34;1305&#34;
+	height=&#34;978&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;feature_transformation_with_linear_unit&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+上图是使用两个logistic regression进行feature transformation的结果，只要再接上一个logistic regression接收他俩的输出就可以进行分类了。&lt;/p&gt;
+&lt;h3 id=&#34;neural-network&#34;&gt;Neural network
+&lt;/h3&gt;&lt;p&gt;由此推广，把若干个线性模型串起来就可以实现很多复杂的功能。那么给logistic regression的单元起个新名字叫做神经元(neuron)，把它们互相连接形成的结构叫做神经网络(neural network)，瞬间就高大上起来了。&lt;/p&gt;
+&lt;p&gt;现在你可以骗麻瓜说「我们在模拟人类大脑的运作实现人工智慧」了;-)&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

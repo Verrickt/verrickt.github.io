@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Tags on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/</link>
+        <description>Recent content in Tags on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Fri, 22 Aug 2025 19:42:57 +0800</lastBuildDate><atom:link href="https://verrickt.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Meta</title>
+        <link>https://verrickt.github.io/tags/meta/</link>
+        <pubDate>Fri, 22 Aug 2025 19:42:57 +0800</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/meta/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>CFG</title>
+        <link>https://verrickt.github.io/tags/cfg/</link>
+        <pubDate>Fri, 15 Aug 2025 16:59:56 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/cfg/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Log</title>
+        <link>https://verrickt.github.io/tags/log/</link>
+        <pubDate>Tue, 01 Nov 2022 20:52:36 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/log/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Nginx</title>
+        <link>https://verrickt.github.io/tags/nginx/</link>
+        <pubDate>Tue, 01 Nov 2022 20:52:36 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/nginx/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Troubleshoot</title>
+        <link>https://verrickt.github.io/tags/troubleshoot/</link>
+        <pubDate>Tue, 01 Nov 2022 20:52:36 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/troubleshoot/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Deadlock</title>
+        <link>https://verrickt.github.io/tags/deadlock/</link>
+        <pubDate>Thu, 28 Jul 2022 16:31:38 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/deadlock/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Xv6</title>
+        <link>https://verrickt.github.io/tags/xv6/</link>
+        <pubDate>Thu, 28 Jul 2022 16:31:38 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/xv6/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>BSOD</title>
+        <link>https://verrickt.github.io/tags/bsod/</link>
+        <pubDate>Sun, 27 Mar 2022 12:00:44 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/bsod/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Github Actions</title>
+        <link>https://verrickt.github.io/tags/github-actions/</link>
+        <pubDate>Tue, 19 Oct 2021 10:51:23 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/github-actions/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Powershell</title>
+        <link>https://verrickt.github.io/tags/powershell/</link>
+        <pubDate>Tue, 19 Oct 2021 10:51:23 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/powershell/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Anaconda</title>
+        <link>https://verrickt.github.io/tags/anaconda/</link>
+        <pubDate>Sat, 16 Jan 2021 15:33:16 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/anaconda/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Jupyter</title>
+        <link>https://verrickt.github.io/tags/jupyter/</link>
+        <pubDate>Sat, 16 Jan 2021 15:33:16 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/jupyter/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>VSCode</title>
+        <link>https://verrickt.github.io/tags/vscode/</link>
+        <pubDate>Sat, 16 Jan 2021 15:33:16 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/vscode/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Machine Learning</title>
+        <link>https://verrickt.github.io/tags/machine-learning/</link>
+        <pubDate>Tue, 04 Aug 2020 15:27:52 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/machine-learning/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Semi-Supervised Learning</title>
+        <link>https://verrickt.github.io/tags/semi-supervised-learning/</link>
+        <pubDate>Tue, 04 Aug 2020 15:27:52 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/semi-supervised-learning/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>SVM</title>
+        <link>https://verrickt.github.io/tags/svm/</link>
+        <pubDate>Fri, 31 Jul 2020 19:49:52 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/svm/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>PCA</title>
+        <link>https://verrickt.github.io/tags/pca/</link>
+        <pubDate>Fri, 31 Jul 2020 19:49:41 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/pca/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>CUDA</title>
+        <link>https://verrickt.github.io/tags/cuda/</link>
+        <pubDate>Tue, 28 Jul 2020 21:39:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/cuda/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Tensorflow</title>
+        <link>https://verrickt.github.io/tags/tensorflow/</link>
+        <pubDate>Tue, 28 Jul 2020 21:39:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/tensorflow/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>RNN</title>
+        <link>https://verrickt.github.io/tags/rnn/</link>
+        <pubDate>Thu, 23 Jul 2020 18:21:45 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/rnn/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>CNN</title>
+        <link>https://verrickt.github.io/tags/cnn/</link>
+        <pubDate>Sat, 18 Jul 2020 19:31:16 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/cnn/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Regularization</title>
+        <link>https://verrickt.github.io/tags/regularization/</link>
+        <pubDate>Wed, 15 Jul 2020 10:22:44 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/regularization/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Backpropagation</title>
+        <link>https://verrickt.github.io/tags/backpropagation/</link>
+        <pubDate>Sat, 11 Jul 2020 11:21:40 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/backpropagation/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Classification</title>
+        <link>https://verrickt.github.io/tags/classification/</link>
+        <pubDate>Sat, 04 Jul 2020 22:01:07 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/classification/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Logistic Regression</title>
+        <link>https://verrickt.github.io/tags/logistic-regression/</link>
+        <pubDate>Sat, 04 Jul 2020 22:01:07 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/logistic-regression/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Neural Network</title>
+        <link>https://verrickt.github.io/tags/neural-network/</link>
+        <pubDate>Sat, 04 Jul 2020 22:01:07 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/neural-network/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>The Flower Book</title>
+        <link>https://verrickt.github.io/tags/the-flower-book/</link>
+        <pubDate>Fri, 03 Jul 2020 21:29:45 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/the-flower-book/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Numberical Computation</title>
+        <link>https://verrickt.github.io/tags/numberical-computation/</link>
+        <pubDate>Sun, 28 Jun 2020 11:00:27 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/numberical-computation/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Information Theory</title>
+        <link>https://verrickt.github.io/tags/information-theory/</link>
+        <pubDate>Fri, 26 Jun 2020 22:25:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/information-theory/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Probability</title>
+        <link>https://verrickt.github.io/tags/probability/</link>
+        <pubDate>Fri, 26 Jun 2020 22:25:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/probability/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Linear Algebra</title>
+        <link>https://verrickt.github.io/tags/linear-algebra/</link>
+        <pubDate>Wed, 24 Jun 2020 09:38:56 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/linear-algebra/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>HTML</title>
+        <link>https://verrickt.github.io/tags/html/</link>
+        <pubDate>Tue, 21 Apr 2020 21:24:32 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/html/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>UWP</title>
+        <link>https://verrickt.github.io/tags/uwp/</link>
+        <pubDate>Tue, 21 Apr 2020 21:24:32 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/uwp/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>PAT</title>
+        <link>https://verrickt.github.io/tags/pat/</link>
+        <pubDate>Fri, 03 Apr 2020 13:31:51 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/pat/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>CPP</title>
+        <link>https://verrickt.github.io/tags/cpp/</link>
+        <pubDate>Wed, 21 Aug 2019 22:41:50 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/cpp/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>C#</title>
+        <link>https://verrickt.github.io/tags/c%23/</link>
+        <pubDate>Thu, 08 Aug 2019 22:57:35 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/c%23/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Parser</title>
+        <link>https://verrickt.github.io/tags/parser/</link>
+        <pubDate>Thu, 08 Aug 2019 22:57:35 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/parser/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>MSBuild</title>
+        <link>https://verrickt.github.io/tags/msbuild/</link>
+        <pubDate>Thu, 30 Aug 2018 23:05:54 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/msbuild/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>.Net Framework</title>
+        <link>https://verrickt.github.io/tags/.net-framework/</link>
+        <pubDate>Tue, 31 Jul 2018 22:43:47 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/.net-framework/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>WPF</title>
+        <link>https://verrickt.github.io/tags/wpf/</link>
+        <pubDate>Tue, 31 Jul 2018 22:43:47 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/wpf/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Overhead</title>
+        <link>https://verrickt.github.io/tags/overhead/</link>
+        <pubDate>Thu, 19 Jul 2018 20:26:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/overhead/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Reference Type</title>
+        <link>https://verrickt.github.io/tags/reference-type/</link>
+        <pubDate>Thu, 19 Jul 2018 20:26:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/reference-type/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>OOP</title>
+        <link>https://verrickt.github.io/tags/oop/</link>
+        <pubDate>Thu, 12 Jul 2018 21:56:26 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/oop/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>SOLID</title>
+        <link>https://verrickt.github.io/tags/solid/</link>
+        <pubDate>Thu, 12 Jul 2018 21:56:26 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/solid/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Debugging</title>
+        <link>https://verrickt.github.io/tags/debugging/</link>
+        <pubDate>Mon, 21 May 2018 21:03:59 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/debugging/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Async/Await</title>
+        <link>https://verrickt.github.io/tags/async/await/</link>
+        <pubDate>Thu, 08 Mar 2018 19:59:20 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/async/await/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Lambda</title>
+        <link>https://verrickt.github.io/tags/lambda/</link>
+        <pubDate>Thu, 08 Mar 2018 19:59:20 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/lambda/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Reentrance</title>
+        <link>https://verrickt.github.io/tags/reentrance/</link>
+        <pubDate>Thu, 08 Mar 2018 19:59:20 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/reentrance/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>HttpClient</title>
+        <link>https://verrickt.github.io/tags/httpclient/</link>
+        <pubDate>Tue, 24 Oct 2017 19:43:28 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/tags/httpclient/</guid>
+        <description></description>
+        </item>
+        
+    </channel>
+</rss>

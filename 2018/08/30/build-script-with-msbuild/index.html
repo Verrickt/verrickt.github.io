@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="背景\r项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。\n">
+<title>使用MSBuild编写构建脚本</title>
+
+<link rel='canonical' href='https://verrickt.github.io/2018/08/30/build-script-with-msbuild/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="使用MSBuild编写构建脚本">
+<meta property='og:description' content="背景\r项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。\n">
+<meta property='og:url' content='https://verrickt.github.io/2018/08/30/build-script-with-msbuild/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='MSBuild' /><meta property='article:published_time' content='2018-08-30T23:05:54&#43;00:00'/><meta property='article:modified_time' content='2018-08-30T23:05:54&#43;00:00'/>
+<meta name="twitter:title" content="使用MSBuild编写构建脚本">
+<meta name="twitter:description" content="背景\r项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#背景">背景</a></li>
+    <li><a href="#roslyn与msbuild">Roslyn与MSBuild</a>
+      <ol>
+        <li><a href="#找到msbuild">找到MSBuild</a></li>
+        <li><a href="#msbuild的命令行选项">MSBuild的命令行选项</a></li>
+      </ol>
+    </li>
+    <li><a href="#踩坑">踩坑</a>
+      <ol>
+        <li><a href="#部分参数无效">部分参数无效</a></li>
+        <li><a href="#c工程指定输出目录无效">C++工程指定输出目录无效</a></li>
+        <li><a href="#c工程defineconstants无效">C++工程DefineConstants无效</a></li>
+      </ol>
+    </li>
+    <li><a href="#对powershell的吐槽">对PowerShell的吐槽</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2018/08/30/build-script-with-msbuild/">使用MSBuild编写构建脚本</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Aug 30, 2018</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="背景">背景
+</h2><p>项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。</p>
+<!-- more -->
+<p>大致介绍下项目的组成吧。整个项目由三部分组成：</p>
+<ul>
+<li>Installer.vcxproj</li>
+<li>Main.csproj</li>
+<li>Updater.csproj</li>
+</ul>
+<p><code>Main</code>是项目本体。<code>Installer</code>负责项目的安装和卸载,<code>Updater</code>负责项目的更新。解决方案里除<code>Installer</code>使为C++外，其余均为C#。</p>
+<p>解决方案的结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">MyProject.sln
+</span></span><span class="line"><span class="cl">- Installer.vcxproj 
+</span></span><span class="line"><span class="cl">- Main.csproj
+</span></span><span class="line"><span class="cl">- Updater.csproj
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>现在需要从<code>MyProject.sln</code>条件编译出多个版本，要求</p>
+<ul>
+<li>对于每个版本，<code>Installer</code>和<code>Main</code>须重新编译</li>
+<li>所有版本共享同一份<code>Updater</code>的二进制。</li>
+</ul>
+<h2 id="roslyn与msbuild">Roslyn与MSBuild
+</h2><p>构建的过程自然离不开编译。编译器虽软能将代码转化为二进制，但这个转换的单位是<strong>文件</strong>:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">gcc --help
+</span></span><span class="line"><span class="cl">Usage: gcc [options] file...
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>作为.NET的编译器，Roslyn也不例外:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">csc /?
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">.........
+</span></span><span class="line"><span class="cl">                        - INPUT FILES -
+</span></span><span class="line"><span class="cl"> /recurse:&lt;wildcard&gt;           Include all files in the current directory and
+</span></span><span class="line"><span class="cl">                               subdirectories according to the wildcard
+</span></span><span class="line"><span class="cl">                               specifications
+</span></span><span class="line"><span class="cl"> /reference:&lt;alias&gt;=&lt;file&gt;     Reference metadata from the specified assembly
+</span></span><span class="line"><span class="cl">                               file using the given alias (Short form: /r)
+</span></span><span class="line"><span class="cl"> /reference:&lt;file list&gt;        Reference metadata from the specified assembly
+</span></span><span class="line"><span class="cl">                               files (Short form: /r)
+</span></span><span class="line"><span class="cl"> /addmodule:&lt;file list&gt;        Link the specified modules into this assembly
+</span></span><span class="line"><span class="cl"> /link:&lt;file list&gt;             Embed metadata from the specified interop
+</span></span><span class="line"><span class="cl">                               assembly files (Short form: /l)
+</span></span><span class="line"><span class="cl"> /analyzer:&lt;file list&gt;         Run the analyzers from this assembly
+</span></span><span class="line"><span class="cl">                               (Short form: /a)
+</span></span><span class="line"><span class="cl"> /additionalfile:&lt;file list&gt;   Additional files that don&#39;t directly affect code
+</span></span><span class="line"><span class="cl">                               generation but may be used by analyzers for producing
+</span></span><span class="line"><span class="cl">                               errors or warnings.
+</span></span><span class="line"><span class="cl"> /embed                        Embed all source files in the PDB.
+</span></span><span class="line"><span class="cl"> /embed:&lt;file list&gt;            Embed specific files in the PDB
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们不会把所有源文件的路径、所有引用的程序集的都告诉编译器，这样既低效又不利于维护。<br>
+最好有个能有个程序，能把所有编译的参数都记下来。这个过程最好能自动化：在文件夹里添加一个源文件、新增一个引用项，它都自动的更新编译参数。<br>
+存在这样的工具吗？当然了。在Visual Studio里添加一个文件是不需要动编译选项的。有心的人会发现，Visual Studio在<code>.csproj</code>记录了新增的文件。<code>.csproj</code>是项目文件。一个叫MSBuild的工具可以解析<code>.csproj</code>，并生成对应的编译选项调用编译器。这样的工具称为构建自动化工具。用微软自己的话说，是构建引擎。大型软件的开发离不开构建引擎。<br>
+与MSBuild同类的工具还有有<a class="link" href="https://en.wikipedia.org/wiki/List_of_build_automation_software#Build_script_generation_tools"  title="List of build automation software"
+     target="_blank" rel="noopener"
+    >很多</a>常见的有make,maven等。</p>
+<p>相比于Roslyn，MSBuild的使用就简单多了，只需要指定项目文件就万事大吉了。
+下面是在一个新建WPF项目下调用MSbuild的输出。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C:<span class="se">\U</span>sers<span class="se">\V</span>on<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\W</span>pfApp1&gt;msbuild WpfApp1.sln
+</span></span><span class="line"><span class="cl">Microsoft <span class="o">(</span>R<span class="o">)</span> Build Engine version 15.7.180.61344 <span class="k">for</span> .NET Framework
+</span></span><span class="line"><span class="cl">Copyright <span class="o">(</span>C<span class="o">)</span> Microsoft Corporation. All rights reserved.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Building the projects in this solution one at a time. To <span class="nb">enable</span> parallel build, please add the <span class="s2">&#34;/m&#34;</span> switch.
+</span></span><span class="line"><span class="cl">Build started 9/1/2018 2:08:01 PM.
+</span></span><span class="line"><span class="cl">Project <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1.sln&#34;</span> on node <span class="m">1</span> <span class="o">(</span>default targets<span class="o">)</span>.
+</span></span><span class="line"><span class="cl">ValidateSolutionConfiguration:
+</span></span><span class="line"><span class="cl">  Building solution configuration <span class="s2">&#34;Debug|Any CPU&#34;</span>.
+</span></span><span class="line"><span class="cl">Project <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1.sln&#34;</span> <span class="o">(</span>1<span class="o">)</span> is building <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfA
+</span></span></span><span class="line"><span class="cl"><span class="s2">pp1.csproj&#34;</span> <span class="o">(</span>2<span class="o">)</span> on node <span class="m">1</span> <span class="o">(</span>default targets<span class="o">)</span>.
+</span></span><span class="line"><span class="cl">GenerateBindingRedirects:
+</span></span><span class="line"><span class="cl">  No suggested binding redirects from ResolveAssemblyReferences.
+</span></span><span class="line"><span class="cl">Project <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfApp1.csproj&#34;</span> <span class="o">(</span>2<span class="o">)</span> is building <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\W
+</span></span></span><span class="line"><span class="cl"><span class="s2">pfApp1\WpfApp1_r1lsxnqk_wpftmp.csproj&#34;</span> <span class="o">(</span>3<span class="o">)</span> on node <span class="m">1</span> <span class="o">(</span>_CompileTemporaryAssembly target<span class="o">(</span>s<span class="o">))</span>.
+</span></span><span class="line"><span class="cl">CoreCompile:
+</span></span><span class="line"><span class="cl">  C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class="o">)</span><span class="se">\M</span>icrosoft Visual Studio<span class="se">\2</span>017<span class="se">\C</span>ommunity<span class="se">\M</span>SBuild<span class="se">\1</span>5.0<span class="se">\b</span>in<span class="se">\R</span>oslyn<span class="se">\c</span>sc.exe /noconfig /nowarn:1701,
+</span></span><span class="line"><span class="cl">  <span class="m">1702</span> /nostdlib+ /platform:anycpu32bitpreferred /errorreport:prompt /warn:4 /define:DEBUG<span class="p">;</span>TRACE /highentropyva+ /refer
+</span></span><span class="line"><span class="cl">  ence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.CSharp.dll&#34;</span> /ref
+</span></span><span class="line"><span class="cl">  erence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\mscorlib.dll&#34;</span> /reference
+</span></span><span class="line"><span class="cl">  :<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationCore.dll&#34;</span> /referen
+</span></span><span class="line"><span class="cl">  ce:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationFramework.dll&#34;</span> /
+</span></span><span class="line"><span class="cl">  reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Core.dll&#34;</span> /ref
+</span></span><span class="line"><span class="cl">  erence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Data.DataSetExten
+</span></span></span><span class="line"><span class="cl"><span class="s2">  sions.dll&#34;</span> /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Da
+</span></span></span><span class="line"><span class="cl"><span class="s2">  ta.dll&#34;</span> /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.dll&#34;</span>
+</span></span><span class="line"><span class="cl">  /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Net.Http.dll&#34;</span>
+</span></span><span class="line"><span class="cl">   /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xaml.dll&#34;</span> /r
+</span></span><span class="line"><span class="cl">  eference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.dll&#34;</span> /refer
+</span></span><span class="line"><span class="cl">  ence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.Linq.dll&#34;</span> /refe
+</span></span><span class="line"><span class="cl">  rence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\WindowsBase.dll&#34;</span> /debug+
+</span></span><span class="line"><span class="cl">  /debug:full /filealign:512 /optimize- /out:obj<span class="se">\D</span>ebug<span class="se">\W</span>pfApp1.exe /ruleset:<span class="s2">&#34;C:\Program Files (x86)\Microsoft Visual St
+</span></span></span><span class="line"><span class="cl"><span class="s2">  udio\2017\Community\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset&#34;</span> /subsystemversion:6.
+</span></span><span class="line"><span class="cl">  <span class="m">00</span> /target:winexe /utf8output App.xaml.cs MainWindow.xaml.cs Properties<span class="se">\A</span>ssemblyInfo.cs Properties<span class="se">\R</span>esources.Designer
+</span></span><span class="line"><span class="cl">  .cs Properties<span class="se">\S</span>ettings.Designer.cs C:<span class="se">\U</span>sers<span class="se">\V</span>on<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\W</span>pfApp1<span class="se">\W</span>pfApp1<span class="se">\o</span>bj<span class="se">\D</span>ebug<span class="se">\M</span>ainWindow.g.cs C:<span class="se">\U</span>sers<span class="se">\V</span>on<span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  source<span class="se">\r</span>epos<span class="se">\W</span>pfApp1<span class="se">\W</span>pfApp1<span class="se">\o</span>bj<span class="se">\D</span>ebug<span class="se">\A</span>pp.g.cs
+</span></span><span class="line"><span class="cl">  Using shared compilation with compiler from directory: C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class="o">)</span><span class="se">\M</span>icrosoft Visual Studio<span class="se">\2</span>017<span class="se">\C</span>ommunity<span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  MSBuild<span class="se">\1</span>5.0<span class="se">\b</span>in<span class="se">\R</span>oslyn
+</span></span><span class="line"><span class="cl">Done Building Project <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfApp1_r1lsxnqk_wpftmp.csproj&#34;</span> <span class="o">(</span>_CompileTemporaryAsse
+</span></span><span class="line"><span class="cl">mbly target<span class="o">(</span>s<span class="o">))</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">MarkupCompilePass2:
+</span></span><span class="line"><span class="cl">  MarkupCompilePass2 successfully generated BAML or <span class="nb">source</span> code files.
+</span></span><span class="line"><span class="cl">CleanupTemporaryTargetAssembly:
+</span></span><span class="line"><span class="cl">  Deleting file <span class="s2">&#34;obj\Debug\WpfApp1.exe&#34;</span>.
+</span></span><span class="line"><span class="cl">CoreResGen:
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\resgen.exe&#34;</span> /useSourcePath /r:<span class="s2">&#34;C:\Program
+</span></span></span><span class="line"><span class="cl"><span class="s2">   Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.CSharp.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files
+</span></span></span><span class="line"><span class="cl"><span class="s2">   (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\mscorlib.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Referen
+</span></span></span><span class="line"><span class="cl"><span class="s2">  ce Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationCore.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Ass
+</span></span></span><span class="line"><span class="cl"><span class="s2">  emblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationFramework.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Asse
+</span></span></span><span class="line"><span class="cl"><span class="s2">  mblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Core.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Micr
+</span></span></span><span class="line"><span class="cl"><span class="s2">  osoft\Framework\.NETFramework\v4.7.1\System.Data.DataSetExtensions.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assembli
+</span></span></span><span class="line"><span class="cl"><span class="s2">  es\Microsoft\Framework\.NETFramework\v4.7.1\System.Data.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsof
+</span></span></span><span class="line"><span class="cl"><span class="s2">  t\Framework\.NETFramework\v4.7.1\System.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NET
+</span></span></span><span class="line"><span class="cl"><span class="s2">  Framework\v4.7.1\System.Net.Http.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramewo
+</span></span></span><span class="line"><span class="cl"><span class="s2">  rk\v4.7.1\System.Xaml.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\S
+</span></span></span><span class="line"><span class="cl"><span class="s2">  ystem.Xml.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.Li
+</span></span></span><span class="line"><span class="cl"><span class="s2">  nq.dll&#34;</span> /r:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\WindowsBase.dll&#34;</span> /co
+</span></span><span class="line"><span class="cl">  mpile Properties<span class="se">\R</span>esources.resx,obj<span class="se">\D</span>ebug<span class="se">\W</span>pfApp1.Properties.Resources.resources
+</span></span><span class="line"><span class="cl">  Processing resource file <span class="s2">&#34;Properties\Resources.resx&#34;</span> into <span class="s2">&#34;obj\Debug\WpfApp1.Properties.Resources.resources&#34;</span>.
+</span></span><span class="line"><span class="cl">CoreCompile:
+</span></span><span class="line"><span class="cl">  C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class="o">)</span><span class="se">\M</span>icrosoft Visual Studio<span class="se">\2</span>017<span class="se">\C</span>ommunity<span class="se">\M</span>SBuild<span class="se">\1</span>5.0<span class="se">\b</span>in<span class="se">\R</span>oslyn<span class="se">\c</span>sc.exe /noconfig /nowarn:1701,
+</span></span><span class="line"><span class="cl">  <span class="m">1702</span> /nostdlib+ /platform:anycpu32bitpreferred /errorreport:prompt /warn:4 /define:DEBUG<span class="p">;</span>TRACE /highentropyva+ /refer
+</span></span><span class="line"><span class="cl">  ence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.CSharp.dll&#34;</span> /ref
+</span></span><span class="line"><span class="cl">  erence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\mscorlib.dll&#34;</span> /reference
+</span></span><span class="line"><span class="cl">  :<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationCore.dll&#34;</span> /referen
+</span></span><span class="line"><span class="cl">  ce:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationFramework.dll&#34;</span> /
+</span></span><span class="line"><span class="cl">  reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Core.dll&#34;</span> /ref
+</span></span><span class="line"><span class="cl">  erence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Data.DataSetExten
+</span></span></span><span class="line"><span class="cl"><span class="s2">  sions.dll&#34;</span> /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Da
+</span></span></span><span class="line"><span class="cl"><span class="s2">  ta.dll&#34;</span> /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.dll&#34;</span>
+</span></span><span class="line"><span class="cl">  /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Net.Http.dll&#34;</span>
+</span></span><span class="line"><span class="cl">   /reference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xaml.dll&#34;</span> /r
+</span></span><span class="line"><span class="cl">  eference:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.dll&#34;</span> /refer
+</span></span><span class="line"><span class="cl">  ence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.Linq.dll&#34;</span> /refe
+</span></span><span class="line"><span class="cl">  rence:<span class="s2">&#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\WindowsBase.dll&#34;</span> /debug+
+</span></span><span class="line"><span class="cl">  /debug:full /filealign:512 /optimize- /out:obj<span class="se">\D</span>ebug<span class="se">\W</span>pfApp1.exe /ruleset:<span class="s2">&#34;C:\Program Files (x86)\Microsoft Visual St
+</span></span></span><span class="line"><span class="cl"><span class="s2">  udio\2017\Community\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset&#34;</span> /subsystemversion:6.
+</span></span><span class="line"><span class="cl">  <span class="m">00</span> /resource:obj<span class="se">\D</span>ebug<span class="se">\W</span>pfApp1.g.resources /resource:obj<span class="se">\D</span>ebug<span class="se">\W</span>pfApp1.Properties.Resources.resources /target:winexe
+</span></span><span class="line"><span class="cl">  /utf8output App.xaml.cs MainWindow.xaml.cs Properties<span class="se">\A</span>ssemblyInfo.cs Properties<span class="se">\R</span>esources.Designer.cs Properties<span class="se">\S</span>et
+</span></span><span class="line"><span class="cl">  tings.Designer.cs C:<span class="se">\U</span>sers<span class="se">\V</span>on<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\W</span>pfApp1<span class="se">\W</span>pfApp1<span class="se">\o</span>bj<span class="se">\D</span>ebug<span class="se">\M</span>ainWindow.g.cs C:<span class="se">\U</span>sers<span class="se">\V</span>on<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\W</span>pfAp
+</span></span><span class="line"><span class="cl">  p1<span class="se">\W</span>pfApp1<span class="se">\o</span>bj<span class="se">\D</span>ebug<span class="se">\A</span>pp.g.cs <span class="s2">&#34;C:\Users\Von\AppData\Local\Temp\.NETFramework,Version=v4.7.1.AssemblyAttributes.cs&#34;</span>
+</span></span><span class="line"><span class="cl">  Using shared compilation with compiler from directory: C:<span class="se">\P</span>rogram Files <span class="o">(</span>x86<span class="o">)</span><span class="se">\M</span>icrosoft Visual Studio<span class="se">\2</span>017<span class="se">\C</span>ommunity<span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="se"></span>  MSBuild<span class="se">\1</span>5.0<span class="se">\b</span>in<span class="se">\R</span>oslyn
+</span></span><span class="line"><span class="cl">_CopyAppConfigFile:
+</span></span><span class="line"><span class="cl">  Copying file from <span class="s2">&#34;App.config&#34;</span> to <span class="s2">&#34;bin\Debug\WpfApp1.exe.config&#34;</span>.
+</span></span><span class="line"><span class="cl">CopyFilesToOutputDirectory:
+</span></span><span class="line"><span class="cl">  Copying file from <span class="s2">&#34;obj\Debug\WpfApp1.exe&#34;</span> to <span class="s2">&#34;bin\Debug\WpfApp1.exe&#34;</span>.
+</span></span><span class="line"><span class="cl">  WpfApp1 -&gt; C:<span class="se">\U</span>sers<span class="se">\V</span>on<span class="se">\s</span>ource<span class="se">\r</span>epos<span class="se">\W</span>pfApp1<span class="se">\W</span>pfApp1<span class="se">\b</span>in<span class="se">\D</span>ebug<span class="se">\W</span>pfApp1.exe
+</span></span><span class="line"><span class="cl">  Copying file from <span class="s2">&#34;obj\Debug\WpfApp1.pdb&#34;</span> to <span class="s2">&#34;bin\Debug\WpfApp1.pdb&#34;</span>.
+</span></span><span class="line"><span class="cl">Done Building Project <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfApp1.csproj&#34;</span> <span class="o">(</span>default targets<span class="o">)</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Done Building Project <span class="s2">&#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1.sln&#34;</span> <span class="o">(</span>default targets<span class="o">)</span>.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Build succeeded.
+</span></span><span class="line"><span class="cl">    <span class="m">0</span> Warning<span class="o">(</span>s<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="m">0</span> Error<span class="o">(</span>s<span class="o">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Time Elapsed 00:00:02.60
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>看看CoreCompile里传给Roslyn的参数。自己调用Roslyn的话光给出正确的参数就让人头痛了。所以还是直接调用MSBuild好了。<br>
+单单调用一次MSBuild无法完成我们的需求，因此构建脚本是少不了的了。</p>
+<h3 id="找到msbuild">找到MSBuild
+</h3><p>首先在`Developer command prompt for VS 2017找到MSbuiid的完全路径:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">$ where msbuild
+</span></span><span class="line"><span class="cl">&gt; C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe
+</span></span><span class="line"><span class="cl">&gt; C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里需要的是Visual Studio目录下的那一个。</p>
+<h3 id="msbuild的命令行选项">MSBuild的命令行选项
+</h3><ul>
+<li>
+<p><code>/t:Rebuild</code><br>
+强制重新编译。</p>
+</li>
+<li>
+<p><code>/p:Configuration=RELEASE</code><br>
+以Release配置编译。会开启优化。</p>
+</li>
+<li>
+<p><code>/p:DefineConstants=&quot;Value1,Value2,...&quot;</code><br>
+定义条件编译常量。</p>
+</li>
+<li>
+<p><code>/p:Platform=</code><br>
+指定目标架构。x86,x64和AnyCpu三选一。</p>
+</li>
+<li>
+<p><code>/p:OutputPath</code><br>
+输出目录。可接受绝对和相对路径。</p>
+</li>
+</ul>
+<p>各个参数中间用空格分开。</p>
+<p>一个例子</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">msbuild WpfApp1.csproj /t:Rebuild /p:Configuration=RELEASE /p:DefineConstants=&#34;TRACE,DEMO&#34; /p:Platform=&#34;x86&#34;  /p:OutputPath=&#34;F:\Release&#34; /p:TargetFrameworkVersion=4.7.1 /tv:15.0
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>更多参数请参阅<a class="link" href="https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2017"  title="MSBuild command-line reference"
+     target="_blank" rel="noopener"
+    >这里</a></p>
+<hr>
+<p>能配好参数调用MSBuild是构建脚本中最重要的一步。至于需求里的其他要求没什么难度，无非用合适的控制流去调用MSBuild。这里就略过了。</p>
+<h2 id="踩坑">踩坑
+</h2><h3 id="部分参数无效">部分参数无效
+</h3><p>如果你发现你设置的部分参数无效，那可能是被因为项目文件的参数覆盖掉了。<br>
+为了少掉坑，请将项目文件的路径放作为给MSBuild的第一个参数。</p>
+<h3 id="c工程指定输出目录无效">C++工程指定输出目录无效
+</h3><p>配好<code>/p:Platform</code>后MSbuild会提示你用<code>/p:OutputPath</code>指定输出路径。
+如果你用了<code>OutputPath</code>，那么恭喜你掉进了微软挖的暗坑：<code>OutputPath</code>对C++项目无效。<br>
+解决方法：请使用使用<code>/p:OutputDir</code>指定输出目录
+原因：</p>
+<blockquote>
+<p>To expand on what @AndyGerlicher said, we can&rsquo;t do what you&rsquo;re asking because we too have lost the reasoning behind this decision. The current team thinks it looks pretty broken.</p>
+<p>From comments in the targets</p>
+<blockquote>
+<p>OutDir and OutputPath are distinguished for legacy reasons, and OutDir should be used if at all possible.</p>
+</blockquote>
+<p>It seems like we got stuck in the middle of a transition. However, as you&rsquo;ve discovered, there&rsquo;s a ton of MSBuild code out there that exploits the differences between the two variables. That keeps us from completing the transition (or for that matter backing it out), because it would cause a lot of churn in customer projects.</p>
+</blockquote>
+<p>更多详情请参阅<a class="link" href="https://github.com/Microsoft/msbuild/issues/87"  title="OutputPath vs OutDir"
+     target="_blank" rel="noopener"
+    >这里</a></p>
+<h3 id="c工程defineconstants无效">C++工程DefineConstants无效
+</h3><p>喜闻乐见的<q>legacy reasons</q></p>
+<p>比较简单的一个workaround</p>
+<p>在<code>.vcxproj</code>的<code>Label</code>为Global的<code>PropertyGroup</code>中加上
+<code>&lt;DefineConstants&gt;&lt;/DefineConstants&gt;</code></p>
+<p>在所有的<code>PreprocessorDefinitions</code>内容的开头添加<code>$(DefineConstants);</code></p>
+<p>最终结果如下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="cp">&lt;?xml version=&#34;1.0&#34; encoding=&#34;utf-8&#34;?&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;Project</span> <span class="na">DefaultTargets=</span><span class="s">&#34;Build&#34;</span> <span class="na">ToolsVersion=</span><span class="s">&#34;14.0&#34;</span> 
+</span></span><span class="line"><span class="cl">    <span class="na">xmlns=</span><span class="s">&#34;http://schemas.microsoft.com/developer/msbuild/2003&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">    .....
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;PropertyGroup</span> <span class="na">Label=</span><span class="s">&#34;Global&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;DefineConstants&gt;&lt;/DefineConstants&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/PropertyGroup&gt;</span>
+</span></span><span class="line"><span class="cl">    ......
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;ItemDefinitionGroup&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;ClCompile&gt;</span>
+</span></span><span class="line"><span class="cl">        ....
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;PreprocessorDefinitions&gt;</span>$(DefineConstants);NDEBUG;WIN32;_WINDOWS;NO_EXP10;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);<span class="nt">&lt;/PreprocessorDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">        ....
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/ClCompile&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/ItemDefinitionGroup&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/Project&gt;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>更多详情请参阅<a class="link" href="https://stackoverflow.com/a/29879657"  title="MSBuild.exe not accepting either /p:DefineConstants nor /p:PreprocessorDefinitions"
+     target="_blank" rel="noopener"
+    >这里</a></p>
+<h2 id="对powershell的吐槽">对PowerShell的吐槽
+</h2><p>本以为基于.NET对象的PowerShell挺好上手的。没想到由JSON反序列化出来的对象是<code>PSObject</code>类型，原来类里的方法都用不了了，想把<code>PSObject</code>转换回去也十分麻烦。可能Shell天生跟OOP合不来吧。<br>
+最后用C#写了构建脚本。C#，脚本，是不是哪里不太对啊🤔</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/msbuild/">MSBuild</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

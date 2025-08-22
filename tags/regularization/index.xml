@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Regularization on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/regularization/</link>
+        <description>Recent content in Regularization on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Wed, 15 Jul 2020 10:22:44 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/regularization/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>神经网络中的Regularization</title>
+        <link>https://verrickt.github.io/2020/07/15/regularization-of-neural-network/</link>
+        <pubDate>Wed, 15 Jul 2020 10:22:44 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/15/regularization-of-neural-network/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;p&gt;Deep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe&amp;hellip; Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;regularization是我们应对overfitting的常用手段。在比较简单的模型，例如linear-regresseion中，人对的capacity的估计通常比较准确，一般不需要做regularization。而在神经网络动辄成千上万个节点，数以百万的参数让估测capacity变得极为困难。正如花书所说，泛化性能最好的往往是复杂的模型加上合理的regularization而得到的&lt;/p&gt;
+&lt;h2 id=&#34;parameter-penalities&#34;&gt;Parameter Penalities
+&lt;/h2&gt;&lt;p&gt;正如三次式最高次的系数为零时退化为二次式，有越多的参数接近0，模型的capacity就越低，即「绑住手脚」。一般来说regularization不会考虑&lt;code&gt;bias&lt;/code&gt;，因为&lt;code&gt;bias&lt;/code&gt;对capacity的影响并不如&lt;code&gt;weight&lt;/code&gt;那么大，但有需要仍可以给&lt;code&gt;bias&lt;/code&gt;加上惩罚。&lt;/p&gt;
+&lt;p&gt;参数惩罚的思路是，给&lt;code&gt;Loss&lt;/code&gt;加上所有参数&lt;code&gt;θ&lt;/code&gt;的函数&lt;code&gt;Ω(θ)&lt;/code&gt;这一项，让模型更偏好于θ接近0的归纳假设。&lt;/p&gt;
+$$
+\hat{L}(\theta,\alpha)=L(\theta)+\alpha \Omega(\theta)
+$$&lt;h3 id=&#34;l2-norm&#34;&gt;L2 norm
+&lt;/h3&gt;&lt;p&gt;L2 norm中所选的函数Ω是
+&lt;/p&gt;
+$$\Omega(\theta)=\frac{1}{2}\theta^{\top}\theta$$&lt;p&gt;&lt;code&gt;Loss&lt;/code&gt;的梯度变为
+&lt;/p&gt;
+$$\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha\theta$$&lt;p&gt;带入梯度下降公式
+&lt;/p&gt;
+$$
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_\theta L - \alpha\epsilon \theta^N = (1-\alpha \epsilon)\theta ^N-\epsilon\nabla_\theta L
+$$&lt;p&gt;每次梯度下降更新参数时会把原来的参数&lt;strong&gt;乘&lt;/strong&gt;上一个固定的值&lt;code&gt;1-αε&lt;/code&gt;，使得θ接近于0&lt;/p&gt;
+&lt;h3 id=&#34;l1-norm&#34;&gt;L1 norm
+&lt;/h3&gt;&lt;p&gt;L1 norm中的函数Ω是&lt;/p&gt;
+$$
+\Omega(\theta)=\sum_{i=1}^N|\theta_i|
+$$&lt;p&gt;
+&lt;code&gt;Loss&lt;/code&gt;的梯度变为
+&lt;/p&gt;
+$$\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha \mathrm{sgn}(\theta)$$&lt;p&gt;带入梯度下降公式
+&lt;/p&gt;
+$$
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_{\theta}L-\alpha\epsilon \mathrm{sgn}(\theta^N) = \theta ^N-\epsilon\nabla_\theta L -\alpha\epsilon \mathrm{sgn}(\theta^N)
+$$&lt;p&gt;发现参数更新时会在每一个分量&lt;code&gt;i&lt;/code&gt;中&lt;strong&gt;减&lt;/strong&gt;掉一个固定值&lt;code&gt;αε*sgn(i)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;L2 norm中，每次都乘上一个小于1的数，当参数大于1时，减小的速度就非常快；当参数小于1时，减小的速度就比较慢。因此L2中最终各个参数比较接近，但不会出现很多0。&lt;/p&gt;
+&lt;p&gt;而L1 norm中，每次减小一个固定值。对很大的参数，减法的步长很小，减小的效果就不是很明显。而参数很小时，减法的步长相对很大，就很容易出现0。因此L1中很容易出现很大的参数和较多的0。&lt;/p&gt;
+&lt;p&gt;含较多0的矩阵叫做稀疏矩阵(Sparse matrix)，因此用L1能够得到比较稀疏的参数。&lt;/p&gt;
+&lt;h2 id=&#34;early-stopping&#34;&gt;Early stopping
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/15/regularization-of-neural-network/early-stopping.png&#34;
+	width=&#34;1304&#34;
+	height=&#34;980&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;early stopping&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;319px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;early stopping的思路就更简单了。既然复杂的模型训练时会关注一些无关的特征，那干脆不要跑那么多次训练就好了。&lt;/p&gt;
+&lt;p&gt;early stopping的形式化描述：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Let n be the number of steps between evaluations.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Let p be the “patience,” the number of times to observe worsening validation set error before giving up. 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Let θ^o be the initial parameters. 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;θ ← θ^o 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;i ← 0 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;j ← 0 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;v ←∞ 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;θ∗ ← θ 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;i∗ ← i 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;while j &amp;lt; p do θ
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    Update by running the training algorithm for n steps. 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    i ← i + n
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    v&amp;#39; ← ValidationSetError(θ) 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    if v&amp;#39; &amp;lt; v then 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        j  ← 0
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        θ∗ ← θ 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        i∗ ← i
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        v  ← v&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    else 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        j ← j + 1 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    end if
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;end while 
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;hr&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;nodes:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Best parameters are θ∗ , best number of training steps is i∗
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;ensemble&#34;&gt;Ensemble
+&lt;/h2&gt;&lt;p&gt;Ensemble认为，模型中出现的错误是随机的，那么使用&lt;strong&gt;同样&lt;/strong&gt;的数据训练出k个不同的模型，将它们的结果取平均就可以得到比较好的结果。&lt;/p&gt;
+&lt;p&gt;复杂模型error主要来自variance。从直觉上说，对多个模型取平均就能很好的抵消一部分variance。
+ensemble的坏处在于，它需要训练k个不同的模型，导致计算量大增。有时这样的计算量是无法承受的，因此希望有一个代价不那么大的ensemble方法，这就是dropout&lt;/p&gt;
+&lt;h3 id=&#34;dropout&#34;&gt;dropout
+&lt;/h3&gt;&lt;p&gt;dropout和以往的方法不同，它把当前训练的模型当作是很多模型的叠加：每次训练时，每个单元都有p的概率从网络中被移除，每次只针对这些被留下来的单元做参数的更新。有n个单元时，因为每一个单元都可以被留下/丢掉，这就可能产生2^N个不同的网络结构。dropout就认为当前的模型是这2^N个网络的ensemble。&lt;/p&gt;
+&lt;p&gt;下面是一个2层的神经网络。它有2个隐藏单元。dropout可以产生的网络由16个。使用dropout的网络经过一次训练后相当于训练了2^N个子网络，计算量的问题就这样解决了。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/15/regularization-of-neural-network/dropout.png&#34;
+	width=&#34;942&#34;
+	height=&#34;878&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;droupout&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;107&#34;
+		data-flex-basis=&#34;257px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;使用dropout的网络训练完成后，在测试时不再移除神经元，而是给网络整体的参数乘上1-p。
+一个直觉的解释：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;设w是dropout得到的参数，w&amp;#39;是训练时的参数。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;在训练时神经元有p的概率被丢弃，所以网络中实际神经元个数的期望是n*(1-p)。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;现在要让网络的输出尽可能的一致，则
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;n*w*(1-p) = n*w&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;即w&amp;#39;=w*(1-p)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/15/regularization-of-neural-network/linearity.png&#34;
+	width=&#34;1286&#34;
+	height=&#34;961&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;linearity&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;实际的分析发现，在整个网络是线性时，上面的论述是精确成立的，而加上激活函数的网络往往不是线性的。但实际使用上dropout的性能也确实比较接近ensemble的结果。为什么会这样我们不清楚，总之拿来主义了。世界各地有很多科学家也在探究背后的奥秘，希望有一天能找出一个精确的解释吧。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

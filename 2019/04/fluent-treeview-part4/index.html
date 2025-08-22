@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="这篇起我们正式开始实现FluentTreeView。先看看图片 TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。 再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？\n">
+<title>FluentTreeView Part.4</title>
+
+<link rel='canonical' href='http://localhost:1313/2019/04/fluent-treeview-part4/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="FluentTreeView Part.4">
+<meta property='og:description' content="这篇起我们正式开始实现FluentTreeView。先看看图片 TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。 再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？\n">
+<meta property='og:url' content='http://localhost:1313/2019/04/fluent-treeview-part4/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2019-04-19T17:20:45&#43;00:00'/><meta property='article:modified_time' content='2019-04-19T17:20:45&#43;00:00'/>
+<meta name="twitter:title" content="FluentTreeView Part.4">
+<meta name="twitter:description" content="这篇起我们正式开始实现FluentTreeView。先看看图片 TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。 再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/fluenttreeview/" >
+                FluentTreeView
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2019/04/fluent-treeview-part4/">FluentTreeView Part.4</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Apr 19, 2019</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 3 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>这篇起我们正式开始实现FluentTreeView。先看看图片
+<img src="/2019/04/fluent-treeview-part4/fluent-tree-view.jpg"
+	width="501"
+	height="270"
+	
+	loading="lazy"
+	
+		alt="FluentTreeView"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="185"
+		data-flex-basis="445px"
+	
+></p>
+<p>TreeView左侧有一选择高亮，Item有一鼠标高亮。这两个高亮与整个TreeView一样宽。
+再回想一下我们上一篇用Expander实现的TreeView，Item的缩进是如何实现的？</p>
+<!-- more -->
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">-</th>
+          <th style="text-align: left">Column1</th>
+          <th style="text-align: left">Column2</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">Row1</td>
+          <td style="text-align: left">Expander</td>
+          <td style="text-align: left">ContentPreserenter</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Row2</td>
+          <td style="text-align: left">/</td>
+          <td style="text-align: left">ItemsPreserenter</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>ItemsPreserenter将会被展开为</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">ItemsPanel
+</span></span><span class="line"><span class="cl">    TreeViewItem
+</span></span><span class="line"><span class="cl">    TreeViewItem
+</span></span><span class="line"><span class="cl">    TreeViewItem
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这就意味着，下一级的TreeViewItem永远处于上一级TreeViewItem的第二列里。将第一列的列宽设置为定值，就实现了各个层级的缩进。</p>
+<p>进一步思考，如果我们在这样的结构里去修改TreeViewItem的面板的背景色当作高亮的话，那这个面板自身也是被缩进的。
+我们试一试，把Style改成这样</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&lt;Style TargetType=&#34;TreeViewItem&#34;&gt;
+</span></span><span class="line"><span class="cl">    &lt;Setter Property=&#34;Template&#34;&gt;
+</span></span><span class="line"><span class="cl">        &lt;Setter.Value&gt;
+</span></span><span class="line"><span class="cl">            &lt;ControlTemplate TargetType=&#34;TreeViewItem&#34;&gt;
+</span></span><span class="line"><span class="cl">                &lt;Grid x:Name=&#34;root&#34;&gt;
+</span></span><span class="line"><span class="cl">                    &lt;Grid.ColumnDefinitions&gt;
+</span></span><span class="line"><span class="cl">                        &lt;ColumnDefinition Width=&#34;24&#34;&gt;&lt;/ColumnDefinition&gt;
+</span></span><span class="line"><span class="cl">                        &lt;ColumnDefinition&gt;&lt;/ColumnDefinition&gt;
+</span></span><span class="line"><span class="cl">                    &lt;/Grid.ColumnDefinitions&gt;
+</span></span><span class="line"><span class="cl">                    &lt;Grid.RowDefinitions&gt;
+</span></span><span class="line"><span class="cl">                        &lt;RowDefinition Height=&#34;Auto&#34;&gt;&lt;/RowDefinition&gt;
+</span></span><span class="line"><span class="cl">                        &lt;RowDefinition Height=&#34;*&#34;&gt;&lt;/RowDefinition&gt;
+</span></span><span class="line"><span class="cl">                    &lt;/Grid.RowDefinitions&gt;
+</span></span><span class="line"><span class="cl">                    &lt;Expander IsExpanded=&#34;{Binding RelativeSource={RelativeSource TemplatedParent},Path=IsExpanded,Mode=TwoWay}&#34; x:Name=&#34;expander&#34;&gt;&lt;/Expander&gt;
+</span></span><span class="line"><span class="cl">                    &lt;ContentPresenter VerticalAlignment=&#34;Center&#34; Grid.Column=&#34;1&#34; ContentSource=&#34;Header&#34;&gt;&lt;/ContentPresenter&gt;
+</span></span><span class="line"><span class="cl">                    &lt;ItemsPresenter Visibility=&#34;{Binding RelativeSource={RelativeSource TemplatedParent},Path=IsExpanded,Converter={StaticResource BoolToVisibilityConverter}}&#34; Grid.Row=&#34;1&#34; Grid.Column=&#34;1&#34;&gt;&lt;/ItemsPresenter&gt;
+</span></span><span class="line"><span class="cl">                &lt;/Grid&gt;
+</span></span><span class="line"><span class="cl">                &lt;ControlTemplate.Triggers&gt;
+</span></span><span class="line"><span class="cl">                    &lt;Trigger Property=&#34;HasItems&#34; Value=&#34;False&#34;&gt;
+</span></span><span class="line"><span class="cl">                        &lt;Setter TargetName=&#34;expander&#34; Property=&#34;Visibility&#34; Value=&#34;Collapsed&#34;&gt;&lt;/Setter&gt;
+</span></span><span class="line"><span class="cl">                    &lt;/Trigger&gt;
+</span></span><span class="line"><span class="cl">                    &lt;Trigger Property=&#34;IsSelected&#34; Value=&#34;True&#34;&gt;
+</span></span><span class="line"><span class="cl">                        &lt;Setter TargetName=&#34;root&#34; Property=&#34;Background&#34; Value=&#34;Red&#34;&gt;&lt;/Setter&gt;
+</span></span><span class="line"><span class="cl">                    &lt;/Trigger&gt;
+</span></span><span class="line"><span class="cl">                &lt;/ControlTemplate.Triggers&gt;
+</span></span><span class="line"><span class="cl">            &lt;/ControlTemplate&gt;
+</span></span><span class="line"><span class="cl">        &lt;/Setter.Value&gt;
+</span></span><span class="line"><span class="cl">    &lt;/Setter&gt;
+</span></span><span class="line"><span class="cl">&lt;/Style&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在选中非第一级Item时，高亮色就出现了我们不需要的左边距。这不符合我们的要求，所以不能用递归的方式来实现不同层级的缩进。
+<img src="/2019/04/fluent-treeview-part4/recursive-indent.jpg"
+	width="507"
+	height="307"
+	
+	loading="lazy"
+	
+		alt="recursive-indent"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="165"
+		data-flex-basis="396px"
+	
+>
+我们所想要的是，每一层TreeViewItem的宽度都与TreeView本身保持一致，所以TreeViewItem自己必须是打平的。需要特殊处理的是ContentPreserenter。可以根据TreeViewItem的层级计算出所需要的左边距。</p>
+<p>再次考虑整个TreeViewItem的布局，鼠标和选择高亮应该撑满可用宽度，倒三角符号(▽)和ContentPreserenter则应该随着层级缩进。有了这些做参照，很容易能写出这样的模板:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;Grid</span> <span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;Grid.RowDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;RowDefinition</span> <span class="na">Height=</span><span class="s">&#34;Auto&#34;</span><span class="nt">&gt;&lt;/RowDefinition&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;RowDefinition</span> <span class="na">Height=</span><span class="s">&#34;*&#34;</span><span class="nt">&gt;&lt;/RowDefinition&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/Grid.RowDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;Grid</span> <span class="na">x:Name=</span><span class="s">&#34;root&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;Rectangle</span> <span class="na">x:Name=</span><span class="s">&#34;selector&#34;</span> <span class="na">Width=</span><span class="s">&#34;2&#34;</span> <span class="na">Visibility=</span><span class="s">&#34;Collapsed&#34;</span> <span class="na">Fill=</span><span class="s">&#34;Green&#34;</span> <span class="na">HorizontalAlignment=</span><span class="s">&#34;Left&#34;</span><span class="nt">&gt;&lt;/Rectangle&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;Grid</span> <span class="na">Margin=</span><span class="s">&#34;{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem},Converter={StaticResource TreeLevelToIndentConverter}}&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;Grid.ColumnDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;ColumnDefinition</span> <span class="na">Width=</span><span class="s">&#34;24&#34;</span><span class="nt">&gt;&lt;/ColumnDefinition&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;ColumnDefinition&gt;&lt;/ColumnDefinition&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;/Grid.ColumnDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;Expander</span> <span class="na">IsExpanded=</span><span class="s">&#34;{Binding RelativeSource={RelativeSource TemplatedParent},Path=IsExpanded,Mode=TwoWay}&#34;</span> <span class="na">x:Name=</span><span class="s">&#34;expander&#34;</span><span class="nt">&gt;&lt;/Expander&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;ContentPresenter</span> <span class="na">VerticalAlignment=</span><span class="s">&#34;Center&#34;</span> <span class="na">Grid.Column=</span><span class="s">&#34;1&#34;</span> <span class="na">ContentSource=</span><span class="s">&#34;Header&#34;</span><span class="nt">&gt;&lt;/ContentPresenter&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/Grid&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/Grid&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;ItemsPresenter</span> <span class="na">Visibility=</span><span class="s">&#34;{Binding RelativeSource={RelativeSource TemplatedParent},Path=IsExpanded,Converter={StaticResource BoolToVisibilityConverter}}&#34;</span> <span class="na">Grid.Row=</span><span class="s">&#34;1&#34;</span><span class="nt">&gt;&lt;/ItemsPresenter&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/Grid&gt;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>TreeLevelToIndentConverter</code>是根据等级计算缩进的Converter。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-csharp" data-lang="csharp"><span class="line"><span class="cl"><span class="kd">public</span> <span class="k">class</span> <span class="nc">TreeLevelToIndentConverter</span> <span class="p">:</span> <span class="n">IValueConverter</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Thickness</span> <span class="n">Margin</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">object</span> <span class="n">Convert</span> <span class="p">(</span><span class="kt">object</span> <span class="k">value</span><span class="p">,</span> <span class="n">Type</span> <span class="n">targetType</span><span class="p">,</span> <span class="kt">object</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">CultureInfo</span> <span class="n">culture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="k">value</span> <span class="k">is</span> <span class="n">TreeViewItem</span> <span class="n">ti</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">level</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">FrameworkElement</span> <span class="n">current</span> <span class="p">=</span> <span class="n">ti</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">do</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">VisualTreeHelper</span><span class="p">.</span><span class="n">GetParent</span> <span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="k">is</span> <span class="n">FrameworkElement</span> <span class="n">fe</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="p">(</span><span class="n">fe</span> <span class="k">is</span> <span class="n">TreeViewItem</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">level</span><span class="p">++;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="p">(</span><span class="n">fe</span> <span class="k">is</span> <span class="n">TreeView</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">current</span> <span class="p">=</span> <span class="n">fe</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">current</span> <span class="p">!=</span> <span class="kc">null</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">Thickness</span> <span class="p">(</span><span class="n">Margin</span><span class="p">.</span><span class="n">Left</span> <span class="p">*</span> <span class="n">level</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="n">Margin</span><span class="p">.</span><span class="n">Right</span> <span class="p">*</span> <span class="n">level</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">object</span> <span class="n">ConvertBack</span> <span class="p">(</span><span class="kt">object</span> <span class="k">value</span><span class="p">,</span> <span class="n">Type</span> <span class="n">targetType</span><span class="p">,</span> <span class="kt">object</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">CultureInfo</span> <span class="n">culture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">throw</span> <span class="k">new</span> <span class="n">NotSupportedException</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>选择高亮已经差不多了，但鼠标高亮还有点问题
+<img src="/2019/04/fluent-treeview-part4/fluent-tree-view-with-selector.jpg"
+	width="496"
+	height="552"
+	
+	loading="lazy"
+	
+		alt="fluent-tree-view-with-selector"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="89"
+		data-flex-basis="215px"
+	
+></p>
+<p>一番搜索发现，当前鼠标悬空的TreeViewItem以及它所有的祖先的<code>IsMouseOver</code>触发器都会<a class="link" href="https://blogs.msdn.microsoft.com/mikehillberg/2006/09/21/a-trigger-for-the-treeviewitem-directly-under-the-mouse/"  target="_blank" rel="noopener"
+    >起作用</a>。</p>
+<p>当然，你也可以像我一样偷懒：给Border设置MouseOver的触发器。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="line"><span class="cl"><span class="nt">&lt;Border</span> <span class="na">x:Name=</span><span class="s">&#34;root&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;Border.Style&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;Style</span> <span class="na">TargetType=</span><span class="s">&#34;Border&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;Style.Triggers&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;Trigger</span> <span class="na">Property=</span><span class="s">&#34;IsMouseOver&#34;</span> <span class="na">Value=</span><span class="s">&#34;True&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&lt;Setter</span> <span class="na">Property=</span><span class="s">&#34;Background&#34;</span> <span class="na">Value=</span><span class="s">&#34;Red&#34;</span><span class="nt">&gt;&lt;/Setter&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;/Trigger&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;/Style.Triggers&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/Style&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/Border.Style&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;Grid&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;Rectangle</span> <span class="na">x:Name=</span><span class="s">&#34;selector&#34;</span> <span class="na">Width=</span><span class="s">&#34;2&#34;</span> <span class="na">Visibility=</span><span class="s">&#34;Collapsed&#34;</span> <span class="na">Fill=</span><span class="s">&#34;Green&#34;</span> <span class="na">HorizontalAlignment=</span><span class="s">&#34;Left&#34;</span><span class="nt">&gt;&lt;/Rectangle&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;Grid</span> <span class="na">Margin=</span><span class="s">&#34;{Binding RelativeSource={RelativeSource AncestorType=TreeViewItem},Converter={StaticResource TreeLevelToIndentConverter}}&#34;</span><span class="nt">&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;Grid.ColumnDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;ColumnDefinition</span> <span class="na">Width=</span><span class="s">&#34;24&#34;</span><span class="nt">&gt;&lt;/ColumnDefinition&gt;</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&lt;ColumnDefinition&gt;&lt;/ColumnDefinition&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;/Grid.ColumnDefinitions&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;Expander</span> <span class="na">IsExpanded=</span><span class="s">&#34;{Binding RelativeSource={RelativeSource TemplatedParent},Path=IsExpanded,Mode=TwoWay}&#34;</span> <span class="na">x:Name=</span><span class="s">&#34;expander&#34;</span><span class="nt">&gt;&lt;/Expander&gt;</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&lt;ContentPresenter</span> <span class="na">VerticalAlignment=</span><span class="s">&#34;Center&#34;</span> <span class="na">Grid.Column=</span><span class="s">&#34;1&#34;</span> <span class="na">ContentSource=</span><span class="s">&#34;Header&#34;</span><span class="nt">&gt;&lt;/ContentPresenter&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&lt;/Grid&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&lt;/Grid&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="nt">&lt;/Border&gt;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/2019/04/fluent-treeview-part4/fluent-tree-view-mouseover-fix.jpg"
+	width="487"
+	height="551"
+	
+	loading="lazy"
+	
+		alt="fluent-tree-view-mouseover-fix"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="88"
+		data-flex-basis="212px"
+	
+></p>
+<p>看起来已经像模像样了，但还有瑕疵：</p>
+<ul>
+<li>选择高亮并不对所有的子节点生效。</li>
+<li>鼠标高亮没有覆盖选择高亮</li>
+<li>配色不对，丑</li>
+</ul>
+<p>我们会在下一篇中改正这些问题</p>
+<hr>
+<p>源代码参见
+<a class="link" href="https://github.com/Verrickt/Melchior-Sample/tree/master/FluentTreeView_Part4"  target="_blank" rel="noopener"
+    >https://github.com/Verrickt/Melchior-Sample/tree/master/FluentTreeView_Part4</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/2019/04/fluent-treeview-part3/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">FluentTreeView Part.3</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2019/04/fluent-treeview-part2/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">FluentTreeView Part.2</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2019/04/fluent-treeview-part1/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">FluentTreeView Part.1</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

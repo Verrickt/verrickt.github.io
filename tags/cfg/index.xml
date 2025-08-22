@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>CFG on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/cfg/</link>
+        <description>Recent content in CFG on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Fri, 15 Aug 2025 16:59:56 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/cfg/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>上下文无关文法中左递归消除的证明</title>
+        <link>https://verrickt.github.io/2025/08/15/left-recursion-elimination/</link>
+        <pubDate>Fri, 15 Aug 2025 16:59:56 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2025/08/15/left-recursion-elimination/</guid>
+        <description>&lt;h2 id=&#34;直接左递归消除&#34;&gt;直接左递归消除
+&lt;/h2&gt;&lt;p&gt;针对左递归的上下文无关语法$A$，存在一种能够消除左递归的改写方式。
+本文将不严谨(?)地证明这一点。&lt;/p&gt;
+&lt;h3 id=&#34;左递归语法&#34;&gt;左递归语法
+&lt;/h3&gt;&lt;p&gt;考虑如下语法&lt;/p&gt;
+$$
+A \rarr  A\alpha_1|A\alpha_2|A\alpha_3|\dots|A\alpha_m|\beta_1|\beta_2|\beta_3|\dots|\beta_n
+$$&lt;p&gt;令$\alpha = \alpha_{1\dots m}$，$\beta = \beta_{1 \dots n}$，则可简写为
+&lt;/p&gt;
+$$
+A \rarr A\alpha |\beta
+$$&lt;h3 id=&#34;左递归消除&#34;&gt;左递归消除
+&lt;/h3&gt;&lt;p&gt;上述语法可被改写为等价的非左递归形式：&lt;/p&gt;
+$$
+A \rarr \beta A^\prime \\
+A^\prime \rarr \alpha A^\prime | \epsilon
+$$&lt;h2 id=&#34;证明&#34;&gt;证明
+&lt;/h2&gt;&lt;p&gt;主要依据是语法表示的字符串集合，集合相等则语法相等。
+对于语法$A \rarr A\alpha |\beta$，其生成的字符串是以非终结符$\beta$开头后任意个$\alpha$的字符串集合，换言之，$A \rarr A\alpha |\beta$与$A = \beta\alpha^*$是等价的。&lt;/p&gt;
+&lt;h3 id=&#34;正向&#34;&gt;正向
+&lt;/h3&gt;&lt;p&gt;利用$\alpha^*$的改写
+&lt;/p&gt;
+$$
+A \rarr A\alpha|\beta  \\
+\Darr \\
+A = \beta\alpha^* \\
+\Darr \\
+A \rarr  \beta A^\prime \\
+A^\prime = \alpha A^\prime|\epsilon
+$$&lt;h3 id=&#34;反向证明&#34;&gt;反向证明
+&lt;/h3&gt;$$
+A \rarr \beta A^\prime \\
+A^\prime \rarr \alpha A^\prime | \epsilon
+$$&lt;p&gt;分析消除左递归的等价形式，$A^\prime$表示任意个$\alpha$组成的字符串集合，即$A^\prime = \alpha^*$&lt;/p&gt;
+&lt;p&gt;将$A^\prime$的产生式带入$A$中，得到$A = \beta\alpha^*$，两组语法等价。&lt;/p&gt;
+&lt;h2 id=&#34;通用左递归消除&#34;&gt;通用左递归消除
+&lt;/h2&gt;&lt;p&gt;上述直接左递归消除算法无法解决间接左递归
+&lt;/p&gt;
+$$
+S \rarr A a | b  \\
+A \rarr A c | Sd | \epsilon
+$$&lt;p&gt;因此有了通用左递归消除算法：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;给定语法S，将其所有非终结符$A$排序：$S = {A_1,A_2,{\dots} A_n }$&lt;/li&gt;
+&lt;li&gt;对于$i \in [1,n-1]$,$j\in[1,i-1]$，如果存在$A_i\rarr A_j \gamma$形式的产生式，将其按照下面的规则替换
+&lt;ol&gt;
+&lt;li&gt;$A_i \rarr \delta_1\gamma|\delta_2\gamma|\delta_3\gamma|\dots|\delta_k\gamma$&lt;/li&gt;
+&lt;li&gt;其中$A_j = \delta_1|\delta_2|\delta_\dots|\delta_k$是当前$A_j$的全部投影&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;使用直接左递归消除算法，消除$A_i$的左递归&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;证明-1&#34;&gt;证明
+&lt;/h3&gt;&lt;p&gt;归纳法不太好理解，这里使用反证法。&lt;/p&gt;
+&lt;p&gt;核心点在于，$A_i$被处理后，对于任意的$j \le i$，不存在从$A_i$到$A_j$的&lt;strong&gt;任何&lt;/strong&gt;投影。&lt;/p&gt;
+&lt;p&gt;证明步骤:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;假设已经对$S = {A_1,A_2,\dots,A_n}$进行了通用左递归消除算法。&lt;/li&gt;
+&lt;li&gt;对于任意的$i,j \in [1,n]$
+&lt;ol&gt;
+&lt;li&gt;若$i \gt j$，由于算法的步骤2进行了替换，不存在$A_i$到$A_j$的左递归。&lt;/li&gt;
+&lt;li&gt;若$i = j$，由于算法的步骤3进行了直接左递归消除，不存在$A_i$到$A_j$的左递归。&lt;/li&gt;
+&lt;li&gt;若$i \le j$，需要进一步分析。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;对于任意$i,j \in [1,n]且 i\lt j$，假设有$A_i$到$A_j$的左递归，则存在环路$A_i \Rarr^+ A_j \Rarr^+ A_i$。注意到$j&amp;gt;i$，算法保证不存在$A_j$到$A_i$的左递归，即环路$A_j \Rarr^+ A_i$不存在，与假设矛盾，所以该情况下不存在左递归&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;综上所属，对于任意$i,j \in [1,n]$，通用左递归消除算法能避免全部左递归。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

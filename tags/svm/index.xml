@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>SVM on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/svm/</link>
+        <description>Recent content in SVM on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Fri, 31 Jul 2020 19:49:52 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/svm/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>支持向量机</title>
+        <link>https://verrickt.github.io/2020/07/31/support-vector-machine/</link>
+        <pubDate>Fri, 31 Jul 2020 19:49:52 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/31/support-vector-machine/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;支持向量机(Support Vector Machine,SVM)是一个能求解通用二元分类问题的模型。SVM使用Kernel trick，使得自己在能够表示非线性函数的同时Loss是有闭式解的Convex function。也有人把SVM当作线性模型向神经网络过渡的中间阶段。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;svm&#34;&gt;SVM
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/What-is-SVM.png&#34;
+	width=&#34;509&#34;
+	height=&#34;329&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;What is SVM&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;154&#34;
+		data-flex-basis=&#34;371px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;对于
+$$
+D = {(x_1,y_1),(x_2,y_2)&amp;hellip;(x_n,y_n)} , y_i \in {-1,+1}&lt;/p&gt;
+&lt;p&gt;$$
+的分类问题，SVM试图在n维空间上找一个超平面，&lt;code&gt;wx+b&lt;/code&gt;，使得&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当wx_i+b≥1时，yi=+1&lt;/li&gt;
+&lt;li&gt;当wx_i+b≤1时，yi=-1&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;并且超平面应该离两侧最近的点都尽可能远。解出这一组w和b就解出了SVM。&lt;/p&gt;
+&lt;p&gt;其实如果在将w和b并在一起作为新的w,将x后接1,则SVM可以进一步简化为&lt;code&gt;wx&lt;/code&gt;:&lt;/p&gt;
+$$
+f(x)= \sum_i w_ix_i+b = \left[ \begin{array}{c} w \\ b
+\end{array} \right] \cdot
+\left[ \begin{array}{c} x \\ 1
+\end{array} \right]
+$$&lt;h3 id=&#34;hinge-loss&#34;&gt;Hinge loss
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/delta-loss.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;delta-loss&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;回到分类问题本身，通常Loss会选择在整个训练集上分类错误的次数：
+&lt;/p&gt;
+$$
+L(f)=\sum_i \delta(g(x^n) \not ={\hat{y}^n}) 
+$$&lt;p&gt;
+其中&lt;code&gt;δ&lt;/code&gt;函数的为真时值为1，反之值为0。
+正如&lt;a class=&#34;link&#34; href=&#34;https://verrickt.github.io/2020/07/04/from-logistic-regression-to-neural-network/&#34; &gt;对率回归&lt;/a&gt;中所说，
+在分类问题上使用这类函数是不利于训练的，因此希望找到一个函数
+&lt;/p&gt;
+$$
+l(f(x^n),\hat y^n)
+$$&lt;p&gt;
+来近似代替&lt;code&gt;δ&lt;/code&gt;函数。&lt;/p&gt;
+&lt;p&gt;hinge loss就是这样的一个函数。他是这么定义的：
+&lt;/p&gt;
+$$
+l(f(x^n),\hat y^n)=\max(0,1-\hat y^nf(x))
+$$&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/comparsion-of-loss.png&#34;
+	width=&#34;930&#34;
+	height=&#34;692&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;comparsion of loss&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;322px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;图中紫色的线就是hinge loss。横坐标1处，hinge loss把两条直线连接起来，就像是连接骨头的关节(hinge)，因此得名。&lt;/p&gt;
+&lt;p&gt;从图上可以看出&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;MSE随着横坐标的增加loss反而增加，根本不适用&lt;/li&gt;
+&lt;li&gt;sigmoid+square loss对横坐标的变化不敏感(saturate)，训练起来也不好做&lt;/li&gt;
+&lt;li&gt;sigmoid+cross entropy会积极的将坐标点往右推，但其实只要横坐标超过了1就已经足够了&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/entropy-vs-hinge.png&#34;
+	width=&#34;927&#34;
+	height=&#34;691&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;entropy-vs-hinge&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;cross entropy好像完美主义者，而hinge loss会想着及格就好。既然在现实世界里两者的性能是一致的，我们也就乐得省下这些无畏的开销。&lt;/p&gt;
+&lt;h3 id=&#34;gradient-descent&#34;&gt;Gradient descent
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/gradient-descent.png&#34;
+	width=&#34;928&#34;
+	height=&#34;693&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;gradient-descent&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;hinge loss对w的偏微分后，得到梯度下降的公式
+&lt;/p&gt;
+$$
+w_{i+1}=w_i-\eta\sum_n c^n(w)x_i^n
+$$&lt;p&gt;
+其中
+&lt;/p&gt;
+$$
+c^n(w) = -\delta(\hat y^nf(x^n)&lt;1)\hat y^nx_i
+$$&lt;h3 id=&#34;soft-margin&#34;&gt;soft margin
+&lt;/h3&gt;&lt;p&gt;将整体的损失函数L
+&lt;/p&gt;
+$$
+L(f)=l(0,1-\hat y^nf(x)) + \lambda|w|_2=\sum_n \max(0,1-\hat y^nf(x)) + \lambda|w|_2
+$$&lt;p&gt;
+中的l用ε代替，得到下列形式
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/slack-variable.png&#34;
+	width=&#34;933&#34;
+	height=&#34;693&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;slack-variable&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+&lt;/p&gt;
+$$
+L = \sum_n\epsilon^n+\lambda|w|_2
+$$$$
+\hat y^nf(x) \ge1-\epsilon^n 
+$$&lt;p&gt;
+而不是硬性规定
+&lt;/p&gt;
+$$
+\hat y^nf(x) \ge1 
+$$&lt;p&gt;
+&lt;code&gt;ε&lt;/code&gt;作为边界条件的放松，被称作松弛变量(slack variable)&lt;/p&gt;
+&lt;h3 id=&#34;support-vector&#34;&gt;Support vector
+&lt;/h3&gt;&lt;p&gt;SVM的w是所有训练样本点的线性组合，并且多数点的系数都是0(sparsity)。&lt;/p&gt;
+&lt;p&gt;这个性质可以从KKT系数反映出来
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/traditonal-support-vector.png&#34;
+	width=&#34;751&#34;
+	height=&#34;533&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;traditonal-support-vector&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;140&#34;
+		data-flex-basis=&#34;338px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;当然，它也可以从另一个角度说明。
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/support-vector.png&#34;
+	width=&#34;928&#34;
+	height=&#34;692&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;support-vector&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;
+考虑梯度下降的式子
+&lt;/p&gt;
+$$
+w_{i+1}=w_i-\eta\sum_n c^n(w)x_i^n
+$$&lt;p&gt;
+其中
+&lt;/p&gt;
+$$
+c^n(w)  =\frac{\partial l(f(x^n),\hat y^n)}{\partial f(x^n)}=-\delta(\hat y^nf(x^n)&lt;1)\hat y^nx_i
+$$&lt;p&gt;当w被初始化为0向量时，每一次参数更新加上了一个样本点的线性组合；而hinge loss有大约一半的定义域里微分是0，因此大部分系数会为0&lt;/p&gt;
+&lt;h2 id=&#34;kernel-method&#34;&gt;Kernel method
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/kernel-function.png&#34;
+	width=&#34;927&#34;
+	height=&#34;693&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;kernel function&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;既然w是X的一个线性组合，将其写作&lt;code&gt;w=Xα&lt;/code&gt;。
+带入f(x)
+&lt;/p&gt;
+$$
+f(x)=w^\top x = \sum_n \alpha_n(x^n \cdot x)
+$$&lt;p&gt;将x^n与x的内积用函数K(kernel function)表示，则
+&lt;/p&gt;
+$$
+f(x)=\sum_n \alpha_nK(x^n,x)
+$$&lt;p&gt;
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/kernel-trick.png&#34;
+	width=&#34;933&#34;
+	height=&#34;691&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;kernel trick&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;135&#34;
+		data-flex-basis=&#34;324px&#34;
+	
+&gt;
+将得到的f(x)带入loss，发现L(f)与x已经无关了，可以直接进行梯度下降。这就是Kernel trick
+&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/useful-kernel-trick.png&#34;
+	width=&#34;926&#34;
+	height=&#34;694&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;useful kenel trick&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;若我们先对x做feature transform &lt;code&gt;φ(x)&lt;/code&gt;，&lt;code&gt;φ(x)·φ(z)&lt;/code&gt;有时可以表示为K(x,z)。这即扩展了SVM的表述能力，也提高了效率。&lt;/p&gt;
+&lt;p&gt;在使用RBF Kernel时，可以在无穷维空间做内积&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/RBF-Kernel.png&#34;
+	width=&#34;933&#34;
+	height=&#34;696&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;RBF-Kernel&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;321px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;svm-and-neural-network&#34;&gt;SVM and Neural network
+&lt;/h2&gt;&lt;p&gt;SVM也可以被看作是有一层hidden unit的神经网络:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/SVM-as-NN.png&#34;
+	width=&#34;925&#34;
+	height=&#34;692&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;SVM-as-NN&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;每一个neural的weight是x^n与x的内积，所有neural的输出经过tanh后再以α为权值求和就得到输出了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2020/07/31/support-vector-machine/SVM-and-NN.png&#34;
+	width=&#34;928&#34;
+	height=&#34;689&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;SVM-and-NN&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;134&#34;
+		data-flex-basis=&#34;323px&#34;
+	
+&gt;
+实际上，SVM也可以看作是一个神经网络。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Kernel function相当于是神经网络中做feature transform的hidden layer&lt;/li&gt;
+&lt;li&gt;SVM学到的分类器与神经网络的输出层学到的分类器是一致的。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

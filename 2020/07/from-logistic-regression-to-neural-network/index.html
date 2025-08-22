@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\r前言\r本文的是台湾大学2020机器学习的Classification1和2的笔记，奉行Lazy evaluation策略，对这些知识更深层次的探究只在绝对必要时完成。\n">
+<title>从分类到对率回归再到到神经网络</title>
+
+<link rel='canonical' href='http://localhost:1313/2020/07/from-logistic-regression-to-neural-network/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="从分类到对率回归再到到神经网络">
+<meta property='og:description' content="\r前言\r本文的是台湾大学2020机器学习的Classification1和2的笔记，奉行Lazy evaluation策略，对这些知识更深层次的探究只在绝对必要时完成。\n">
+<meta property='og:url' content='http://localhost:1313/2020/07/from-logistic-regression-to-neural-network/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='classification' /><meta property='article:tag' content='logistic regression' /><meta property='article:tag' content='neural network' /><meta property='article:published_time' content='2020-07-04T22:01:07&#43;00:00'/><meta property='article:modified_time' content='2020-07-04T22:01:07&#43;00:00'/>
+<meta name="twitter:title" content="从分类到对率回归再到到神经网络">
+<meta name="twitter:description" content="\r前言\r本文的是台湾大学2020机器学习的Classification1和2的笔记，奉行Lazy evaluation策略，对这些知识更深层次的探究只在绝对必要时完成。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#分类">分类</a>
+      <ol>
+        <li><a href="#引例">引例</a></li>
+        <li><a href="#贝叶斯公式">贝叶斯公式</a></li>
+        <li><a href="#pc1x">P(C1|x)</a></li>
+        <li><a href="#共用协方差矩阵">共用协方差矩阵</a></li>
+        <li><a href="#why-linear一些推导">Why linear?一些推导</a></li>
+      </ol>
+    </li>
+    <li><a href="#logistic-regression">logistic regression</a>
+      <ol>
+        <li><a href="#step1-find-a-function-set">Step1, find a function set</a></li>
+        <li><a href="#step2-determine-goodness-of-function">Step2, determine goodness of function</a></li>
+        <li><a href="#step3-find-the-best-function">Step3, find the best function</a></li>
+        <li><a href="#why-likelihood-instead-of-mse">Why likelihood instead of MSE?</a></li>
+        <li><a href="#多元分类">多元分类</a>
+          <ol>
+            <li><a href="#step-1">Step 1</a></li>
+            <li><a href="#step-2">Step 2</a></li>
+            <li><a href="#step-3">Step 3</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#线性模型的限制">线性模型的限制</a>
+      <ol>
+        <li><a href="#feature-transformation">feature transformation</a></li>
+        <li><a href="#feature-transformation-with-linear-unit">feature transformation with linear unit</a></li>
+        <li><a href="#neural-network">Neural network</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2020/07/from-logistic-regression-to-neural-network/">从分类到对率回归再到到神经网络</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 04, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h2 id="前言">前言
+</h2><p>本文的是台湾大学2020机器学习的Classification<a class="link" href="https://youtu.be/fZAZUYEeIMg"  target="_blank" rel="noopener"
+    >1</a>和<a class="link" href="https://youtu.be/hSXFuypLukA"  target="_blank" rel="noopener"
+    >2</a>的笔记，奉行<a class="link" href="https://en.wikipedia.org/wiki/Lazy_evaluation"  target="_blank" rel="noopener"
+    >Lazy evaluation</a>策略，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。</p>
+<!-- more -->
+<h2 id="分类">分类
+</h2><p>在分类问题，我们要找一个函数f，f的输入是代表样本的向量，输出是一个代表类别的标量。将样本分为两类的叫做二元分类，多于两类的叫做多元分类。我们先考虑二元分类问题。</p>
+<h3 id="引例">引例
+</h3><p>XCOM中面对的敌人有变种人(ADVENT)和外星人(Alien)两种，长老(The elder)送来了新的物种，现有训练资料变种人数据15组，外星人10组，你能据此帮助被关在外星人网络中充当首脑的人类指挥官分辨新物种的种类吗？</p>
+<p>先考虑这个问题，蓝绿两个盒子，其中各有蓝绿球若干。从蓝盒子抽球的概率是1/3，从绿盒子抽球的概率是2/3。已知抽到了蓝球，问从蓝色盒子里抽到的概率是多少?
+<img src="/2020/07/from-logistic-regression-to-neural-network/two_boxes.png"
+	width="1306"
+	height="972"
+	
+	loading="lazy"
+	
+		alt="两个盒子"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="322px"
+	
+></p>
+$$
+P(蓝盒子)=\frac{1}{3} \\
+P(绿盒子)=\frac{2}{3} \\
+P(抽到蓝球|蓝盒子)=\frac{4}{5} \\
+P(绿盒子|抽到蓝球)=\frac{2}{5} \\
+P(抽到蓝球)=P(蓝盒子)P(抽到蓝球|蓝盒子)+P(绿盒子)P(绿盒子|抽到蓝球)=\frac{1*4}{3*5}*\frac{2*2}{3*5}=\frac{8}{15} \\
+P(蓝盒子|抽到蓝球)=\frac{P(抽到蓝球|蓝盒子)P(蓝盒子)}{P(抽到蓝球)}=\frac{\frac{1*4}{3*5}}{\frac{8}{15}}=\frac{1}{2} 
+$$<h3 id="贝叶斯公式">贝叶斯公式
+</h3><p>我们预测的依据是贝叶斯公式：
+</p>
+$$P(A|B)=\frac{P(B|A)P(A)}{P(B)}$$<p>
+用C1表示敌人属于变种人，C2表示敌人属于外星人，那么</p>
+$$P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))}$$<p>training set中一共有15组变种人，10组外星人。则
+</p>
+$$
+P(C_1)=\frac{15}{15+10}=\frac{3}{5} \\
+P(C_2)=\frac{10}{15+10}=\frac{2}{5}
+$$<p>接下来是确定P(x|C1)。思考一下，testing-set上的数据我们的算法从来没有见过，那么P(x|C1)应该是0咯。可这样贝叶斯公式就变成0/0了，还怎么预测?</p>
+<h3 id="pc1x">P(C1|x)
+</h3><p>在此，我们大胆假设，目前所见过的C1的example是由一个概率分布产生的，这样就可以对testing-set上没见过的数据了求概率了。</p>
+<p><img src="/2020/07/from-logistic-regression-to-neural-network/prior.png"
+	width="1301"
+	height="977"
+	
+	loading="lazy"
+	
+		alt="先验"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="319px"
+	
+></p>
+<p>这是课件的一张图，对于图中79个example，认为是一个Gaussian产生的，但好多个Gaussian都可以产生这样的点，具体是哪一个呢？这里使用极大似然的思想，就认为使得产生训练数据的概率最大的Gaussian好了</p>
+<p>回到我们的例子，似然函数是
+</p>
+$$
+L(\mu,\Sigma)=\prod_i^{15}f_{\mu,\Sigma}(x^i) \\
+f_{\mu,\Sigma}=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{\{-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\}}
+\\
+\mu^*,\Sigma^*=\argmax_{\mu,\Sigma} L(\mu,\Sigma)
+$$<p>
+经过一番运算后，得到μ和Σ的闭式解:
+</p>
+$$
+\mu^*=\frac{1}{15}\sum_{n=1}^{15}x^n
+\Sigma^*=\frac{1}{15}\sum_{n=1}^{15}(x^n-\mu^*)(x^n-\mu^*)^T
+$$<p>
+这样就得到了C1的分布<code>G1(μ,Σ)</code>，同理可以得到C2的分布<code>G2(μ,Σ)</code>，有了这两项就可以计算条件概率从而完成预测了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">if(x|C1)&gt;0.5 output ADVENT
+</span></span><span class="line"><span class="cl">else output ALIEN
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/2020/07/from-logistic-regression-to-neural-network/res_1.png"
+	width="720"
+	height="541"
+	
+	loading="lazy"
+	
+		alt="结果"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="319px"
+	
+>
+回到上课的例子，这个模型的效果并不好:(。</p>
+<p>想到<a class="link" href="../../../06/26/machine-learning-basics-probability-and-information-theory/" >Probability</a>中Gaussion的PS</p>
+<blockquote>
+<p>如果用高斯分布来做分类问题，让分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。</p>
+</blockquote>
+<p>那就试试共用协方差矩阵吧</p>
+<h3 id="共用协方差矩阵">共用协方差矩阵
+</h3><p>似然函数变为
+</p>
+$$
+L(\mu_1,\mu_2,\Sigma)=\prod_i^{15}f_{\mu1,\Sigma}(x^i)\prod_{j=16}^{25}f_{\mu2,\Sigma}(x^i) \\
+$$<p><img src="/2020/07/from-logistic-regression-to-neural-network/res_2.png"
+	width="1301"
+	height="979"
+	
+	loading="lazy"
+	
+		alt="共用covariance-matrix"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="318px"
+	
+>
+求解过程省略，来看一下结果，准确度一下子就上来了。这时发现分界线变成了一条直线。这与线性模型有关系吗？推一下看看</p>
+<h3 id="why-linear一些推导">Why linear?一些推导
+</h3>$$
+P(C_1|x)=\frac{P(x|C_1)P(C_1)}{P(x|C_1)P(C_1)+P({x|C_2})P(C_2))} \\
+$$<p>
+上下同除以分子
+</p>
+$$
+P(C_1|x)=\frac{1}{1+\frac{P({x|C_2})P(C_2)}{P(x|C_1)P(C_1)}}
+$$$$
+令z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}，
+则P(C_1|x)=\frac{1}{1+\exp(-z)}=\sigma(z) 
+$$<p>
+sigmoid函数就这样出现了!
+继续分解z
+</p>
+$$
+z=\ln \frac{P({x|C_1})P(C_1)}{P(x|C_2)P(C_2)}=\ln \frac{P({x|C_1})}{P(x|C_2)}+\ln\frac{P(C_1)}{P(C_2)} $$<p>
+$$</p>
+<p>\lg \frac{P(C_1)}{P(C_2)}=\lg \frac{\frac{N_1}{N_1+N_2}}{\frac{N_2}{N_1+N_2}}=\lg \frac{N_1}{N2}</p>
+$$
+是个常数 
+$$<p>
+P(x|C_1)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)}} </p>
+$$
+$$<p>
+P(x|C_2)=\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)}} </p>
+$$
+带入，则
+$$<p>
+\ln \frac{P({x|C_1})}{P(x|C_2)} = \ln \frac{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)}}}{\frac{1}{2\pi^{D/2}}\frac{1}{|\Sigma|^{1/2}}\exp{{-\frac{1}{2}(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)}}} </p>
+$$
+$$<p>
+=\ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\ln \exp\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup </p>
+$$
+$$<p>
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[(x-\mu^1)^T(\Sigma^1)^{-1}(x-\mu^1)-(x-\mu^2)^T(\Sigma^2)^{-1}(x-\mu^2)]\rgroup </p>
+$$
+$$<p>
+= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup
+</p>
+$$
+$$<p>
+z= \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} +\lgroup -\frac{1}{2}[x^T(\Sigma^1)^{-1}x-2(\mu^1)^T(\Sigma^1)^{-1}x+(\mu^1)^T(\Sigma^1)^{-1}\mu^1-x^T(\Sigma^2)^{-1}x+2(\mu^1)^T(\Sigma^2)^{-1}x-(\mu^2)^T(\Sigma^2)^{-1}\mu^2]\rgroup + \lg \frac{N_1}{N2} $$</p>
+<p>共用协方差矩阵时，
+</p>
+$$\Sigma^1=\Sigma^2=\Sigma $$$$
+ \ln \frac{|\Sigma^2|^{1/2}}{|\Sigma^1|^{1/2}} =0
+ x^T(\Sigma^1)^{-1}x - x^T(\Sigma^2)^{-1}x=0 $$<p>此时
+</p>
+$$z = (\mu^1-\mu^2)^T\Sigma^{-1}x-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2} $$$$
+ 令w^T=(\mu^1-\mu^2)^T\Sigma^{-1},b=-\frac{1}{2}(\mu^1)^T(\Sigma)^{-1}\mu^1+\frac{1}{2}(\mu^2)^T\Sigma^{-1}\mu^2+\ln \frac{N_1}{N2}$$$$则z=w^T+b $$$$P(C_1|x)= \sigma(z)$$<p>
+是z的广义线性模型，给它一个名字，即logistic regression。</p>
+<p>由
+</p>
+$$\mu^2,\mu^2,\Sigma^1,\Sigma^2$$<p>
+得到w和b的模型称为生成模型(generative model)，因为各个x可以由一组分布生成出来。 直接找出w和b的模型称为判别模型(discriminative model)</p>
+<h2 id="logistic-regression">logistic regression
+</h2><h3 id="step1-find-a-function-set">Step1, find a function set
+</h3><p>logistic regression问题中，我们要找一组参数w和b，σ(wTx+b)给出的值是x属于正例的概率。</p>
+<h3 id="step2-determine-goodness-of-function">Step2, determine goodness of function
+</h3><p>这里使用似然函数
+<img src="/2020/07/from-logistic-regression-to-neural-network/goodness.png"
+	width="1275"
+	height="787"
+	
+	loading="lazy"
+	
+		alt="loss"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="162"
+		data-flex-basis="388px"
+	
+></p>
+<p>最小化对数似然函数(NLL)实际上就是最小化交叉熵</p>
+<p><img src="/2020/07/from-logistic-regression-to-neural-network/cross_entropy.png"
+	width="1310"
+	height="983"
+	
+	loading="lazy"
+	
+		alt="cross_entropy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="319px"
+	
+></p>
+<h3 id="step3-find-the-best-function">Step3, find the best function
+</h3><p>梯度下降走你</p>
+<h3 id="why-likelihood-instead-of-mse">Why likelihood instead of MSE?
+</h3><p><img src="/2020/07/from-logistic-regression-to-neural-network/MSE.png"
+	width="1307"
+	height="975"
+	
+	loading="lazy"
+	
+		alt="MSE"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="321px"
+	
+></p>
+<p>若使用MSE，则偏微分的值一直是0，无法进行梯度下降。
+<img src="/2020/07/from-logistic-regression-to-neural-network/cross_entropy_vs_MSE.png"
+	width="1313"
+	height="976"
+	
+	loading="lazy"
+	
+		alt="MSE&cross entropy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="322px"
+	
+>
+由图可见，在logistic regression这个问题上，交叉熵(极大似然)确实比MSE的梯度更大，更适合当作评价函数好坏的标准。</p>
+<h3 id="多元分类">多元分类
+</h3><p><img src="/2020/07/from-logistic-regression-to-neural-network/multi-class_classification.png"
+	width="1316"
+	height="981"
+	
+	loading="lazy"
+	
+		alt="Multiclass-classification"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="321px"
+	
+></p>
+<h4 id="step-1">Step 1
+</h4><p>以三元分类为例，要做三元分类，要找三组参数</p>
+<p>$$
+C_1:w^1,b^1 \text{  } z_1=w^1x+b_1 \
+C_2:w^2,b^2 \text{  } z_2=w^2x+b_2 \
+C_3:w^3,b^3 \text{  } z_3=w^3x+b_3 \
+\mathrm{softmax}: \vec{z} \in \mathbb{R}^n\to \vec{y} \in\mathbb{R}^n \
+\text{}\\
+y_i = \frac{\exp{z_i}}{\sum_{i=1}^3}</p>
+<p>$$</p>
+<h4 id="step-2">Step 2
+</h4><p><img src="/2020/07/from-logistic-regression-to-neural-network/multi_class_loss.png"
+	width="1302"
+	height="969"
+	
+	loading="lazy"
+	
+		alt="Multiclass-Loss"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="322px"
+	
+></p>
+<p>把<code>z</code>经过<code>softmax</code>函数变换后得到的概率分布<code>y</code>与真实值计算交叉熵，即为需要最小化的函数</p>
+<h4 id="step-3">Step 3
+</h4><p>梯度下降</p>
+<h2 id="线性模型的限制">线性模型的限制
+</h2><p>线性模型的函数是直线，而稍微复杂点的问题是无法用直线解决的。例如XOR问题</p>
+<p><img src="/2020/07/from-logistic-regression-to-neural-network/XOR.png"
+	width="1297"
+	height="979"
+	
+	loading="lazy"
+	
+		alt="XOR"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="317px"
+	
+></p>
+<h3 id="feature-transformation">feature transformation
+</h3><p><img src="/2020/07/from-logistic-regression-to-neural-network/feature_transformation.png"
+	width="1308"
+	height="977"
+	
+	loading="lazy"
+	
+		alt="feature transformation"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="321px"
+	
+></p>
+<p>通过对feature做一些处理，是有可能突破线性模型的限制的。
+但需要人工参与，而且没有一般规律。这就变成<em>人工</em>学习而不是<em>机器</em>学习了:(</p>
+<h3 id="feature-transformation-with-linear-unit">feature transformation with linear unit
+</h3><p><img src="/2020/07/from-logistic-regression-to-neural-network/cascading_logistic_regression.png"
+	width="1309"
+	height="971"
+	
+	loading="lazy"
+	
+		alt="cascading_logistic_regression"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="134"
+		data-flex-basis="323px"
+	
+>
+但我们可以把feature transformation看作是一个线性的变化，这样就可以由logistic regression来解决。这样把多个logistic regression串起来，就可以对feature做复杂的变化。</p>
+<p><img src="/2020/07/from-logistic-regression-to-neural-network/feature_transformation_with_linear_unit.png"
+	width="1305"
+	height="978"
+	
+	loading="lazy"
+	
+		alt="feature_transformation_with_linear_unit"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="320px"
+	
+>
+上图是使用两个logistic regression进行feature transformation的结果，只要再接上一个logistic regression接收他俩的输出就可以进行分类了。</p>
+<h3 id="neural-network">Neural network
+</h3><p>由此推广，把若干个线性模型串起来就可以实现很多复杂的功能。那么给logistic regression的单元起个新名字叫做神经元(neuron)，把它们互相连接形成的结构叫做神经网络(neural network)，瞬间就高大上起来了。</p>
+<p>现在你可以骗麻瓜说「我们在模拟人类大脑的运作实现人工智慧」了;-)</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/classification/">Classification</a>
+        
+            <a href="/tags/logistic-regression/">Logistic Regression</a>
+        
+            <a href="/tags/neural-network/">Neural Network</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/2020/07/machine-learning-in-pure-paperworks/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——纸上谈兵</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/06/machine-learning-basics-numerical-computation/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——数值计算</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/06/machine-learning-basics-probability-and-information-theory/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——概率论与信息论</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/06/machine-learning-basics-linear-algebra/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——线性代数</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

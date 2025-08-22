@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>The Flower Book on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/the-flower-book/</link>
+        <description>Recent content in The Flower Book on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Fri, 03 Jul 2020 21:29:45 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/the-flower-book/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>机器学习基础——纸上谈兵</title>
+        <link>https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/</link>
+        <pubDate>Fri, 03 Jul 2020 21:29:45 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对相关知识的补充会在实践后进行。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;what-is-machine-learning&#34;&gt;what is machine learning
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;the-task-t&#34;&gt;The Task T
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Classification&lt;/li&gt;
+&lt;li&gt;Regression&lt;/li&gt;
+&lt;li&gt;Structured output&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;the-performance-measure-p&#34;&gt;The performance measure P
+&lt;/h3&gt;&lt;p&gt;Usually we are interested in how well the machine learning algorithm performs
+on data that it has &lt;strong&gt;not&lt;/strong&gt; seen before, since this determines how well it will work when deployed in the real world. We therefore evaluate these performance measures using a &lt;strong&gt;test set&lt;/strong&gt; of data that is separate from the data used for training the machine learning system.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s often difficult to choose a performance measure that corresponds well to the desired behavior of the system for two reasons&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The performance measure can be difficult to decide. When performing a regression task, should we penalize the system more if it frequently makes medium-sized mistakes or if it rarely makes very large mistakes? These kinds of design choices depend on the application&lt;/li&gt;
+&lt;li&gt;we know what quantity we would ideally like to measure, but measuring it is impractical. Computing the actual probability value assigned to a specific point in space in many density estimation models is intractable&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;the-experience-e&#34;&gt;The Experience E
+&lt;/h3&gt;&lt;p&gt;Machine learning algorithms can be broadly categorized as unsupervised or supervised by what kind of experience they are allowed to have during the learning process.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Unsupervised learning algorithms experience a dataset containing many features, then learn useful properties of the structure of this dataset. In the context of deep learning, we usually want to learn the entire probability distribution that generated a dataset, whether explicitly as in density estimation or implicitly for tasks like synthesis or denoising. Some other unsupervised learning algorithms perform other roles, like clustering, which consists of dividing the dataset into clusters of similar examples.&lt;/li&gt;
+&lt;li&gt;Supervised learning algorithms experience a dataset containing features,but each example is also associated with a label or target.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Roughly speaking, unsupervised learning involves observing several examples
+of a random vector x, and attempting to implicitly or explicitly learn the probability distribution p(x), or some interesting properties of that distribution, while supervised learning involves observing several examples of a random vector x and an associated value or vector y, and learning to predict y from x, usually by estimating &lt;code&gt;p(y|x)&lt;/code&gt; The term supervised learning originates from the view of the target y being provided by an instructor or teacher who shows the machine learning system what to do. In unsupervised learning, there is no instructor or teacher, and the algorithm must learn to make sense of the data without this guide&lt;/p&gt;
+&lt;p&gt;Some machine learning algorithms do not just experience a fixed dataset. For
+example, &lt;strong&gt;reinforcement learning&lt;/strong&gt; algorithms interact with an environment, so there is a feedback loop between the learning system and its experiences&lt;/p&gt;
+&lt;h3 id=&#34;example-linear-regression&#34;&gt;Example: Linear regression
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;The task T: linear regression solves a regression problem. The goal is to build a system that can take a vector x ∈ R^n as input and predict the value of a scalar y ∈ R as its output.&lt;/li&gt;
+&lt;/ul&gt;
+$$\hat{y}=w^{\top}x+b$$&lt;p&gt;&lt;strong&gt;w&lt;/strong&gt; is a vector of the weights over different features.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;b&lt;/strong&gt; is the bias(not the bias in statistic)&lt;/p&gt;
+&lt;p&gt;Together ,&lt;strong&gt;w&lt;/strong&gt; and &lt;strong&gt;b&lt;/strong&gt; are called the &lt;strong&gt;parameters&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;y&lt;/strong&gt; is the &lt;strong&gt;label&lt;/strong&gt; of the data.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;y-hat&lt;/strong&gt; is the prediction value&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The performance measurement P:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;mean squared error(MSE)&lt;/p&gt;
+$$\mathrm{MSE_{test}}=\frac{1}{m}\sum_i(\hat{y}^{(test)}-y^{(test)})$$&lt;h2 id=&#34;capacity-overfitting-and-underfitting&#34;&gt;Capacity, Overfitting and Underfitting
+&lt;/h2&gt;&lt;p&gt;The central challenge in machine learning is that we must perform well on &lt;em&gt;new, previously unseen inputs&lt;/em&gt;—not just those on which our model was trained. The ability to perform well on previously unobserved inputs is called generalization.&lt;/p&gt;
+&lt;p&gt;The factors determining how well a machine learning algorithm will perform are its ability to:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Make the training error small.&lt;/li&gt;
+&lt;li&gt;Make the gap between training and test error small.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;These two factors are underfitting and overfitting. Underfitting occurs when the model is not able to obtain a sufficiently low error value on the training set. Overfitting occurs when the gap between the training error and test error is too large.&lt;/p&gt;
+&lt;p&gt;Informally, a model’s capacity is its ability to fit a wide variety of functions. Models with low capacity may struggle to fit the training set. Models with high capacity can overfit by memorizing properties of the training set that do not serve them well on the test set. Usually,the error mainly comes from bias in the case of underfitting and variance in the case of overfitting.
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/capacity.png&#34;
+	width=&#34;1301&#34;
+	height=&#34;975&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Capacity&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;133&#34;
+		data-flex-basis=&#34;320px&#34;
+	
+&gt;
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/optimal_capacity.png&#34;
+	width=&#34;605&#34;
+	height=&#34;326&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Capacity,overfitting and underfitting&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;185&#34;
+		data-flex-basis=&#34;445px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;bayes-error&#34;&gt;Bayes error
+&lt;/h3&gt;&lt;p&gt;The error incurred by an oracle making predictions from the true distribution
+&lt;code&gt;p(x,y)&lt;/code&gt; is called the Bayes error.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Why are there errors if we know the true probability distribution ?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;because there may still be some noise in the distribution&lt;/p&gt;
+&lt;h3 id=&#34;how-about-training-size&#34;&gt;How about training size
+&lt;/h3&gt;&lt;p&gt;Training and generalization error vary as the size of the training set varies.
+Expected generalization error can never increase as the number of training examples increases. For non-parametric models, more data yields better generalization until the best possible error is achieved. Any fixed parametric model with less than optimal capacity will asymptote to an error value that exceeds the Bayes error. See figure
+5.4 for an illustration. Note that it is possible for the model to have optimal
+capacity and yet still have a large gap between training and generalization error. In this situation, we may be able to reduce this gap by gathering more training examples.
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/training_set_size_and_errors.png&#34;
+	width=&#34;595&#34;
+	height=&#34;282&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;The effect of the training dataset size on the train and test error&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;210&#34;
+		data-flex-basis=&#34;506px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;hyperparameters&#34;&gt;Hyperparameters
+&lt;/h3&gt;&lt;p&gt;hyperparameters are use to control the behavior of the learning algorithm.&lt;/p&gt;
+&lt;p&gt;Eg. In linear regression, we could use a model&lt;/p&gt;
+$$\hat{y}=b+\sum_i^kw_ix^i$$&lt;p&gt;&lt;strong&gt;k&lt;/strong&gt; controls degree of the polynomial,which acts as a &lt;em&gt;capacity hyperparameter&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Why hyperparameters?&lt;/p&gt;
+&lt;p&gt;Sometimes a setting is chosen to be a hyperparameter that the learning algorithm does not learn because it is difficult to optimize. The setting must be a hyperparameter because it is not appropriate to learn that hyperparameter on the training set. This applies to all hyperparameters that control model capacity(e.g:&lt;strong&gt;k&lt;/strong&gt;). If learned on the training set, such hyperparameters would always choose the maximum possible model capacity, resulting in overfitting&lt;/p&gt;
+&lt;p&gt;How to adjust hyperparameters?&lt;/p&gt;
+&lt;p&gt;Validation set!&lt;/p&gt;
+&lt;h3 id=&#34;regularization&#34;&gt;Regularization
+&lt;/h3&gt;&lt;p&gt;We can give a learning algorithm a preference for one solution in its
+hypothesis space to another. This means that both functions are eligible, but one is preferred.(即西瓜书提到的归纳假设)&lt;/p&gt;
+&lt;p&gt;For example, we can modify the training criterion for linear regression to include
+&lt;strong&gt;weight decay&lt;/strong&gt;&lt;/p&gt;
+$$J(w)=\mathrm{MSE_{train}}+\lambda w^\top w$$&lt;p&gt;where λ is a value chosen ahead of time that controls the strength of our preference for smaller weights. in this sense, λ is also a hyperparameter
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/weight_decay.png&#34;
+	width=&#34;677&#34;
+	height=&#34;311&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;weight_decay&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;217&#34;
+		data-flex-basis=&#34;522px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;frequentist-vs-baysian&#34;&gt;Frequentist vs baysian
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;Frequentist  statistics:
+we assume that the true parameter value θ is fixed but unknown, while the point estimate θ_hat is a function of the data. Since the data is drawn from a random process, any function of the data is random. Therefore θ_hat is a random variable&lt;/li&gt;
+&lt;li&gt;Bayesian Statistics:
+the dataset is directly observed and so is not random. On the other hand, the true parameter θ is unknown or uncertain and thus is represented as a random variable. Before observing the data, we represent our knowledge of θ using &lt;em&gt;the prior probability distribution&lt;/em&gt;, &lt;strong&gt;p(θ)&lt;/strong&gt;. Generally, the machine learning practitioner selects a prior distribution that is quite broad (i.e. with high entropy) to reflect a high degree of uncertainty in the value of θ before observing any data&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;maximum-likelihood&#34;&gt;Maximum likelihood
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;最大似然估计：使得现有观测值出现概率最大的参数θ
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;The maximum likelihood estimator for is defined as
+&lt;/p&gt;
+$$\theta_{ML}=\argmax _\theta\prod_{i=1}^mp_{model}(x^i;\theta)$$&lt;p&gt;
+log-likelihood estimator
+&lt;/p&gt;
+$$\theta_{ML}=\argmax _\theta\sum_{i=1}^m\log p_{model}(x^i;\theta)$$&lt;p&gt;观察KL-Divergence:
+&lt;/p&gt;
+$$D_{KL}(\hat{p}_{data}\|p_{model})=\mathbb{E}_{x\sim \hat{p}_{data}}[\log \hat{p}_{data}(x) - \log \hat{p}_{model}(x)]$$&lt;p&gt;为了最小化KL-Divergence，只需最小化&lt;/p&gt;
+$$- \mathbb{E}_{x\sim \hat{p}_{data}} \log \hat{p}_{model}(x)]$$&lt;p&gt;这与最大化log-likelihood是&lt;strong&gt;等价&lt;/strong&gt;的&lt;/p&gt;
+&lt;h2 id=&#34;simple-machine-learning-algorithm&#34;&gt;Simple machine learning algorithm
+&lt;/h2&gt;&lt;h3 id=&#34;svm&#34;&gt;SVM
+&lt;/h3&gt;&lt;p&gt;One of the most influential approaches to supervised learning is the support vector machine  This model is similar to logistic regression in that it is driven by a linear function
+&lt;/p&gt;
+$$y=w^\top x+b$$&lt;p&gt;
+. The SVM predicts that the positive class is present when y is positive. Likewise, it predicts that the negative class is present when y is negative.&lt;/p&gt;
+&lt;p&gt;One key innovation associated with support vector machines is the kernel trick. The kernel trick consists of observing that many machine learning algorithms can be written exclusively in terms of dot products between examples. For example, it can be shown that the linear function used by the support vector machine can be re-written as&lt;/p&gt;
+$$w^\top x+b=b+\sum_i^m \alpha_i x^\top x^{(i)}$$&lt;p&gt;where x^i is a training example and α is a vector of coefficients.Rewriting the learning algorithm this way allows us to replace x by the output of a given feature function φ(x) and the dot product with a function k(x,x^i) = φ(x)· φ(x^i) called a kernel.&lt;/p&gt;
+&lt;p&gt;The most commonly used kernel is the &lt;strong&gt;Gaussian kernel&lt;/strong&gt;
+&lt;/p&gt;
+$$k(u,v)=\mathbin{N}(u-v;0;\sigma^2I)$$&lt;p&gt;this kernel is also known as the radial basis function (RBF) kernel. The Gaussian kernel is performing a kind of template matching. A training example x associated with training label y becomes a template for class y. When a test point x&amp;rsquo; is near x according to Euclidean distance, the Gaussian kernel has a large response, indicating that x&amp;rsquo; is very similar to the x template. The model then puts a large weight on the associated training label y. Overall, the prediction will combine many such training labels weighted by the similarity of the corresponding training examples&lt;/p&gt;
+&lt;h3 id=&#34;gradient-descent-improved-stochastic-gradient-descent&#34;&gt;Gradient descent improved: stochastic gradient descent
+&lt;/h3&gt;&lt;p&gt;Idea:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;take a step over a &amp;lsquo;minibatch&amp;rsquo; instead of observing the whole training-set&lt;/li&gt;
+&lt;li&gt;step cost does not depend on size of training set, thus achieving convergence much faster.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A recurring problem in machine learning is that large training sets are necessary
+for good generalization, but large training sets are also more computationally expensive.&lt;/p&gt;
+&lt;p&gt;the insight of stochastic gradient descent is that the gradient is an expectation.
+The expectation may be approximately estimated using a small set of samples. Specifically, on each step of the algorithm, we can sample a &lt;strong&gt;minibatch&lt;/strong&gt; of examples&lt;/p&gt;
+&lt;p&gt;For a fixed model size, the cost per SGD update does not depend on the training set size m. In practice, we often use a larger model as the training set size increases, but we are not forced to do so. The number of updates required to reach convergence usually increases with training set size. However, as m approaches infinity, the model will eventually converge to its best possible test error before SGD has sampled every example in the training set. Increasing m further will not extend the amount of training time needed to reach the model’s best possible test error. From this point of view, one can argue that the asymptotic cost of training a model with SGD is O(1) as a function of m&lt;/p&gt;
+&lt;h2 id=&#34;why-deep-learning&#34;&gt;Why deep learning?
+&lt;/h2&gt;&lt;h3 id=&#34;curse-of-dimensionality&#34;&gt;curse of dimensionality
+&lt;/h3&gt;&lt;p&gt;Many machine learning problems become exceedingly difficult when the number of dimensions in the data is high.&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;dimension&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;number of states&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;1&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;2&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n^2&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;3&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;n^3&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Traditional machine learning algorithm can&amp;rsquo;t distinguish a state that&amp;rsquo;s not seen in the training set.&lt;/p&gt;
+&lt;h3 id=&#34;local-constancy-and-smoothness-regularization&#34;&gt;Local Constancy and Smoothness Regularization
+&lt;/h3&gt;&lt;p&gt;In order to generalize well, machine learning algorithms need to be guided by prior beliefs about what kind of function they should learn.&lt;/p&gt;
+&lt;p&gt;Among the most widely used of these implicit “priors” is the smoothness
+prior or local constancy prior. This prior states that the function we learn should not change very much within a small region.
+Many simpler algorithms rely exclusively on this prior to generalize well, and
+as a result they &lt;em&gt;fail&lt;/em&gt; to scale to the statistical challenges involved in solving AIlevel tasks.&lt;/p&gt;
+&lt;h3 id=&#34;how-do-we-deal-with-curse-of-dimensionality&#34;&gt;How do we deal with curse of dimensionality?
+&lt;/h3&gt;&lt;p&gt;The key insight is that a very large number of regions, e.g., O(2^k), can be defined with O(k) examples, so long as we introduce some &lt;strong&gt;dependencies&lt;/strong&gt; between the regions via additional assumptions about the underlying data generating distribution&lt;/p&gt;
+&lt;p&gt;The core idea in deep learning is that we assume that the data was generated by the composition of factors or features, potentially at multiple levels in a hierarchy.&lt;/p&gt;
+&lt;h3 id=&#34;manifold-learning--manifold-hypothesis&#34;&gt;Manifold Learning &amp;amp; manifold hypothesis
+&lt;/h3&gt;&lt;p&gt;Manifold learning algorithms  assuming that most of R^n
+consists of &lt;strong&gt;invalid inputs&lt;/strong&gt;, and that interesting inputs occur only along
+a collection of manifolds containing a small subset of points.&lt;/p&gt;
+&lt;p&gt;manifold hypothesis:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;probability distribution over images, text strings, and sounds that occur in real life is highly concentrated.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;we can also imagine such neighborhoods and transformations, at least informally. In the case of images, we can certainly think of many possible transformations that allow us to trace out a manifold in image space: we can gradually dim or brighten the lights, gradually move or rotate objects in the image, gradually alter the colors on the surfaces of objects&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;流形假说:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;大部分有结构的数据的分布函数并不是分散的，而是集中聚集在某些范围。
+支持证据：随机取像素试图产生而期待其产生日常生活中的照片的概率是微乎其微的。随机取字母指望它生成一篇文章的概率也是微乎其微的。所以有结构的数据的分布函数必然是在某个范围内聚集，而在大部分区域分散
+&lt;img src=&#34;https://verrickt.github.io/2020/07/03/machine-learning-in-pure-paperworks/noise.png&#34;
+	width=&#34;771&#34;
+	height=&#34;843&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;noise&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;91&#34;
+		data-flex-basis=&#34;219px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;在流形的表面移动，将可以得到流形所代表的全部数据。如在代表人脸的流形上移动，A点代表微笑的人，B点代表流泪的人。若从直线直接过去，则在A，B中间点所对应的数据可能不是人脸；若从流形的表面移动到B，则数据一直都是人脸。（微笑-&amp;gt;皱眉-&amp;gt;哭泣）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;请参考&lt;a class=&#34;link&#34; href=&#34;https://www.youtube.com/watch?v=BePQBWPnYuE&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Youtube视频：My understanding of the Manifold Hypothesis | Machine learning&lt;/a&gt;&lt;/p&gt;
+&lt;iframe  maxwidth=&#34;100%&#34;  width=&#34;560&#34; height=&#34;315&#34; src=&#34;https://www.youtube.com/embed/BePQBWPnYuE&#34; style=&#34;max-width:100%&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——数值计算</title>
+        <link>https://verrickt.github.io/2020/06/28/machine-learning-basics-numerical-computation/</link>
+        <pubDate>Sun, 28 Jun 2020 11:00:27 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/28/machine-learning-basics-numerical-computation/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的数值计算知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;source-of-errors&#34;&gt;Source of errors
+&lt;/h2&gt;&lt;h3 id=&#34;overflow-and-underflow&#34;&gt;Overflow and Underflow
+&lt;/h3&gt;&lt;p&gt;计算机的内存是有限的，而有限的内存上无法实现无限精度的数值计算，因此数值计算是有误差的。&lt;/p&gt;
+&lt;p&gt;接近零的非零数值因为舍入变为0称为Underflow。&lt;/p&gt;
+&lt;p&gt;超出表示范围的wrap-around称为Overflow&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;positive-overflow 指超过范围的正数被截断为负数&lt;/li&gt;
+&lt;li&gt;negative-overflow 指超过范围的负数被截断为正数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;poor-conditioning&#34;&gt;Poor Conditioning
+&lt;/h3&gt;&lt;p&gt;Condition指输入的微小变化引起函数值变化的剧烈程度。计算机中的数字是有表示范围的，因此Condition大的函数会遇到很多问题。&lt;/p&gt;
+&lt;p&gt;对于&lt;/p&gt;
+$$f(\mathbf{x})=A_{-1}\mathbf{x},A \in \mathbb{R}^{nxn}$$&lt;p&gt;
+如果A可以做特征值分解，那么f的condition number定义为
+&lt;/p&gt;
+$$\max{i,j}\left|\frac{\lambda_i}{\lambda_j}\right|$$&lt;h2 id=&#34;optimization&#34;&gt;Optimization
+&lt;/h2&gt;&lt;p&gt;解出使函数f(x)取得最大值/最小值的x的过程称为优化(optimization)。求f(x)最大值可以用求-f(x)的最小值实现，因此主要讨论求最小值。&lt;/p&gt;
+&lt;h3 id=&#34;naive-gradient-descent&#34;&gt;naive gradient descent
+&lt;/h3&gt;&lt;p&gt;梯度(gradient)给出了函数增长最快的方向，那么沿着梯度的反方向就可以将函数值减少。梯度下降法(gradient descent)就是采用这个思路一种方法:&lt;/p&gt;
+$$
+x^{i+1} = x^{i} - \epsilon \nabla_xf(x)
+$$&lt;p&gt;
+其中ε是学习率(learning rate)。一般来说ε有两种取法&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;设为一个固定的很小的常量&lt;/li&gt;
+&lt;li&gt;取多个ε，选其中让f(x-ε∇f(x))最小的那个ε。这种方法又称为line search&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;beyond-the-gradient-jacobian-and-hessian-matrices&#34;&gt;Beyond the Gradient: Jacobian and Hessian Matrices
+&lt;/h3&gt;&lt;p&gt;对于一个输入和输出都是向量的函数f，含有它的所有偏微分的矩阵称为雅可比矩阵(Jacobian matrix)&lt;/p&gt;
+$$f:\mathbb{R^m} \to \mathbb{R^n}$$$$J_{i,j}=\frac{\partial}{\partial x_j}f(x)_i 其中J \in \mathbb{R^{n\times m}}$$&lt;p&gt;同样的，含有f的所有二阶偏微分的矩阵称为海希矩阵(Hessian matrix)&lt;/p&gt;
+$$\mathbf{}{H}(f)(x)_{i,j}=\frac{\partial ^2}{\partial x_i \partial x_j}f(x)
+$$&lt;p&gt;海希矩阵就是梯度的雅可比矩阵。&lt;/p&gt;
+&lt;p&gt;当二阶偏微分连续时，微分运算符具有交换律，即
+&lt;/p&gt;
+$$H_{i,j}=H_{j,i}$$&lt;p&gt;机器学习中大部分函数f都具有连续的二阶偏微分，因此海希矩阵是实对称矩阵，因而可以做特征值分解，并且U是正交矩阵。&lt;/p&gt;
+&lt;p&gt;f对某个单位向量u方向u的二阶偏微分由
+&lt;/p&gt;
+$$u^{\top} Hu$$&lt;p&gt;给出。&lt;/p&gt;
+&lt;p&gt;在x0处对f做二阶泰勒展开&lt;/p&gt;
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$&lt;p&gt;H为海希矩阵，g为梯度。当采用学习率ε时，梯度下降的新坐标是x0-εg，带入泰勒展开，有&lt;/p&gt;
+$$f(x^0-\epsilon g) \approx f(x^0) - \epsilon g^{\top}g+\frac{1}{2}\epsilon^2g^{\top}Hg$$&lt;p&gt;当最后一项小于等于零时，ε可以任选。当最后一项大于零时，有&lt;/p&gt;
+$$\epsilon^*=\frac{g^{\top}g}{g^{\top}Hg}$$&lt;p&gt;时下降最快。最坏情况下，g与H重合，因此学习率的数量级由
+&lt;/p&gt;
+$$\frac{1}{\lambda_{\max}}$$&lt;p&gt;
+决定。&lt;/p&gt;
+&lt;p&gt;学习率设的过大或过小都会造成问题，这可以由海希矩阵解决。其中最简单的就是&lt;strong&gt;牛顿法&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;牛顿法的步骤基本思路是，在x点做二阶泰勒展开。&lt;/p&gt;
+$$f(x)\approx f(x^0)+(x-x^0)^{\top}g+\frac{1}{2}(x-x^0)^\top H(x-x^0)$$&lt;p&gt;
+解出函数的critical point&lt;/p&gt;
+$$x^*=x^0-H(f)(x^0)^{-1}\nabla_xf(x^0)$$&lt;p&gt;f是正定二次函数时，一次就找到了最低点。当f不是二次函数但是可以用二次函数局部近似时，多次迭代x*即可。&lt;/p&gt;
+&lt;p&gt;牛顿法只适用于解最小值，而梯度下降没有这个限制。&lt;/p&gt;
+&lt;p&gt;只用到梯度的优化算法，如梯度下降，叫做一阶优化算法。使用海希矩阵的算法，如牛顿法，叫做二阶优化算法。&lt;/p&gt;
+&lt;h3 id=&#34;constrained-optimization&#34;&gt;Constrained optimization
+&lt;/h3&gt;&lt;p&gt;有时我们希望在某集合S上而不是R^n上找出函数的最大/最小值，这叫做constrainted optimization(受限优化)。落在s中的点称为feasible point(可行点)&lt;/p&gt;
+&lt;p&gt;KKT方法是一个受限优化问题的通用方法。使用KKT方法，首先定义广义拉格朗日函数。&lt;/p&gt;
+&lt;p&gt;为了定义广义拉格朗日函数，首先需要将S定义为函数的集合&lt;/p&gt;
+$$\mathbb{S}=\{x| \forall i,g^{(i)}(x)=0 \text{ and } \forall j,h^{(j)}(x) \le0 \}$$&lt;p&gt;
+含有g(i)的方程称为equality constraints，含有h(j)的方程称为inequality constraints。&lt;/p&gt;
+&lt;p&gt;对于每个函数，定义λi和αj。他们叫做KKT乘数。&lt;/p&gt;
+&lt;p&gt;现在定义广义拉格朗日函数&lt;/p&gt;
+$$L(x,\lambda,\alpha)=f(x)+\sum_i \lambda_i g^{(i)}(x)+\sum_j \alpha_jh^{(j)}(x)$$&lt;p&gt;接下来在广义拉格朗日函数上使用非受限优化算法，就可以解决受限优化算法了。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——概率论与信息论</title>
+        <link>https://verrickt.github.io/2020/06/26/machine-learning-basics-probability-and-information-theory/</link>
+        <pubDate>Fri, 26 Jun 2020 22:25:05 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/26/machine-learning-basics-probability-and-information-theory/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的概率论知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;probability&#34;&gt;Probability
+&lt;/h2&gt;&lt;h3 id=&#34;conditional-probability&#34;&gt;Conditional probability
+&lt;/h3&gt;$$P(A|B)=\frac{P(AB)}{P(B)}$$&lt;p&gt;Chain rule/product rule of conditiona probability&lt;/p&gt;
+$$P(x^{(1)},...,x^{(n)})=P(x^{(1)})\prod_{i=2}^{n}P(x^{1}|x^{(1)},...,x^{(n)})$$&lt;p&gt;eg
+&lt;/p&gt;
+$$P(a,b,c)=P(a|b,c)P(b,c)$$$$P(b,c)=P(b|c)P(c)$$$$P(a,b,c)=P(a|b,c)P(b|c)P(c)$$&lt;h3 id=&#34;independence&#34;&gt;Independence
+&lt;/h3&gt;&lt;p&gt;Indenpendence:&lt;/p&gt;
+$$\forall x \in x,y \in y,p(x=x,y=y)=p(x=x)p(y=y)$$&lt;p&gt;则x,y互相独立。记作
+&lt;/p&gt;
+$$x \perp y $$&lt;p&gt;Conditional independent:
+&lt;/p&gt;
+$$\forall x \in x,y \in y ,z\in z,p(x=x,y=y|z=z)=p(x=x|z=z)p(y=y|z=z)$$&lt;p&gt;
+称x,y在z下相互独立，记作
+&lt;/p&gt;
+$$x \perp y \mid z$$&lt;h3 id=&#34;covariance&#34;&gt;Covariance
+&lt;/h3&gt;$$Cov(f(x),g(y))=\mathbb{E}[(f(x))-\mathbb{E}[f(x)])(g(x))-\mathbb{E}[g(x)]]$$&lt;p&gt;协方差值越高，意味着f和g的变化非常大，并且同时距离各自的均值很远。如果协方差是正值，那么f和g倾向于同时相对大的值。如果是负值，则一个取高值的同时另一个取低值。&lt;/p&gt;
+&lt;p&gt;向量
+&lt;/p&gt;
+$$x \in \mathbb{R}^n$$&lt;p&gt;
+的covariance matrix(协方差矩阵)是一个&lt;code&gt;nxn&lt;/code&gt;的方阵，其中
+&lt;/p&gt;
+$$Cov(x)_{i,j}=Cov(x_i,x_j)$$&lt;p&gt;
+对于对角线的元素，
+&lt;/p&gt;
+$$Cov(x_i,x_i)=Var(x_i)$$&lt;h3 id=&#34;gaussian-distribution&#34;&gt;Gaussian Distribution
+&lt;/h3&gt;&lt;p&gt;高斯分布，又称正态分布。
+概率密度函数(PDF):
+&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\sigma)=\sqrt{\frac{1}{2 \pi \sigma^2}}exp(-\frac{1}{2\sigma^2}(x-\mu)^2)$$&lt;p&gt;计算概率密度时，经常要取σ的平方倒数，工程中常使用另一个参数β∈(0,∞)表示高斯分布的&lt;strong&gt;精准度&lt;/strong&gt;
+&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\beta^{-1})=\sqrt{\frac{\beta}{2 \pi \sigma^2}}exp(-\frac{1}{2}\beta(x-\mu)^2)$$&lt;p&gt;高斯分布的特点&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;现实中很多复杂的系统可以由高斯分布建模（&lt;strong&gt;中心极限定理&lt;/strong&gt;）&lt;/li&gt;
+&lt;li&gt;在方差相同的所有分布中，高斯分布在实数范围上的“不确定度”最高。换句话说，高斯分布是所有分布中对样本做出最少先验假设的&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;N维高斯分布：&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\Sigma)=\sqrt{\frac{1}{(2\pi)^n det(\Sigma)}}exp(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu))$$&lt;p&gt;其中Σ是正定对称矩阵。μ是矢量形式的分布均值，Σ给出分布的协方差矩阵。为了便于计算，对于N维高斯分布，常用&lt;strong&gt;准确度矩阵β&lt;/strong&gt;作为参数：&lt;/p&gt;
+$$\mathcal{N}(x;\mu,\beta^{-1})=\sqrt{\frac{det(\beta)}{(2\pi)^n }}exp(-\frac{1}{2}(x-\mu)^T\beta(x-\mu))$$&lt;p&gt;实践上通常将协方差矩阵固定为对角阵。更简单的方式是将&lt;strong&gt;isotropic matrix&lt;/strong&gt;作为协方差矩阵，其中&lt;strong&gt;isotropic matrix&lt;/strong&gt;指标量数乘单位矩阵的结果。&lt;/p&gt;
+&lt;h3 id=&#34;dirac-delta-distribution--empirical-distribution&#34;&gt;Dirac delta distribution &amp;amp; empirical distribution
+&lt;/h3&gt;&lt;p&gt;有时我们希望所有的概率密度都聚集在一个点附近。这可以通过Dirac delta函数
+&lt;code&gt;$$\delta(x)$$&lt;/code&gt;实现：
+&lt;/p&gt;
+$$p(x)=\delta(x-\mu)$$&lt;p&gt;Dirac delta分布常常被用作empirical distribution（经验分布）的一个组件：&lt;/p&gt;
+$$\hat{p}(x)=\frac{1}{m}\sum_{i=1}^m\delta(x-x^{(i)})$$&lt;p&gt;empirical distribution在全部m个点
+&lt;/p&gt;
+$$x^{(1)},...x^{(m)}$$&lt;p&gt;
+上放置
+&lt;/p&gt;
+$$\frac{1}{m}$$&lt;p&gt;
+概率密度&lt;/p&gt;
+&lt;h3 id=&#34;mixture-distribution&#34;&gt;Mixture distribution
+&lt;/h3&gt;&lt;p&gt;用其他简单的概率分布来定义概率分布是十分普遍的，混合分布（mixture distribution)就是这样一种方式。混合分布由好几个组件(component)组成。每次采样时，由一个多重分布的结果选择组件标识(component identity)，由此最终结果是由哪一个分布给出的。&lt;/p&gt;
+$$P(x)=\sum_iP(c=i)P(x\mid c=i)$$&lt;p&gt;其中P(c)是所有组件上的多重分布。&lt;/p&gt;
+&lt;p&gt;一种常见且强大的混合模型是高斯混合模型。高斯混合模型所有组件都是高斯分布，他们具有不同的参数&lt;code&gt;μ&lt;/code&gt;和&lt;code&gt;Σ&lt;/code&gt;。有些分布可以增加限制，如所有组件共用协方差矩阵等。&lt;/p&gt;
+&lt;p&gt;高斯混合分布是概率密度的通用近似方式。具有足够分量的高斯混合模型可以用任何特定的非零误差量来近似任何平滑密度。&lt;/p&gt;
+&lt;p&gt;PS，如果用高斯分布来做分类问题，让两个分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。&lt;/p&gt;
+&lt;h3 id=&#34;latent-variable&#34;&gt;Latent variable
+&lt;/h3&gt;&lt;p&gt;隐含变量（Latent variable)指无法直接观测的随机变量。混合分布中的组件标识变量c就是隐含变量。&lt;/p&gt;
+$$P(x,c)=P(x\mid c)P(c)$$&lt;p&gt;隐含变量的分布&lt;code&gt;P(c)&lt;/code&gt;和条件分布&lt;code&gt;P(x|c)&lt;/code&gt;共同决定了&lt;code&gt;P(x)&lt;/code&gt;的分布。尽管&lt;code&gt;P(x)&lt;/code&gt;可以在没有隐含变量的条件下被计算出来。&lt;/p&gt;
+&lt;h3 id=&#34;useful-properties-of-common-functions&#34;&gt;Useful properties of Common Functions
+&lt;/h3&gt;&lt;p&gt;logistic sigmoid:
+&lt;/p&gt;
+$$\sigma(x)=\frac{1}{1+exp(-x)}$$&lt;p&gt;softplus:
+&lt;/p&gt;
+$$\zeta(x)=log(1+exp(x))$$&lt;blockquote&gt;
+&lt;p&gt;why the name softplus?&lt;br&gt;
+It&amp;rsquo;s a &amp;ldquo;softeded&amp;rdquo; version of x^=max(0,x)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;bayes-rule&#34;&gt;Bayes&amp;rsquo; Rule
+&lt;/h3&gt;&lt;p&gt;已知&lt;code&gt;P(y|x)&lt;/code&gt;和&lt;code&gt;P(x)&lt;/code&gt;求&lt;code&gt;P(x|y)&lt;/code&gt;时可以使用贝叶斯公式：&lt;/p&gt;
+$$P(x|y)=\frac{P(x)P(y \mid x)}{P(y)}$$&lt;p&gt;
+其中
+&lt;/p&gt;
+$$P(y)=\sum_xP(y \mid x)P(x)$$&lt;h3 id=&#34;prior-probability-and-posterior-probability&#34;&gt;prior-probability and posterior-probability
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;prior-probability
+即先验概率。指根据以往经验和分析得到的概率&lt;/li&gt;
+&lt;li&gt;posterior-probability
+后验概率是在考虑和给出相关证据或数据后所得到的条件概率&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;考虑bayes&amp;rsquo; Rule&lt;/p&gt;
+$$P(\theta \mid x)=\frac{P(x\mid\theta)P(\theta)}{P(x)}$$&lt;ul&gt;
+&lt;li&gt;θ：parameter&lt;/li&gt;
+&lt;li&gt;x：observed value&lt;/li&gt;
+&lt;li&gt;P(x)：evidence&lt;/li&gt;
+&lt;li&gt;P(θ)：prior&lt;/li&gt;
+&lt;li&gt;P(x|θ)：likelihood&lt;/li&gt;
+&lt;li&gt;P(θ|x)：posterior&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;pdf-of-y-where-ygx&#34;&gt;PDF of y where y=g(x)
+&lt;/h3&gt;&lt;p&gt;假设有现随机变量x，y，其中y=g(x)，求y的PDF&lt;/p&gt;
+&lt;p&gt;PDF根据pdf的定义,
+&lt;/p&gt;
+$$P(x)_{x \in \delta}=\int_{x}p(x)dx$$&lt;p&gt;
+p(x)dx为x落在某一邻域δ内的概率。现保留该属性，则有&lt;/p&gt;
+$$|p_y(g(x))dy|=|p_x(x)dx|$$$$p_y(y)=p_x(g^{-1}(y))\mid \frac{\partial x}{\partial y} \mid$$$$p_x(x)=p_y(g(x))\mid \frac{\partial g(x)}{\partial y} \mid$$&lt;p&gt;考虑高维情况，x与y为向量，定义雅可比矩阵J，其中
+&lt;/p&gt;
+$$J_{i,j}=\frac{\partial x_i}{\partial y_j}$$&lt;p&gt;则&lt;/p&gt;
+$$p_x(x)=p_y(g(x))\mid \det \left\{ \frac{\partial g(x)}{\partial x}\right\} \mid$$&lt;h2 id=&#34;information-theory&#34;&gt;Information theory
+&lt;/h2&gt;&lt;p&gt;basic assemption:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Likely events should have low information content, and in the extreme case, events that are guaranteed to happen should have no information content whatsoever.&lt;/li&gt;
+&lt;li&gt;Less likely events should have higher information content.&lt;/li&gt;
+&lt;li&gt;Independent events should have additive information. For example, finding out that a tossed coin has come up as heads twice should convey twice as much information as finding out that a tossed coin has come up as heads once.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;self-information--shanon-entropy&#34;&gt;Self-information &amp;amp; Shanon entropy
+&lt;/h3&gt;&lt;p&gt;单一事件所含的信息，单位为nat
+&lt;/p&gt;
+$$I(x)=-\log P(x)$$&lt;p&gt;整个概率分布上的不确定性，即香农熵&lt;/p&gt;
+$$H(x)=E_{x\sim P}[I(x)]=-\mathbb{E}_{x\sim P}[\log P(x)]$$&lt;p&gt;也记作H(P).&lt;/p&gt;
+&lt;p&gt;当P(x)和Q(x)为相同随机变量x的分部时，两种分布间的“距离”用
+Kullback-Leibler (KL) divergence定义：
+&lt;/p&gt;
+$$D_{KL}(P\|Q)=\mathbb{E}_{x\sim P}\left[\log\frac{P(x)}{Q(x)}\right]=\mathbb{E}_{x\sim p}[\log P(x) - \log Q(x)]$$&lt;p&gt;the value means the extra amount of information
+needed to send a message containing symbols drawn from probability distribution P, when we use a code that was designed to minimize the length of messages drawn from probability distribution .&lt;/p&gt;
+&lt;p&gt;KL divergence&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;non-negarive&lt;/li&gt;
+&lt;li&gt;not symmetric
+$$D_{KL}(P\|Q)\not ={D_{KL}(Q\|P)}$$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;与KL divergence密切相关的一种度量是cross-entropy
+定义为
+&lt;/p&gt;
+$$
+H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)$$&lt;p&gt;Minimizing the cross-entropy with respect to Q is equivalent to minimizing the KL divergence, because Q does not participate in the omitted term.&lt;/p&gt;
+&lt;h3 id=&#34;structed-probabilistic-models&#34;&gt;Structed Probabilistic Models
+&lt;/h3&gt;&lt;p&gt;机器学习中的参数成千上万，使用含有这么多参数的分布不切实际。根据条件概率的乘法公式，可以把大分布拆成小分布的乘积（这一过程叫factorization)。当使用CS中的图来表示这种&lt;code&gt;factorization&lt;/code&gt;时，就把模型称为structured probabilistic model或graphical model。structed probabilistic model分为两类，分别使用DAG和UAG。&lt;/p&gt;
+&lt;h4 id=&#34;dag&#34;&gt;DAG
+&lt;/h4&gt;&lt;p&gt;Directed models use graphs with directed edges, and they represent factorizations into conditional probability distributions,  Specifically, a directed model contains one factor for every random variable xi in the distribution&lt;/p&gt;
+$$p(\mathbf{x})=\prod_ip(x_i|Pa\mathcal{G}(x_i))$$&lt;p&gt;where&lt;/p&gt;
+$$Pa\mathcal{G}(x_i)$$&lt;p&gt;is the parents of xi.&lt;/p&gt;
+&lt;h4 id=&#34;uag&#34;&gt;UAG
+&lt;/h4&gt;&lt;p&gt;Undirected models use graphs with undirected edges, and they represent
+factorizations into a set of functions; unlike in the directed case, these functions are usually not probability distributions of any kind. &lt;strong&gt;Any&lt;/strong&gt; set of nodes that are all &lt;strong&gt;connected to each other&lt;/strong&gt; in G is called a &lt;strong&gt;&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Clique_%28graph_theory%29&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;clique&lt;/a&gt;&lt;/strong&gt;. Each clique Ci in an undirected model is associated with a factor φi . These factors are just functions, not probability distributions. The output of each factor must be non-negative, but there is no constraint that the factor must sum or integrate to 1 like a probability distribution.&lt;/p&gt;
+&lt;p&gt;The probability of a configuration of random variables is proportional to the
+product of all of these factors—assignments that result in larger factor values are more likely. Of course, there is no guarantee that this product will sum to 1. We therefore divide by a normalizing constant Z, defined to be the sum or integral over all states of the product of the φ functions, in order to obtain a normalized probability distribution:&lt;/p&gt;
+$$p(x)=\frac{1}{Z}\prod_i\phi^{(i)}(\mathcal{C}^{(i)})$$&lt;p&gt;DAG和UAG都是描述概率分布的方法，他们并不是互斥的概率分布。使用DAG还是UAG并不是概率分布的属性，而是某种特定&lt;strong&gt;描述方式&lt;/strong&gt;的属性&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>机器学习基础——线性代数</title>
+        <link>https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/</link>
+        <pubDate>Wed, 24 Jun 2020 09:38:56 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2020/06/24/machine-learning-basics-linear-algebra/</guid>
+        <description>&lt;script src=&#39;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML&#39; async&gt;&lt;/script&gt;
+&lt;h2 id=&#34;前言&#34;&gt;前言
+&lt;/h2&gt;&lt;p&gt;本文的主体是机器学习中所用到的线性代数知识，因此奉行&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/Lazy_evaluation&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Lazy evaluation&lt;/a&gt;，对这些知识更深层次的探究只在&lt;strong&gt;绝对必要&lt;/strong&gt;时完成。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;h2 id=&#34;concepts&#34;&gt;Concepts
+&lt;/h2&gt;&lt;h3 id=&#34;tensor&#34;&gt;Tensor
+&lt;/h3&gt;&lt;p&gt;矩阵是向量的延申，而Tensor(张量)则是矩阵的延申。
+向量可用一维数组表示，矩阵可用二维数组表示，而张量可用三维数组表示。
+表示张量A的一个分量&lt;/p&gt;
+$$A_{i,j,k}$$&lt;h3 id=&#34;identify-matrix&#34;&gt;Identify matrix
+&lt;/h3&gt;&lt;p&gt;Identity matrix为单位矩阵的另一名称。一般用I表示，而单位矩阵用E表示。&lt;/p&gt;
+&lt;h3 id=&#34;matrix-inversion&#34;&gt;matrix inversion
+&lt;/h3&gt;&lt;p&gt;花书定义：
+&lt;/p&gt;
+$$A^{-1}A=I$$&lt;p&gt;并&lt;strong&gt;未限定&lt;/strong&gt;A为方阵，并且是左逆&lt;/p&gt;
+&lt;p&gt;花书也定义了右逆
+&lt;/p&gt;
+$$AA^{-1}=I$$&lt;p&gt;同样&lt;strong&gt;未限定&lt;/strong&gt;A为方阵&lt;/p&gt;
+&lt;p&gt;而后说明，&lt;strong&gt;方阵&lt;/strong&gt;的左逆和右逆是相同的&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;For square matrices, the left inverse and right inverse are equal&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;而课本认为&lt;strong&gt;非方阵&lt;/strong&gt;没有逆矩阵。对左逆和右逆也不做显式区分。&lt;/p&gt;
+&lt;p&gt;在花书接下来提到逆矩阵时，这可能是一个坑点&lt;/p&gt;
+&lt;h3 id=&#34;singular-matrix&#34;&gt;Singular matrix
+&lt;/h3&gt;&lt;p&gt;非&lt;strong&gt;满秩&lt;/strong&gt;的&lt;strong&gt;方阵&lt;/strong&gt;称为奇异矩阵。&lt;/p&gt;
+&lt;h3 id=&#34;norms&#34;&gt;Norms
+&lt;/h3&gt;&lt;p&gt;又称范式。范式是一个将向量映射为非负数量的函数，用以描述向量的“大小”。&lt;/p&gt;
+&lt;p&gt;正式定义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;f(x) = 0 ⇒ x = 0&lt;/li&gt;
+&lt;li&gt;f(x+y) ≤ f(x) + f(y)(三角不等式)&lt;/li&gt;
+&lt;li&gt;∀α∈R,f(αx) = |α|f(x)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;常用的范式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;L2 norm
+向量与原点的距离&lt;/li&gt;
+&lt;/ul&gt;
+$$||x||_2=(\sum_{i} |x_i|^2)^{\frac{1}{2}}$$&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Squared L2 norm
+L2 norm的平方形式，某些情况下易于分析和计算&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;L1 norm
+&lt;/p&gt;
+$$||x||_1=\sum_{i} |x_i|$$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;max norm
+&lt;/p&gt;
+$$||x||_{\infty }={\max} |x_i|$$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Frobenius norm
+计算矩阵的“大小”&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+$$||A||_F=\sqrt{(\sum_{i,j} A_{i,j}^2)}$$&lt;h2 id=&#34;operations&#34;&gt;Operations
+&lt;/h2&gt;&lt;h3 id=&#34;decomposition&#34;&gt;Decomposition
+&lt;/h3&gt;&lt;p&gt;将矩阵分解为某些更基础的成分可以更好的帮助我们分析其中的一般规律。&lt;/p&gt;
+&lt;h4 id=&#34;eigendecomposition&#34;&gt;Eigendecomposition
+&lt;/h4&gt;&lt;p&gt;基于特征值和特征向量分解。与课本相同，不再赘述。&lt;/p&gt;
+&lt;h4 id=&#34;singular-value-decompositionsvd&#34;&gt;Singular value decomposition(SVD)
+&lt;/h4&gt;&lt;p&gt;又称奇异值分解。对矩阵的形状没有要求，且任意实矩阵都可以做奇异值分解，因而比特征值分解更具通用性。&lt;/p&gt;
+&lt;p&gt;对于一个&lt;code&gt;m*n&lt;/code&gt;的矩阵A，奇异值分解希望将其分解为三个矩阵的乘积：
+&lt;/p&gt;
+$$A=UDV^T$$&lt;ul&gt;
+&lt;li&gt;U是大小&lt;code&gt;m*m&lt;/code&gt;的正交矩阵&lt;/li&gt;
+&lt;li&gt;D是大小&lt;code&gt;m*n&lt;/code&gt;的对角矩阵&lt;/li&gt;
+&lt;li&gt;V是大小&lt;code&gt;n*n&lt;/code&gt;的正交矩阵&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;D中对角线的元素称为A的奇异值。U的列向量称为A的&lt;strong&gt;左&lt;/strong&gt;奇异向量，V的列向量称为A的&lt;strong&gt;右&lt;/strong&gt;奇异向量&lt;/p&gt;
+&lt;p&gt;A的奇异值分解可以理解为「A的函数」的特征值分解：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A的左奇异值向量是AA^T的特征向量。&lt;/li&gt;
+&lt;li&gt;A的右奇异值向量是A^TA的特征向量&lt;/li&gt;
+&lt;li&gt;A的非零奇异值是A^TA的特征值，也是AA^T的特征值&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;SVD的一个应用：部分场景下将矩阵求逆推广到非方阵，如下&lt;/p&gt;
+&lt;h3 id=&#34;the-moore-penrose-pseudoinverse&#34;&gt;The Moore-Penrose Pseudoinverse
+&lt;/h3&gt;&lt;p&gt;又称摩尔－彭若斯广义逆（好长的名字&amp;hellip;）&lt;/p&gt;
+$$A^+=\lim_{\alpha \searrow 0}(A^TA+\alpha I)^{-1}A^{T}$$&lt;p&gt;实际上，一般用
+&lt;/p&gt;
+$$A^+=VD^+U^T$$&lt;p&gt;
+来计算广义逆&lt;/p&gt;
+&lt;p&gt;U，D，V是A的奇异值分解。D的广义逆D+由非零元素取倒数，然后转置得到。&lt;/p&gt;
+&lt;p&gt;当A是Ax=y的系数矩阵时，若x有解，则x=A+y是所有解中具有最小L2范式的那一个。&lt;/p&gt;
+&lt;p&gt;若x无解，Ax给出了L2范式中y-Ax的最小值&lt;/p&gt;
+&lt;h3 id=&#34;trace&#34;&gt;Trace
+&lt;/h3&gt;&lt;p&gt;又称迹，是矩阵主对角线元素的和。&lt;/p&gt;
+$$\mathrm{Tr}(A)=\sum_i{A_{i,i}}$$&lt;p&gt;迹和矩阵乘法可以代替一些需要求和符号的操作：
+&lt;/p&gt;
+$$||A||_F=\sqrt{\mathrm{Tr(AA^T)}}$$&lt;p&gt;矩阵的迹具有循环不变性：&lt;/p&gt;
+$$\mathrm{Tr(ABC)=Tr(CAB)=Tr(BCA)}$$&lt;p&gt;更通用来说，
+&lt;/p&gt;
+$$\mathrm{Tr}(\prod_{i=1}^nF^{(i)})=\mathrm{Tr}(F^{(n)}\prod_{i=1}^{n-1}F^{(i)})$$</description>
+        </item>
+        
+    </channel>
+</rss>

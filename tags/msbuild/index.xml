@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>MSBuild on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/msbuild/</link>
+        <description>Recent content in MSBuild on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Thu, 30 Aug 2018 23:05:54 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/msbuild/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>使用MSBuild编写构建脚本</title>
+        <link>https://verrickt.github.io/2018/08/30/build-script-with-msbuild/</link>
+        <pubDate>Thu, 30 Aug 2018 23:05:54 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2018/08/30/build-script-with-msbuild/</guid>
+        <description>&lt;h2 id=&#34;背景&#34;&gt;背景
+&lt;/h2&gt;&lt;p&gt;项目需求变更，需要从一份代码里编译出好几个不同的版本。编译和部署的复杂度都成指数增加，简单的Release构建搞不定了，写构建脚本迫在眉睫。&lt;/p&gt;
+&lt;!-- more --&gt;
+&lt;p&gt;大致介绍下项目的组成吧。整个项目由三部分组成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Installer.vcxproj&lt;/li&gt;
+&lt;li&gt;Main.csproj&lt;/li&gt;
+&lt;li&gt;Updater.csproj&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;Main&lt;/code&gt;是项目本体。&lt;code&gt;Installer&lt;/code&gt;负责项目的安装和卸载,&lt;code&gt;Updater&lt;/code&gt;负责项目的更新。解决方案里除&lt;code&gt;Installer&lt;/code&gt;使为C++外，其余均为C#。&lt;/p&gt;
+&lt;p&gt;解决方案的结构如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;MyProject.sln
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- Installer.vcxproj 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- Main.csproj
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;- Updater.csproj
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;现在需要从&lt;code&gt;MyProject.sln&lt;/code&gt;条件编译出多个版本，要求&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对于每个版本，&lt;code&gt;Installer&lt;/code&gt;和&lt;code&gt;Main&lt;/code&gt;须重新编译&lt;/li&gt;
+&lt;li&gt;所有版本共享同一份&lt;code&gt;Updater&lt;/code&gt;的二进制。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;roslyn与msbuild&#34;&gt;Roslyn与MSBuild
+&lt;/h2&gt;&lt;p&gt;构建的过程自然离不开编译。编译器虽软能将代码转化为二进制，但这个转换的单位是&lt;strong&gt;文件&lt;/strong&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;gcc --help
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Usage: gcc [options] file...
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;作为.NET的编译器，Roslyn也不例外:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;csc /?
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;.........
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        - INPUT FILES -
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /recurse:&amp;lt;wildcard&amp;gt;           Include all files in the current directory and
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               subdirectories according to the wildcard
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               specifications
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /reference:&amp;lt;alias&amp;gt;=&amp;lt;file&amp;gt;     Reference metadata from the specified assembly
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               file using the given alias (Short form: /r)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /reference:&amp;lt;file list&amp;gt;        Reference metadata from the specified assembly
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               files (Short form: /r)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /addmodule:&amp;lt;file list&amp;gt;        Link the specified modules into this assembly
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /link:&amp;lt;file list&amp;gt;             Embed metadata from the specified interop
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               assembly files (Short form: /l)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /analyzer:&amp;lt;file list&amp;gt;         Run the analyzers from this assembly
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               (Short form: /a)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /additionalfile:&amp;lt;file list&amp;gt;   Additional files that don&amp;#39;t directly affect code
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               generation but may be used by analyzers for producing
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                               errors or warnings.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /embed                        Embed all source files in the PDB.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; /embed:&amp;lt;file list&amp;gt;            Embed specific files in the PDB
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我们不会把所有源文件的路径、所有引用的程序集的都告诉编译器，这样既低效又不利于维护。&lt;br&gt;
+最好有个能有个程序，能把所有编译的参数都记下来。这个过程最好能自动化：在文件夹里添加一个源文件、新增一个引用项，它都自动的更新编译参数。&lt;br&gt;
+存在这样的工具吗？当然了。在Visual Studio里添加一个文件是不需要动编译选项的。有心的人会发现，Visual Studio在&lt;code&gt;.csproj&lt;/code&gt;记录了新增的文件。&lt;code&gt;.csproj&lt;/code&gt;是项目文件。一个叫MSBuild的工具可以解析&lt;code&gt;.csproj&lt;/code&gt;，并生成对应的编译选项调用编译器。这样的工具称为构建自动化工具。用微软自己的话说，是构建引擎。大型软件的开发离不开构建引擎。&lt;br&gt;
+与MSBuild同类的工具还有有&lt;a class=&#34;link&#34; href=&#34;https://en.wikipedia.org/wiki/List_of_build_automation_software#Build_script_generation_tools&#34;  title=&#34;List of build automation software&#34;
+     target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;很多&lt;/a&gt;常见的有make,maven等。&lt;/p&gt;
+&lt;p&gt;相比于Roslyn，MSBuild的使用就简单多了，只需要指定项目文件就万事大吉了。
+下面是在一个新建WPF项目下调用MSbuild的输出。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;  1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;  9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 31
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 32
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 33
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 34
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 35
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 36
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 37
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 38
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 39
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 40
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 41
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 42
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 43
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 44
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 45
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 46
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 47
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 48
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 49
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 50
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 51
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 52
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 53
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 54
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 55
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 56
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 57
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 58
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 59
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 60
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 61
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 62
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 63
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 64
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 65
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 66
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 67
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 68
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 69
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 70
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 71
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 72
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 73
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 74
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 75
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 76
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 77
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 78
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 79
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 80
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 81
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 82
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 83
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 84
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 85
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 86
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 87
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 88
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 89
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 90
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 91
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 92
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 93
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 94
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 95
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 96
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 97
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 98
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 99
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;100
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;101
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;C:&lt;span class=&#34;se&#34;&gt;\U&lt;/span&gt;sers&lt;span class=&#34;se&#34;&gt;\V&lt;/span&gt;on&lt;span class=&#34;se&#34;&gt;\s&lt;/span&gt;ource&lt;span class=&#34;se&#34;&gt;\r&lt;/span&gt;epos&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&amp;gt;msbuild WpfApp1.sln
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Microsoft &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;R&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; Build Engine version 15.7.180.61344 &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; .NET Framework
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Copyright &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;C&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; Microsoft Corporation. All rights reserved.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Building the projects in this solution one at a time. To &lt;span class=&#34;nb&#34;&gt;enable&lt;/span&gt; parallel build, please add the &lt;span class=&#34;s2&#34;&gt;&amp;#34;/m&amp;#34;&lt;/span&gt; switch.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Build started 9/1/2018 2:08:01 PM.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Project &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1.sln&amp;#34;&lt;/span&gt; on node &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;default targets&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ValidateSolutionConfiguration:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Building solution configuration &lt;span class=&#34;s2&#34;&gt;&amp;#34;Debug|Any CPU&amp;#34;&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Project &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1.sln&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;1&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; is building &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfA
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;pp1.csproj&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;2&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; on node &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;default targets&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;GenerateBindingRedirects:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  No suggested binding redirects from ResolveAssemblyReferences.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Project &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfApp1.csproj&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;2&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; is building &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\W
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;pfApp1\WpfApp1_r1lsxnqk_wpftmp.csproj&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;3&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; on node &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;_CompileTemporaryAssembly target&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;s&lt;span class=&#34;o&#34;&gt;))&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;CoreCompile:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  C:&lt;span class=&#34;se&#34;&gt;\P&lt;/span&gt;rogram Files &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;x86&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;icrosoft Visual Studio&lt;span class=&#34;se&#34;&gt;\2&lt;/span&gt;017&lt;span class=&#34;se&#34;&gt;\C&lt;/span&gt;ommunity&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;SBuild&lt;span class=&#34;se&#34;&gt;\1&lt;/span&gt;5.0&lt;span class=&#34;se&#34;&gt;\b&lt;/span&gt;in&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;oslyn&lt;span class=&#34;se&#34;&gt;\c&lt;/span&gt;sc.exe /noconfig /nowarn:1701,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;m&#34;&gt;1702&lt;/span&gt; /nostdlib+ /platform:anycpu32bitpreferred /errorreport:prompt /warn:4 /define:DEBUG&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;TRACE /highentropyva+ /refer
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.CSharp.dll&amp;#34;&lt;/span&gt; /ref
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  erence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\mscorlib.dll&amp;#34;&lt;/span&gt; /reference
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  :&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationCore.dll&amp;#34;&lt;/span&gt; /referen
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ce:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationFramework.dll&amp;#34;&lt;/span&gt; /
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Core.dll&amp;#34;&lt;/span&gt; /ref
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  erence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Data.DataSetExten
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  sions.dll&amp;#34;&lt;/span&gt; /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Da
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  ta.dll&amp;#34;&lt;/span&gt; /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.dll&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Net.Http.dll&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xaml.dll&amp;#34;&lt;/span&gt; /r
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  eference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.dll&amp;#34;&lt;/span&gt; /refer
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.Linq.dll&amp;#34;&lt;/span&gt; /refe
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  rence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\WindowsBase.dll&amp;#34;&lt;/span&gt; /debug+
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  /debug:full /filealign:512 /optimize- /out:obj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1.exe /ruleset:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Microsoft Visual St
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  udio\2017\Community\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset&amp;#34;&lt;/span&gt; /subsystemversion:6.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt; /target:winexe /utf8output App.xaml.cs MainWindow.xaml.cs Properties&lt;span class=&#34;se&#34;&gt;\A&lt;/span&gt;ssemblyInfo.cs Properties&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;esources.Designer
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  .cs Properties&lt;span class=&#34;se&#34;&gt;\S&lt;/span&gt;ettings.Designer.cs C:&lt;span class=&#34;se&#34;&gt;\U&lt;/span&gt;sers&lt;span class=&#34;se&#34;&gt;\V&lt;/span&gt;on&lt;span class=&#34;se&#34;&gt;\s&lt;/span&gt;ource&lt;span class=&#34;se&#34;&gt;\r&lt;/span&gt;epos&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\o&lt;/span&gt;bj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;ainWindow.g.cs C:&lt;span class=&#34;se&#34;&gt;\U&lt;/span&gt;sers&lt;span class=&#34;se&#34;&gt;\V&lt;/span&gt;on&lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;  source&lt;span class=&#34;se&#34;&gt;\r&lt;/span&gt;epos&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\o&lt;/span&gt;bj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\A&lt;/span&gt;pp.g.cs
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Using shared compilation with compiler from directory: C:&lt;span class=&#34;se&#34;&gt;\P&lt;/span&gt;rogram Files &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;x86&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;icrosoft Visual Studio&lt;span class=&#34;se&#34;&gt;\2&lt;/span&gt;017&lt;span class=&#34;se&#34;&gt;\C&lt;/span&gt;ommunity&lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;  MSBuild&lt;span class=&#34;se&#34;&gt;\1&lt;/span&gt;5.0&lt;span class=&#34;se&#34;&gt;\b&lt;/span&gt;in&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;oslyn
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Done Building Project &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfApp1_r1lsxnqk_wpftmp.csproj&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;_CompileTemporaryAsse
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;mbly target&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;s&lt;span class=&#34;o&#34;&gt;))&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;MarkupCompilePass2:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  MarkupCompilePass2 successfully generated BAML or &lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt; code files.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;CleanupTemporaryTargetAssembly:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Deleting file &lt;span class=&#34;s2&#34;&gt;&amp;#34;obj\Debug\WpfApp1.exe&amp;#34;&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;CoreResGen:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\resgen.exe&amp;#34;&lt;/span&gt; /useSourcePath /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;   Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.CSharp.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;   (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\mscorlib.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Referen
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  ce Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationCore.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Ass
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  emblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationFramework.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Asse
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  mblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Core.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Micr
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  osoft\Framework\.NETFramework\v4.7.1\System.Data.DataSetExtensions.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assembli
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  es\Microsoft\Framework\.NETFramework\v4.7.1\System.Data.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsof
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  t\Framework\.NETFramework\v4.7.1\System.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NET
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  Framework\v4.7.1\System.Net.Http.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramewo
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  rk\v4.7.1\System.Xaml.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\S
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  ystem.Xml.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.Li
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  nq.dll&amp;#34;&lt;/span&gt; /r:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\WindowsBase.dll&amp;#34;&lt;/span&gt; /co
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  mpile Properties&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;esources.resx,obj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1.Properties.Resources.resources
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Processing resource file &lt;span class=&#34;s2&#34;&gt;&amp;#34;Properties\Resources.resx&amp;#34;&lt;/span&gt; into &lt;span class=&#34;s2&#34;&gt;&amp;#34;obj\Debug\WpfApp1.Properties.Resources.resources&amp;#34;&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;CoreCompile:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  C:&lt;span class=&#34;se&#34;&gt;\P&lt;/span&gt;rogram Files &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;x86&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;icrosoft Visual Studio&lt;span class=&#34;se&#34;&gt;\2&lt;/span&gt;017&lt;span class=&#34;se&#34;&gt;\C&lt;/span&gt;ommunity&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;SBuild&lt;span class=&#34;se&#34;&gt;\1&lt;/span&gt;5.0&lt;span class=&#34;se&#34;&gt;\b&lt;/span&gt;in&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;oslyn&lt;span class=&#34;se&#34;&gt;\c&lt;/span&gt;sc.exe /noconfig /nowarn:1701,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;m&#34;&gt;1702&lt;/span&gt; /nostdlib+ /platform:anycpu32bitpreferred /errorreport:prompt /warn:4 /define:DEBUG&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;TRACE /highentropyva+ /refer
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\Microsoft.CSharp.dll&amp;#34;&lt;/span&gt; /ref
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  erence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\mscorlib.dll&amp;#34;&lt;/span&gt; /reference
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  :&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationCore.dll&amp;#34;&lt;/span&gt; /referen
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ce:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\PresentationFramework.dll&amp;#34;&lt;/span&gt; /
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Core.dll&amp;#34;&lt;/span&gt; /ref
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  erence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Data.DataSetExten
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  sions.dll&amp;#34;&lt;/span&gt; /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Da
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  ta.dll&amp;#34;&lt;/span&gt; /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.dll&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Net.Http.dll&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   /reference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xaml.dll&amp;#34;&lt;/span&gt; /r
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  eference:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.dll&amp;#34;&lt;/span&gt; /refer
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  ence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\System.Xml.Linq.dll&amp;#34;&lt;/span&gt; /refe
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  rence:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.1\WindowsBase.dll&amp;#34;&lt;/span&gt; /debug+
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  /debug:full /filealign:512 /optimize- /out:obj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1.exe /ruleset:&lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Program Files (x86)\Microsoft Visual St
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;  udio\2017\Community\Team Tools\Static Analysis Tools\\Rule Sets\MinimumRecommendedRules.ruleset&amp;#34;&lt;/span&gt; /subsystemversion:6.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;m&#34;&gt;00&lt;/span&gt; /resource:obj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1.g.resources /resource:obj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1.Properties.Resources.resources /target:winexe
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  /utf8output App.xaml.cs MainWindow.xaml.cs Properties&lt;span class=&#34;se&#34;&gt;\A&lt;/span&gt;ssemblyInfo.cs Properties&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;esources.Designer.cs Properties&lt;span class=&#34;se&#34;&gt;\S&lt;/span&gt;et
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  tings.Designer.cs C:&lt;span class=&#34;se&#34;&gt;\U&lt;/span&gt;sers&lt;span class=&#34;se&#34;&gt;\V&lt;/span&gt;on&lt;span class=&#34;se&#34;&gt;\s&lt;/span&gt;ource&lt;span class=&#34;se&#34;&gt;\r&lt;/span&gt;epos&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\o&lt;/span&gt;bj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;ainWindow.g.cs C:&lt;span class=&#34;se&#34;&gt;\U&lt;/span&gt;sers&lt;span class=&#34;se&#34;&gt;\V&lt;/span&gt;on&lt;span class=&#34;se&#34;&gt;\s&lt;/span&gt;ource&lt;span class=&#34;se&#34;&gt;\r&lt;/span&gt;epos&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfAp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  p1&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\o&lt;/span&gt;bj&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\A&lt;/span&gt;pp.g.cs &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\AppData\Local\Temp\.NETFramework,Version=v4.7.1.AssemblyAttributes.cs&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Using shared compilation with compiler from directory: C:&lt;span class=&#34;se&#34;&gt;\P&lt;/span&gt;rogram Files &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;x86&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;\M&lt;/span&gt;icrosoft Visual Studio&lt;span class=&#34;se&#34;&gt;\2&lt;/span&gt;017&lt;span class=&#34;se&#34;&gt;\C&lt;/span&gt;ommunity&lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;  MSBuild&lt;span class=&#34;se&#34;&gt;\1&lt;/span&gt;5.0&lt;span class=&#34;se&#34;&gt;\b&lt;/span&gt;in&lt;span class=&#34;se&#34;&gt;\R&lt;/span&gt;oslyn
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;_CopyAppConfigFile:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Copying file from &lt;span class=&#34;s2&#34;&gt;&amp;#34;App.config&amp;#34;&lt;/span&gt; to &lt;span class=&#34;s2&#34;&gt;&amp;#34;bin\Debug\WpfApp1.exe.config&amp;#34;&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;CopyFilesToOutputDirectory:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Copying file from &lt;span class=&#34;s2&#34;&gt;&amp;#34;obj\Debug\WpfApp1.exe&amp;#34;&lt;/span&gt; to &lt;span class=&#34;s2&#34;&gt;&amp;#34;bin\Debug\WpfApp1.exe&amp;#34;&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  WpfApp1 -&amp;gt; C:&lt;span class=&#34;se&#34;&gt;\U&lt;/span&gt;sers&lt;span class=&#34;se&#34;&gt;\V&lt;/span&gt;on&lt;span class=&#34;se&#34;&gt;\s&lt;/span&gt;ource&lt;span class=&#34;se&#34;&gt;\r&lt;/span&gt;epos&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1&lt;span class=&#34;se&#34;&gt;\b&lt;/span&gt;in&lt;span class=&#34;se&#34;&gt;\D&lt;/span&gt;ebug&lt;span class=&#34;se&#34;&gt;\W&lt;/span&gt;pfApp1.exe
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  Copying file from &lt;span class=&#34;s2&#34;&gt;&amp;#34;obj\Debug\WpfApp1.pdb&amp;#34;&lt;/span&gt; to &lt;span class=&#34;s2&#34;&gt;&amp;#34;bin\Debug\WpfApp1.pdb&amp;#34;&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Done Building Project &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1\WpfApp1.csproj&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;default targets&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Done Building Project &lt;span class=&#34;s2&#34;&gt;&amp;#34;C:\Users\Von\source\repos\WpfApp1\WpfApp1.sln&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;default targets&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Build succeeded.
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Warning&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt; Error&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Time Elapsed 00:00:02.60
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;看看CoreCompile里传给Roslyn的参数。自己调用Roslyn的话光给出正确的参数就让人头痛了。所以还是直接调用MSBuild好了。&lt;br&gt;
+单单调用一次MSBuild无法完成我们的需求，因此构建脚本是少不了的了。&lt;/p&gt;
+&lt;h3 id=&#34;找到msbuild&#34;&gt;找到MSBuild
+&lt;/h3&gt;&lt;p&gt;首先在`Developer command prompt for VS 2017找到MSbuiid的完全路径:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;$ where msbuild
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&amp;gt; C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&amp;gt; C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里需要的是Visual Studio目录下的那一个。&lt;/p&gt;
+&lt;h3 id=&#34;msbuild的命令行选项&#34;&gt;MSBuild的命令行选项
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/t:Rebuild&lt;/code&gt;&lt;br&gt;
+强制重新编译。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/p:Configuration=RELEASE&lt;/code&gt;&lt;br&gt;
+以Release配置编译。会开启优化。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/p:DefineConstants=&amp;quot;Value1,Value2,...&amp;quot;&lt;/code&gt;&lt;br&gt;
+定义条件编译常量。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/p:Platform=&lt;/code&gt;&lt;br&gt;
+指定目标架构。x86,x64和AnyCpu三选一。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;/p:OutputPath&lt;/code&gt;&lt;br&gt;
+输出目录。可接受绝对和相对路径。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;各个参数中间用空格分开。&lt;/p&gt;
+&lt;p&gt;一个例子&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;msbuild WpfApp1.csproj /t:Rebuild /p:Configuration=RELEASE /p:DefineConstants=&amp;#34;TRACE,DEMO&amp;#34; /p:Platform=&amp;#34;x86&amp;#34;  /p:OutputPath=&amp;#34;F:\Release&amp;#34; /p:TargetFrameworkVersion=4.7.1 /tv:15.0
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;更多参数请参阅&lt;a class=&#34;link&#34; href=&#34;https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2017&#34;  title=&#34;MSBuild command-line reference&#34;
+     target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;这里&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;能配好参数调用MSBuild是构建脚本中最重要的一步。至于需求里的其他要求没什么难度，无非用合适的控制流去调用MSBuild。这里就略过了。&lt;/p&gt;
+&lt;h2 id=&#34;踩坑&#34;&gt;踩坑
+&lt;/h2&gt;&lt;h3 id=&#34;部分参数无效&#34;&gt;部分参数无效
+&lt;/h3&gt;&lt;p&gt;如果你发现你设置的部分参数无效，那可能是被因为项目文件的参数覆盖掉了。&lt;br&gt;
+为了少掉坑，请将项目文件的路径放作为给MSBuild的第一个参数。&lt;/p&gt;
+&lt;h3 id=&#34;c工程指定输出目录无效&#34;&gt;C++工程指定输出目录无效
+&lt;/h3&gt;&lt;p&gt;配好&lt;code&gt;/p:Platform&lt;/code&gt;后MSbuild会提示你用&lt;code&gt;/p:OutputPath&lt;/code&gt;指定输出路径。
+如果你用了&lt;code&gt;OutputPath&lt;/code&gt;，那么恭喜你掉进了微软挖的暗坑：&lt;code&gt;OutputPath&lt;/code&gt;对C++项目无效。&lt;br&gt;
+解决方法：请使用使用&lt;code&gt;/p:OutputDir&lt;/code&gt;指定输出目录
+原因：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;To expand on what @AndyGerlicher said, we can&amp;rsquo;t do what you&amp;rsquo;re asking because we too have lost the reasoning behind this decision. The current team thinks it looks pretty broken.&lt;/p&gt;
+&lt;p&gt;From comments in the targets&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;OutDir and OutputPath are distinguished for legacy reasons, and OutDir should be used if at all possible.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;It seems like we got stuck in the middle of a transition. However, as you&amp;rsquo;ve discovered, there&amp;rsquo;s a ton of MSBuild code out there that exploits the differences between the two variables. That keeps us from completing the transition (or for that matter backing it out), because it would cause a lot of churn in customer projects.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;更多详情请参阅&lt;a class=&#34;link&#34; href=&#34;https://github.com/Microsoft/msbuild/issues/87&#34;  title=&#34;OutputPath vs OutDir&#34;
+     target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;这里&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;c工程defineconstants无效&#34;&gt;C++工程DefineConstants无效
+&lt;/h3&gt;&lt;p&gt;喜闻乐见的&lt;q&gt;legacy reasons&lt;/q&gt;&lt;/p&gt;
+&lt;p&gt;比较简单的一个workaround&lt;/p&gt;
+&lt;p&gt;在&lt;code&gt;.vcxproj&lt;/code&gt;的&lt;code&gt;Label&lt;/code&gt;为Global的&lt;code&gt;PropertyGroup&lt;/code&gt;中加上
+&lt;code&gt;&amp;lt;DefineConstants&amp;gt;&amp;lt;/DefineConstants&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;在所有的&lt;code&gt;PreprocessorDefinitions&lt;/code&gt;内容的开头添加&lt;code&gt;$(DefineConstants);&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;最终结果如下&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;utf-8&amp;#34;?&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;Project&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;DefaultTargets=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Build&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;ToolsVersion=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;14.0&amp;#34;&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;na&#34;&gt;xmlns=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;http://schemas.microsoft.com/developer/msbuild/2003&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    .....
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;PropertyGroup&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Label=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Global&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;DefineConstants&amp;gt;&amp;lt;/DefineConstants&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;/PropertyGroup&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    ......
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;ItemDefinitionGroup&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;ClCompile&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        ....
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;PreprocessorDefinitions&amp;gt;&lt;/span&gt;$(DefineConstants);NDEBUG;WIN32;_WINDOWS;NO_EXP10;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);&lt;span class=&#34;nt&#34;&gt;&amp;lt;/PreprocessorDefinitions&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        ....
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;/ClCompile&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;/ItemDefinitionGroup&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;/Project&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;更多详情请参阅&lt;a class=&#34;link&#34; href=&#34;https://stackoverflow.com/a/29879657&#34;  title=&#34;MSBuild.exe not accepting either /p:DefineConstants nor /p:PreprocessorDefinitions&#34;
+     target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;这里&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;对powershell的吐槽&#34;&gt;对PowerShell的吐槽
+&lt;/h2&gt;&lt;p&gt;本以为基于.NET对象的PowerShell挺好上手的。没想到由JSON反序列化出来的对象是&lt;code&gt;PSObject&lt;/code&gt;类型，原来类里的方法都用不了了，想把&lt;code&gt;PSObject&lt;/code&gt;转换回去也十分麻烦。可能Shell天生跟OOP合不来吧。&lt;br&gt;
+最后用C#写了构建脚本。C#，脚本，是不是哪里不太对啊🤔&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

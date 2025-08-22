@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\r前言\r本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行Lazy evaluation，对相关知识的补充会在实践后进行。\n">
+<title>机器学习基础——纸上谈兵</title>
+
+<link rel='canonical' href='http://localhost:1313/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%B8%E4%B8%8A%E8%B0%88%E5%85%B5/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="机器学习基础——纸上谈兵">
+<meta property='og:description' content="\r前言\r本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行Lazy evaluation，对相关知识的补充会在实践后进行。\n">
+<meta property='og:url' content='http://localhost:1313/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%B8%E4%B8%8A%E8%B0%88%E5%85%B5/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='The flower book' /><meta property='article:published_time' content='2020-07-03T21:29:45&#43;00:00'/><meta property='article:modified_time' content='2020-07-03T21:29:45&#43;00:00'/>
+<meta name="twitter:title" content="机器学习基础——纸上谈兵">
+<meta name="twitter:description" content="\r前言\r本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行Lazy evaluation，对相关知识的补充会在实践后进行。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#what-is-machine-learning">what is machine learning</a>
+      <ol>
+        <li><a href="#the-task-t">The Task T</a></li>
+        <li><a href="#the-performance-measure-p">The performance measure P</a></li>
+        <li><a href="#the-experience-e">The Experience E</a></li>
+        <li><a href="#example-linear-regression">Example: Linear regression</a></li>
+      </ol>
+    </li>
+    <li><a href="#capacity-overfitting-and-underfitting">Capacity, Overfitting and Underfitting</a>
+      <ol>
+        <li><a href="#bayes-error">Bayes error</a></li>
+        <li><a href="#how-about-training-size">How about training size</a></li>
+        <li><a href="#hyperparameters">Hyperparameters</a></li>
+        <li><a href="#regularization">Regularization</a></li>
+      </ol>
+    </li>
+    <li><a href="#frequentist-vs-baysian">Frequentist vs baysian</a>
+      <ol>
+        <li><a href="#maximum-likelihood">Maximum likelihood</a></li>
+      </ol>
+    </li>
+    <li><a href="#simple-machine-learning-algorithm">Simple machine learning algorithm</a>
+      <ol>
+        <li><a href="#svm">SVM</a></li>
+        <li><a href="#gradient-descent-improved-stochastic-gradient-descent">Gradient descent improved: stochastic gradient descent</a></li>
+      </ol>
+    </li>
+    <li><a href="#why-deep-learning">Why deep learning?</a>
+      <ol>
+        <li><a href="#curse-of-dimensionality">curse of dimensionality</a></li>
+        <li><a href="#local-constancy-and-smoothness-regularization">Local Constancy and Smoothness Regularization</a></li>
+        <li><a href="#how-do-we-deal-with-curse-of-dimensionality">How do we deal with curse of dimensionality?</a></li>
+        <li><a href="#manifold-learning--manifold-hypothesis">Manifold Learning &amp; manifold hypothesis</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%B8%E4%B8%8A%E8%B0%88%E5%85%B5/">机器学习基础——纸上谈兵</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 03, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h2 id="前言">前言
+</h2><p>本文的主体是Ian Goodfellow 「Deep Learning」第五章「MACHINE LEARNING BASICS」，未经动手实做，故称纸上谈兵。目前奉行<a class="link" href="https://en.wikipedia.org/wiki/Lazy_evaluation"  target="_blank" rel="noopener"
+    >Lazy evaluation</a>，对相关知识的补充会在实践后进行。</p>
+<!-- more -->
+<h2 id="what-is-machine-learning">what is machine learning
+</h2><blockquote>
+<p>A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E</p>
+</blockquote>
+<h3 id="the-task-t">The Task T
+</h3><ul>
+<li>Classification</li>
+<li>Regression</li>
+<li>Structured output</li>
+</ul>
+<h3 id="the-performance-measure-p">The performance measure P
+</h3><p>Usually we are interested in how well the machine learning algorithm performs
+on data that it has <strong>not</strong> seen before, since this determines how well it will work when deployed in the real world. We therefore evaluate these performance measures using a <strong>test set</strong> of data that is separate from the data used for training the machine learning system.</p>
+<p>It&rsquo;s often difficult to choose a performance measure that corresponds well to the desired behavior of the system for two reasons</p>
+<ul>
+<li>The performance measure can be difficult to decide. When performing a regression task, should we penalize the system more if it frequently makes medium-sized mistakes or if it rarely makes very large mistakes? These kinds of design choices depend on the application</li>
+<li>we know what quantity we would ideally like to measure, but measuring it is impractical. Computing the actual probability value assigned to a specific point in space in many density estimation models is intractable</li>
+</ul>
+<h3 id="the-experience-e">The Experience E
+</h3><p>Machine learning algorithms can be broadly categorized as unsupervised or supervised by what kind of experience they are allowed to have during the learning process.</p>
+<ul>
+<li>Unsupervised learning algorithms experience a dataset containing many features, then learn useful properties of the structure of this dataset. In the context of deep learning, we usually want to learn the entire probability distribution that generated a dataset, whether explicitly as in density estimation or implicitly for tasks like synthesis or denoising. Some other unsupervised learning algorithms perform other roles, like clustering, which consists of dividing the dataset into clusters of similar examples.</li>
+<li>Supervised learning algorithms experience a dataset containing features,but each example is also associated with a label or target.</li>
+</ul>
+<p>Roughly speaking, unsupervised learning involves observing several examples
+of a random vector x, and attempting to implicitly or explicitly learn the probability distribution p(x), or some interesting properties of that distribution, while supervised learning involves observing several examples of a random vector x and an associated value or vector y, and learning to predict y from x, usually by estimating <code>p(y|x)</code> The term supervised learning originates from the view of the target y being provided by an instructor or teacher who shows the machine learning system what to do. In unsupervised learning, there is no instructor or teacher, and the algorithm must learn to make sense of the data without this guide</p>
+<p>Some machine learning algorithms do not just experience a fixed dataset. For
+example, <strong>reinforcement learning</strong> algorithms interact with an environment, so there is a feedback loop between the learning system and its experiences</p>
+<h3 id="example-linear-regression">Example: Linear regression
+</h3><ul>
+<li>The task T: linear regression solves a regression problem. The goal is to build a system that can take a vector x ∈ R^n as input and predict the value of a scalar y ∈ R as its output.</li>
+</ul>
+$$\hat{y}=w^{\top}x+b$$<p><strong>w</strong> is a vector of the weights over different features.</p>
+<p><strong>b</strong> is the bias(not the bias in statistic)</p>
+<p>Together ,<strong>w</strong> and <strong>b</strong> are called the <strong>parameters</strong></p>
+<p><strong>y</strong> is the <strong>label</strong> of the data.</p>
+<p><strong>y-hat</strong> is the prediction value</p>
+<ul>
+<li>The performance measurement P:</li>
+</ul>
+<p>mean squared error(MSE)</p>
+$$\mathrm{MSE_{test}}=\frac{1}{m}\sum_i(\hat{y}^{(test)}-y^{(test)})$$<h2 id="capacity-overfitting-and-underfitting">Capacity, Overfitting and Underfitting
+</h2><p>The central challenge in machine learning is that we must perform well on <em>new, previously unseen inputs</em>—not just those on which our model was trained. The ability to perform well on previously unobserved inputs is called generalization.</p>
+<p>The factors determining how well a machine learning algorithm will perform are its ability to:</p>
+<ol>
+<li>Make the training error small.</li>
+<li>Make the gap between training and test error small.</li>
+</ol>
+<p>These two factors are underfitting and overfitting. Underfitting occurs when the model is not able to obtain a sufficiently low error value on the training set. Overfitting occurs when the gap between the training error and test error is too large.</p>
+<p>Informally, a model’s capacity is its ability to fit a wide variety of functions. Models with low capacity may struggle to fit the training set. Models with high capacity can overfit by memorizing properties of the training set that do not serve them well on the test set. Usually,the error mainly comes from bias in the case of underfitting and variance in the case of overfitting.
+<img src="/capacity.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="Capacity"
+	
+	
+>
+<img src="/optimal_capacity.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="Capacity,overfitting and underfitting"
+	
+	
+></p>
+<h3 id="bayes-error">Bayes error
+</h3><p>The error incurred by an oracle making predictions from the true distribution
+<code>p(x,y)</code> is called the Bayes error.</p>
+<blockquote>
+<p>Why are there errors if we know the true probability distribution ?</p>
+</blockquote>
+<p>because there may still be some noise in the distribution</p>
+<h3 id="how-about-training-size">How about training size
+</h3><p>Training and generalization error vary as the size of the training set varies.
+Expected generalization error can never increase as the number of training examples increases. For non-parametric models, more data yields better generalization until the best possible error is achieved. Any fixed parametric model with less than optimal capacity will asymptote to an error value that exceeds the Bayes error. See figure
+5.4 for an illustration. Note that it is possible for the model to have optimal
+capacity and yet still have a large gap between training and generalization error. In this situation, we may be able to reduce this gap by gathering more training examples.
+<img src="/training_set_size_and_errors.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="The effect of the training dataset size on the train and test error"
+	
+	
+></p>
+<h3 id="hyperparameters">Hyperparameters
+</h3><p>hyperparameters are use to control the behavior of the learning algorithm.</p>
+<p>Eg. In linear regression, we could use a model</p>
+$$\hat{y}=b+\sum_i^kw_ix^i$$<p><strong>k</strong> controls degree of the polynomial,which acts as a <em>capacity hyperparameter</em></p>
+<p>Why hyperparameters?</p>
+<p>Sometimes a setting is chosen to be a hyperparameter that the learning algorithm does not learn because it is difficult to optimize. The setting must be a hyperparameter because it is not appropriate to learn that hyperparameter on the training set. This applies to all hyperparameters that control model capacity(e.g:<strong>k</strong>). If learned on the training set, such hyperparameters would always choose the maximum possible model capacity, resulting in overfitting</p>
+<p>How to adjust hyperparameters?</p>
+<p>Validation set!</p>
+<h3 id="regularization">Regularization
+</h3><p>We can give a learning algorithm a preference for one solution in its
+hypothesis space to another. This means that both functions are eligible, but one is preferred.(即西瓜书提到的归纳假设)</p>
+<p>For example, we can modify the training criterion for linear regression to include
+<strong>weight decay</strong></p>
+$$J(w)=\mathrm{MSE_{train}}+\lambda w^\top w$$<p>where λ is a value chosen ahead of time that controls the strength of our preference for smaller weights. in this sense, λ is also a hyperparameter
+<img src="/weight_decay.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="weight_decay"
+	
+	
+></p>
+<h2 id="frequentist-vs-baysian">Frequentist vs baysian
+</h2><ul>
+<li>Frequentist  statistics:
+we assume that the true parameter value θ is fixed but unknown, while the point estimate θ_hat is a function of the data. Since the data is drawn from a random process, any function of the data is random. Therefore θ_hat is a random variable</li>
+<li>Bayesian Statistics:
+the dataset is directly observed and so is not random. On the other hand, the true parameter θ is unknown or uncertain and thus is represented as a random variable. Before observing the data, we represent our knowledge of θ using <em>the prior probability distribution</em>, <strong>p(θ)</strong>. Generally, the machine learning practitioner selects a prior distribution that is quite broad (i.e. with high entropy) to reflect a high degree of uncertainty in the value of θ before observing any data</li>
+</ul>
+<h3 id="maximum-likelihood">Maximum likelihood
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">最大似然估计：使得现有观测值出现概率最大的参数θ
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>The maximum likelihood estimator for is defined as
+</p>
+$$\theta_{ML}=\argmax _\theta\prod_{i=1}^mp_{model}(x^i;\theta)$$<p>
+log-likelihood estimator
+</p>
+$$\theta_{ML}=\argmax _\theta\sum_{i=1}^m\log p_{model}(x^i;\theta)$$<p>观察KL-Divergence:
+</p>
+$$D_{KL}(\hat{p}_{data}\|p_{model})=\mathbb{E}_{x\sim \hat{p}_{data}}[\log \hat{p}_{data}(x) - \log \hat{p}_{model}(x)]$$<p>为了最小化KL-Divergence，只需最小化</p>
+$$- \mathbb{E}_{x\sim \hat{p}_{data}} \log \hat{p}_{model}(x)]$$<p>这与最大化log-likelihood是<strong>等价</strong>的</p>
+<h2 id="simple-machine-learning-algorithm">Simple machine learning algorithm
+</h2><h3 id="svm">SVM
+</h3><p>One of the most influential approaches to supervised learning is the support vector machine  This model is similar to logistic regression in that it is driven by a linear function
+</p>
+$$y=w^\top x+b$$<p>
+. The SVM predicts that the positive class is present when y is positive. Likewise, it predicts that the negative class is present when y is negative.</p>
+<p>One key innovation associated with support vector machines is the kernel trick. The kernel trick consists of observing that many machine learning algorithms can be written exclusively in terms of dot products between examples. For example, it can be shown that the linear function used by the support vector machine can be re-written as</p>
+$$w^\top x+b=b+\sum_i^m \alpha_i x^\top x^{(i)}$$<p>where x^i is a training example and α is a vector of coefficients.Rewriting the learning algorithm this way allows us to replace x by the output of a given feature function φ(x) and the dot product with a function k(x,x^i) = φ(x)· φ(x^i) called a kernel.</p>
+<p>The most commonly used kernel is the <strong>Gaussian kernel</strong>
+</p>
+$$k(u,v)=\mathbin{N}(u-v;0;\sigma^2I)$$<p>this kernel is also known as the radial basis function (RBF) kernel. The Gaussian kernel is performing a kind of template matching. A training example x associated with training label y becomes a template for class y. When a test point x&rsquo; is near x according to Euclidean distance, the Gaussian kernel has a large response, indicating that x&rsquo; is very similar to the x template. The model then puts a large weight on the associated training label y. Overall, the prediction will combine many such training labels weighted by the similarity of the corresponding training examples</p>
+<h3 id="gradient-descent-improved-stochastic-gradient-descent">Gradient descent improved: stochastic gradient descent
+</h3><p>Idea:</p>
+<ul>
+<li>take a step over a &lsquo;minibatch&rsquo; instead of observing the whole training-set</li>
+<li>step cost does not depend on size of training set, thus achieving convergence much faster.</li>
+</ul>
+<p>A recurring problem in machine learning is that large training sets are necessary
+for good generalization, but large training sets are also more computationally expensive.</p>
+<p>the insight of stochastic gradient descent is that the gradient is an expectation.
+The expectation may be approximately estimated using a small set of samples. Specifically, on each step of the algorithm, we can sample a <strong>minibatch</strong> of examples</p>
+<p>For a fixed model size, the cost per SGD update does not depend on the training set size m. In practice, we often use a larger model as the training set size increases, but we are not forced to do so. The number of updates required to reach convergence usually increases with training set size. However, as m approaches infinity, the model will eventually converge to its best possible test error before SGD has sampled every example in the training set. Increasing m further will not extend the amount of training time needed to reach the model’s best possible test error. From this point of view, one can argue that the asymptotic cost of training a model with SGD is O(1) as a function of m</p>
+<h2 id="why-deep-learning">Why deep learning?
+</h2><h3 id="curse-of-dimensionality">curse of dimensionality
+</h3><p>Many machine learning problems become exceedingly difficult when the number of dimensions in the data is high.</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: center">dimension</th>
+          <th style="text-align: center">number of states</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">1</td>
+          <td style="text-align: center">n</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">n^2</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">3</td>
+          <td style="text-align: center">n^3</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>Traditional machine learning algorithm can&rsquo;t distinguish a state that&rsquo;s not seen in the training set.</p>
+<h3 id="local-constancy-and-smoothness-regularization">Local Constancy and Smoothness Regularization
+</h3><p>In order to generalize well, machine learning algorithms need to be guided by prior beliefs about what kind of function they should learn.</p>
+<p>Among the most widely used of these implicit “priors” is the smoothness
+prior or local constancy prior. This prior states that the function we learn should not change very much within a small region.
+Many simpler algorithms rely exclusively on this prior to generalize well, and
+as a result they <em>fail</em> to scale to the statistical challenges involved in solving AIlevel tasks.</p>
+<h3 id="how-do-we-deal-with-curse-of-dimensionality">How do we deal with curse of dimensionality?
+</h3><p>The key insight is that a very large number of regions, e.g., O(2^k), can be defined with O(k) examples, so long as we introduce some <strong>dependencies</strong> between the regions via additional assumptions about the underlying data generating distribution</p>
+<p>The core idea in deep learning is that we assume that the data was generated by the composition of factors or features, potentially at multiple levels in a hierarchy.</p>
+<h3 id="manifold-learning--manifold-hypothesis">Manifold Learning &amp; manifold hypothesis
+</h3><p>Manifold learning algorithms  assuming that most of R^n
+consists of <strong>invalid inputs</strong>, and that interesting inputs occur only along
+a collection of manifolds containing a small subset of points.</p>
+<p>manifold hypothesis:</p>
+<ul>
+<li>
+<p>probability distribution over images, text strings, and sounds that occur in real life is highly concentrated.</p>
+</li>
+<li>
+<p>we can also imagine such neighborhoods and transformations, at least informally. In the case of images, we can certainly think of many possible transformations that allow us to trace out a manifold in image space: we can gradually dim or brighten the lights, gradually move or rotate objects in the image, gradually alter the colors on the surfaces of objects</p>
+</li>
+</ul>
+<p>流形假说:</p>
+<ol>
+<li>大部分有结构的数据的分布函数并不是分散的，而是集中聚集在某些范围。
+支持证据：随机取像素试图产生而期待其产生日常生活中的照片的概率是微乎其微的。随机取字母指望它生成一篇文章的概率也是微乎其微的。所以有结构的数据的分布函数必然是在某个范围内聚集，而在大部分区域分散
+<img src="/noise.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="noise"
+	
+	
+></li>
+<li>在流形的表面移动，将可以得到流形所代表的全部数据。如在代表人脸的流形上移动，A点代表微笑的人，B点代表流泪的人。若从直线直接过去，则在A，B中间点所对应的数据可能不是人脸；若从流形的表面移动到B，则数据一直都是人脸。（微笑-&gt;皱眉-&gt;哭泣）</li>
+</ol>
+<p>请参考<a class="link" href="https://www.youtube.com/watch?v=BePQBWPnYuE"  target="_blank" rel="noopener"
+    >Youtube视频：My understanding of the Manifold Hypothesis | Machine learning</a></p>
+<iframe  maxwidth="100%"  width="560" height="315" src="https://www.youtube.com/embed/BePQBWPnYuE" style="max-width:100%" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/the-flower-book/">The Flower Book</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E6%95%B0%E5%80%BC%E8%AE%A1%E7%AE%97/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——数值计算</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E4%BF%A1%E6%81%AF%E8%AE%BA/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——概率论与信息论</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——线性代数</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

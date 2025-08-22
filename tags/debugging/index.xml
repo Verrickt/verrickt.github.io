@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Debugging on Melchior on CLR</title>
+        <link>https://verrickt.github.io/tags/debugging/</link>
+        <description>Recent content in Debugging on Melchior on CLR</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>Melchior on CLR</copyright>
+        <lastBuildDate>Mon, 21 May 2018 21:03:59 +0000</lastBuildDate><atom:link href="https://verrickt.github.io/tags/debugging/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>记一次愉(dan)快(teng)的捉虫</title>
+        <link>https://verrickt.github.io/2018/05/21/hell-mode-debugging/</link>
+        <pubDate>Mon, 21 May 2018 21:03:59 +0000</pubDate>
+        
+        <guid>https://verrickt.github.io/2018/05/21/hell-mode-debugging/</guid>
+        <description>&lt;h2 id=&#34;废话&#34;&gt;废话
+&lt;/h2&gt;&lt;p&gt;BUG是任何软件都会遇到的问题。它通常是开发人员考虑问题不全面而埋下的隐形炸弹，在条件合适的时候就会爆炸；开发自己埋BUG往往比较容易除错，因为代码都是自己写的，定位问题后&lt;code&gt;git blame&lt;/code&gt;一下就可以甩锅了；而程序依赖项里的BUG则排查起来则让人一筹莫展，尤其是在没有足够多信息的情况。&lt;/p&gt;
+&lt;p&gt;面对来自客户和QA的压力，绞尽脑汁仍无法定位问题开发们只能找借口了🤣&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It&amp;rsquo;s a feature,not a bug.&lt;/li&gt;
+&lt;li&gt;That&amp;rsquo;s the design decision, so not a bug&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我以前也遇到框架出问题的情况，不过都是自己改代码改出来的，倒也不是很难排查。但这次挖出来的BUG就完全不一样了&lt;/p&gt;
+&lt;h2 id=&#34;背景&#34;&gt;背景
+&lt;/h2&gt;&lt;p&gt;一个WPF的项目，勉强在deadline之前赶完了功能。出了新版本后接到QA报告，程序在Windows 8.1上死于OOM:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;System.OutOfMemoryException: Insufficient memory to continue the execution of the program.
+at System.Windows.Media.MediaContext.NotifyPartitionIsZombie(Int32 failureCode)
+at System.Windows.Media.MediaContext.NotifyChannelMessage()
+at System.Windows.Interop.HwndTarget.HandleMessage(Int32 msg, IntPtr wparam, IntPtr lparam)
+at System.Windows.Interop.HwndSource.HwndTargetFilterMessage(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp;amp; handled)
+at MS.Win32.HwndWrapper.WndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, Boolean&amp;amp; handled)
+at MS.Win32.HwndSubclass.DispatcherCallbackOperation(Object o)
+at System.Windows.Threading.ExceptionWrapper.InternalRealCall(Delegate callback, Object args, Boolean isSingleParameter)
+at System.Windows.Threading.ExceptionWrapper.TryCatchWhen(Object source, Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)
+at System.Windows.Threading.Dispatcher.WrappedInvoke(Delegate callback, Object args, Boolean isSingleParameter, Delegate catchHandler)
+at System.Windows.Threading.Dispatcher.InvokeImpl(DispatcherPriority priority, TimeSpan timeout, Delegate method, Object args, Boolean isSingleParameter)
+at System.Windows.Threading.Dispatcher.Invoke(DispatcherPriority priority, Delegate method, Object arg)
+at MS.Win32.HwndSubclass.SubclassWndProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam)
+at MS.Win32.UnsafeNativeMethods.DispatchMessage(MSG&amp;amp; msg)
+at System.Windows.Threading.Dispatcher.PushFrameImpl(DispatcherFrame frame)
+at System.Windows.Threading.Dispatcher.PushFrame(DispatcherFrame frame)
+at System.Windows.Threading.Dispatcher.Run()&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;捉虫&#34;&gt;捉虫
+&lt;/h2&gt;&lt;h3 id=&#34;出师不利&#34;&gt;出师不利
+&lt;/h3&gt;&lt;p&gt;程序里用自定义的&lt;code&gt;Window Style&lt;/code&gt;替代了WPF自带的。但是自定义的&lt;code&gt;Window Style&lt;/code&gt;在最大化的时候会&lt;a class=&#34;link&#34; href=&#34;https://stackoverflow.com/questions/20941443/properly-maximizing-wpf-window-with-windowstyle-none&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;覆盖任务栏&lt;/a&gt;。为了解决这个问题，我们使用了回答里自定义的消息循环。看到调用栈里的&lt;code&gt;Hwnd&lt;/code&gt;，初步怀疑是自定义的消息循环的问题。把消息循环相关的代码拿掉，问题依旧。看来不是消息循环的问题。不过为什么我在开发的时候没有遇到问题呢？&lt;/p&gt;
+&lt;h3 id=&#34;寻找原因&#34;&gt;寻找原因
+&lt;/h3&gt;&lt;p&gt;把出问题版本直接放在我的开发机上跑发现并没有问题。放在另一个同事的机子上也没问题。这时候意识到问题有点蹊跷。一般来说这种不能稳定重现的问题都或多或少会和多线程和死锁有关。然而上个版本到这个版本并没有写这些方面的代码。这时候开始怀疑是环境的问题了。找来各个版本的Windows，依次尝试后发现只在Windows 8.1上有问题。难道是OS的问题？同事提醒了一句，说以前的版本是可以在Windows 8.1上正常跑的。用二分法，找到了最晚的能用的版本B和最早的不能用的版本A。&lt;/p&gt;
+&lt;h3 id=&#34;又入困境&#34;&gt;又入困境
+&lt;/h3&gt;&lt;p&gt;按理说，找到版本后diff下改动的代码就能比较快的定位问题了。不过现在有了稳定浮现的版本B，我决定从异常本身入手。一番搜索后找到了微软的一篇&lt;a class=&#34;link&#34; href=&#34;https://blogs.msdn.microsoft.com/dsui_team/2013/11/18/wpf-render-thread-failures/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;博客&lt;/a&gt;，其中提到这个错误通常是渲染子系统出问题的症状：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&amp;hellip; WPF render thread encountered some fatal error &amp;hellip; Most of the time, a failure occurs when calling into DirectX/D3D &amp;hellip; When a failure is detected, The render thread will attempt to map the failure it receives to an appropriate managed exception. The render thread only synchronizes with the UI thread in a few locations &amp;hellip;The most common locations when they synchronize are &amp;hellip; or as a result of the UI thread handling a &amp;ldquo;channel&amp;rdquo; message from DirectX.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If a render thread failure manifests as a System.OutOfMemoryException, then the likelihood is that the render thread was a victim of the process exhausting some resource .The exhausted resource is most often available/contiguous virtual address space &amp;hellip; It might be a situation where sometimes the WPF render thread is the victim of the resource exhaustion &amp;hellip;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;WPF里的渲染是由非托管的DirectX做的。为了从程序员的角度隐藏掉渲染这个过程，WPF将自身拆分为不同的组件。&lt;code&gt;PreserentationFramework.dll&lt;/code&gt;和&lt;code&gt;PreserentationFrameworkCore.dll&lt;/code&gt;是程序员直接能接触到的。这里实现的是组合子系统。渲染子系统则在非托管的&lt;code&gt;milcore.dll&lt;/code&gt;里实现。&lt;code&gt;System.Windows.Media.Visual&lt;/code&gt;是WPF组合子系统的入口点，它通过私有的通信协议与&lt;code&gt;milcore&lt;/code&gt;里的渲染子系统通信，从而将组合子系统和渲染子系统连接起来。&lt;/p&gt;
+&lt;p&gt;看起来我们的代码耗尽了DirectX里边的某种资源，从而让渲染失败了。C#做为一个托管语言，居然能捅这么大的篓子，完全不科学。这个BUG越来越有意思了🤔&lt;/p&gt;
+&lt;p&gt;既然异常上看不出来什么头绪那就要从代码入手了。找diff的时候发现B版本没有打tag。&lt;/p&gt;
+&lt;p&gt;没打tag不算大问题，多花了些时间成功找到了那个commit，但是心情有点不爽。&lt;/p&gt;
+&lt;p&gt;diff的代码不多。排除掉无关的文件就只剩下一些布局文件比较可疑。改流程，依次跳过这些页面，发现一跳到登录页面就挂了。登录页面的diff有点多，二分删除很快就定位到了问题的根源:&lt;code&gt;ImageButton&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ImageButton&lt;/code&gt;是个在普通、鼠标悬停、被按下三种不同状态时显示不同的图片的按钮。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ImageButton.cs&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;31
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;32
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;33
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;34
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;35
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;36
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-csharp&#34; data-lang=&#34;csharp&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;using&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;System.Windows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;using&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;System.Windows.Controls&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;using&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;System.Windows.Media&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;namespace&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;Debugging&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;ImageButton&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Button&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Source&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;get&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GetValue&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SourceProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;set&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SetValue&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SourceProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;value&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;readonly&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DependencyProperty&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SourceProperty&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;DependencyProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Register&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Source&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;typeof&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;typeof&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageButton&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PropertyMetadata&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;MouseOverImage&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;get&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GetValue&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;MouseOverImageProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;set&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SetValue&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;MouseOverImageProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;value&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;readonly&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DependencyProperty&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;MouseOverImageProperty&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;DependencyProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Register&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;MouseOverImage&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;typeof&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;typeof&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageButton&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PropertyMetadata&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PressedImage&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;get&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GetValue&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PressedImageProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;set&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SetValue&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PressedImageProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;value&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;readonly&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DependencyProperty&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PressedImageProperty&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;DependencyProperty&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Register&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;PressedImage&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;typeof&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageSource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;typeof&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ImageButton&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PropertyMetadata&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;code&gt;ImageButton.xaml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;ResourceDictionary&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;xmlns=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;http://schemas.microsoft.com/winfx/2006/xaml/presentation&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;na&#34;&gt;xmlns:x=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;http://schemas.microsoft.com/winfx/2006/xaml&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;na&#34;&gt;xmlns:local=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;clr-namespace:Debugging&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;Style&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;TargetType=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;local:ImageButton&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;Setter&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Property=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Template&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;nt&#34;&gt;&amp;lt;Setter.Value&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;nt&#34;&gt;&amp;lt;ControlTemplate&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;TargetType=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;local:ImageButton&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;nt&#34;&gt;&amp;lt;Grid&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;nt&#34;&gt;&amp;lt;Image&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;x:Name=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;image&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Source=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;{TemplateBinding Source}&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Grid&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;nt&#34;&gt;&amp;lt;ControlTemplate.Triggers&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;nt&#34;&gt;&amp;lt;Trigger&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Property=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;IsMouseOver&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Value=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;True&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            &lt;span class=&#34;nt&#34;&gt;&amp;lt;Setter&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;TargetName=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;image&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Property=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Source&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Value=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MouseOverImage}&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Trigger&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;nt&#34;&gt;&amp;lt;Trigger&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Property=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;IsPressed&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Value=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;True&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            &lt;span class=&#34;nt&#34;&gt;&amp;lt;Setter&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;TargetName=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;image&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Property=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Source&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Value=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PressedImage}&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Trigger&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;nt&#34;&gt;&amp;lt;/ControlTemplate.Triggers&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;nt&#34;&gt;&amp;lt;/ControlTemplate&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Setter.Value&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Setter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Style&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;/ResourceDictionary&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;登陆页面中是这样使用ImageButton的:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;....
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;ImageButton&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Source=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;{StaticResource SomeImage}&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;MouseOverImage=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;{StaticResouce SomeOtherImage}&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;PressedImage=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;{StaticResources AnotherImage}&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;....
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;把&lt;code&gt;Source=&amp;quot;{StaticResource SomeImage}&amp;quot;&lt;/code&gt;这一句去掉就正常了。似乎它就是罪魁祸首。但是，把这部分代码和图片拿出来放到另一个程序里却又一切正常。&lt;/p&gt;
+&lt;h3 id=&#34;转机&#34;&gt;转机
+&lt;/h3&gt;&lt;p&gt;接下来又尝试了&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;把&lt;code&gt;ImageButton&lt;/code&gt;替换为&lt;code&gt;Image&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;把&lt;code&gt;Template.Trigger&lt;/code&gt;去掉&lt;/li&gt;
+&lt;li&gt;把&lt;code&gt;SomeImage&lt;/code&gt;指向其他图片&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;但是还是找不到root cause。一模一样的代码不能在其他程序复现，那就说明BUG是我们程序自己造成的。但是这个BUG只在Windows 8.1下出现，说明跟环境也有可能有关系。距离发现BUG已经过去一天半了，放弃的话实在是不甘心，接下来只能猜了。&lt;/p&gt;
+&lt;p&gt;堆栈里显示程序挂在WPF的程序集里，基于这个现象决定retarget到.NET Framework的最新版本4.7.2。编译打包部署一套流程走完，在运行的时候发现Windows 8.1没有安装.NET Framework 4.7.2。好吧，那就装。可是安装包告诉我不满足条件：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://verrickt.github.io/2018/05/21/hell-mode-debugging/net472_error.png&#34;
+	width=&#34;1159&#34;
+	height=&#34;752&#34;
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;net472_requirement_not_meet&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;154&#34;
+		data-flex-basis=&#34;369px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;需要安装&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2919355/windows-rt-8-1-windows-8-1-and-windows-server-2012-r2-update-april-201&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;&lt;strong&gt;KB2919355&lt;/strong&gt;&lt;/a&gt;？&lt;/p&gt;
+&lt;h3 id=&#34;微软来背锅&#34;&gt;微软来背锅
+&lt;/h3&gt;&lt;p&gt;在微软的&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2919355/windows-rt-8-1-windows-8-1-and-windows-server-2012-r2-update-april-201&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;支持网站&lt;/a&gt;上详细列出了KB2919355的change log。以&lt;code&gt;image&lt;/code&gt;为关键字CTRL+F发现这样的描述：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;Article number&lt;/th&gt;
+          &lt;th style=&#34;text-align: center&#34;&gt;Article Title&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2929755&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;2929755&lt;/a&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: center&#34;&gt;Out of memory when you load some image resources in a Windows application&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我去，这就是我们遇到的问题。&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2929755/out-of-memory-when-you-load-some-image-resources-in-a-windows-applicat&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;对应的页面&lt;/a&gt;给出的描述：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;When you load some image resources in an application such as Microsoft Visual Studio on a computer that has Windows 8.1, Windows Server 2012 R2, Windows 8, Windows Server 2012, Windows 7, or Windows Server 2008 R2 installed, the application stops responding and memory leaks in Windows. This issue occurs after you install the following update:
+2670838 Platform update for Windows 7 SP1 and Windows Server 2008 R2 SP1&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;File Information&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;For all supported x86-based versions of Windows 8:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;File name&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;File version&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;File size&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;Date&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;Time&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;Platform&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;Windowscodecs.dll&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;6.2.9200.16809&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;1,339,392&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;31-Jan-2014&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;00:48&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;x86&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;Windowscodecs.dll&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;6.2.9200.20930&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;1,319,936&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;31-Jan-2014&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;06:04&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;x86&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这个BUG是&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2670838&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;KB2670838&lt;/a&gt;引入的。在2670838的更新中,微软更新了现有的Windows Imaging Component (WIC)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This update improves the range and performance of the following graphics and imaging components:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Windows Imaging Component (WIC)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我们在diff里重点关注了Image相更改，发现改了这么一行：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;Application.Resources&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;Style&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;TargetType=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Image&amp;#34;&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;nt&#34;&gt;&amp;lt;Setter&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;Property=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;RenderOptions.BitmapScalingMode&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;na&#34;&gt;Value=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Fant&amp;#34;&lt;/span&gt; &lt;span class=&#34;nt&#34;&gt;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nt&#34;&gt;&amp;lt;/Style&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nt&#34;&gt;&amp;lt;/Application.Resources&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.bitmapscalingmode?view=netframework-4.7.2&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RenderOptons.BitmapScalingMode&lt;/a&gt;指明在需要缩放时使用的算法。&lt;code&gt;Fant&lt;/code&gt;是质量最高的一种之一。尝试&lt;code&gt;Fant&lt;/code&gt;改为&lt;code&gt;Linear&lt;/code&gt;后程序正常运行。继续尝试其他的值，发现除了&lt;code&gt;Linear&lt;/code&gt;和&lt;code&gt;Unspecified&lt;/code&gt;都会崩溃。&lt;/p&gt;
+&lt;h2 id=&#34;原因分析&#34;&gt;原因分析
+&lt;/h2&gt;&lt;p&gt;在KB2670838里的WIC在特定情况会OOM爆掉。WPF里的&lt;code&gt;BitmapScalingMode.Fant&lt;/code&gt;依赖WIC实现，在装了KB2670838的环境里跟就会跟WIC一起OOM爆掉；微软在后来发行的KB2919355中修复了这个BUG。&lt;/p&gt;
+&lt;p&gt;我们的测试机的Windows系统由RTM的镜像安装并且关闭了自动更新。在Windows 8.1之前的RTM镜像没有自带KBB2670838，在Windows 8.1之后RTM镜像自带了KB2919355。偏偏这个Windows 8.1的RTM镜像内置了KB2670838而没有内置KB2919355，程序就这样死于OOM。&lt;/p&gt;
+&lt;p&gt;验证Windowscodecs.dll的版本也支持这个结论。&lt;/p&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;定位环境问题的时候要控制变量&lt;/li&gt;
+&lt;li&gt;二分法能快速定位出错的位置&lt;/li&gt;
+&lt;li&gt;打好Tag很重要&lt;/li&gt;
+&lt;li&gt;一直以来依赖的底层也会有BUG。大胆质疑，小心求证。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;del&gt;该甩锅的时候要果断的甩给微软&lt;/del&gt;&lt;/p&gt;
+&lt;h2 id=&#34;reference&#34;&gt;Reference
+&lt;/h2&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/wpf-architecture#systemwindowsmediavisual&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;WPF Architecture - docs.microsoft.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://social.msdn.microsoft.com/Forums/en-US/2ca9e3d5-06b9-4ca0-b5e0-0a42d54cd926/wpf-tooltip-rendering-issue-application-hang?forum=wpf&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;WPF ToolTip Rendering Issue : Application Hang - social.msdn.microsoft.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2919355/windows-rt-8-1-windows-8-1-and-windows-server-2012-r2-update-april-201&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Windows RT 8.1, Windows 8.1, and Windows Server 2012 R2 update: April 2014 - support.microsoft.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://support.microsoft.com/en-us/help/2670838/platform-update-for-windows-7-sp1-and-windows-server-2008-r2-sp1&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Platform update for Windows 7 SP1 and Windows Server 2008 R2 SP1 - support.microsoft.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://msdn.microsoft.com/library/windows/desktop/ee719902.aspx&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Windows Imaging Component - msdn.microsoft.com&lt;/a&gt;&lt;/p&gt;</description>
+        </item>
+        
+    </channel>
+</rss>

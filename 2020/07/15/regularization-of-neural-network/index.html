@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\rDeep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe&hellip; Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately\n">
+<title>神经网络中的Regularization</title>
+
+<link rel='canonical' href='https://verrickt.github.io/2020/07/15/regularization-of-neural-network/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="神经网络中的Regularization">
+<meta property='og:description' content="\rDeep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe&hellip; Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately\n">
+<meta property='og:url' content='https://verrickt.github.io/2020/07/15/regularization-of-neural-network/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='Regularization' /><meta property='article:published_time' content='2020-07-15T10:22:44&#43;00:00'/><meta property='article:modified_time' content='2020-07-15T10:22:44&#43;00:00'/>
+<meta name="twitter:title" content="神经网络中的Regularization">
+<meta name="twitter:description" content="\rDeep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe&hellip; Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#parameter-penalities">Parameter Penalities</a>
+      <ol>
+        <li><a href="#l2-norm">L2 norm</a></li>
+        <li><a href="#l1-norm">L1 norm</a></li>
+      </ol>
+    </li>
+    <li><a href="#early-stopping">Early stopping</a></li>
+    <li><a href="#ensemble">Ensemble</a>
+      <ol>
+        <li><a href="#dropout">dropout</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/2020/07/15/regularization-of-neural-network/">神经网络中的Regularization</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 15, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 4 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<p>Deep learning algorithms are typically applied to extremely complicated domains where the true generation process essentially involves simulating the entire universe&hellip; Controlling the complexity of the model is not a simple matter of finding the model of the right size, with the right number of parameters. Instead, we might find—and indeed in practical deep learning scenarios, we almost always do find—that the best fitting model (in the sense of minimizing generalization error) is a large model that has been regularized appropriately</p>
+<!-- more -->
+<p>regularization是我们应对overfitting的常用手段。在比较简单的模型，例如linear-regresseion中，人对的capacity的估计通常比较准确，一般不需要做regularization。而在神经网络动辄成千上万个节点，数以百万的参数让估测capacity变得极为困难。正如花书所说，泛化性能最好的往往是复杂的模型加上合理的regularization而得到的</p>
+<h2 id="parameter-penalities">Parameter Penalities
+</h2><p>正如三次式最高次的系数为零时退化为二次式，有越多的参数接近0，模型的capacity就越低，即「绑住手脚」。一般来说regularization不会考虑<code>bias</code>，因为<code>bias</code>对capacity的影响并不如<code>weight</code>那么大，但有需要仍可以给<code>bias</code>加上惩罚。</p>
+<p>参数惩罚的思路是，给<code>Loss</code>加上所有参数<code>θ</code>的函数<code>Ω(θ)</code>这一项，让模型更偏好于θ接近0的归纳假设。</p>
+$$
+\hat{L}(\theta,\alpha)=L(\theta)+\alpha \Omega(\theta)
+$$<h3 id="l2-norm">L2 norm
+</h3><p>L2 norm中所选的函数Ω是
+</p>
+$$\Omega(\theta)=\frac{1}{2}\theta^{\top}\theta$$<p><code>Loss</code>的梯度变为
+</p>
+$$\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha\theta$$<p>带入梯度下降公式
+</p>
+$$
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_\theta L - \alpha\epsilon \theta^N = (1-\alpha \epsilon)\theta ^N-\epsilon\nabla_\theta L
+$$<p>每次梯度下降更新参数时会把原来的参数<strong>乘</strong>上一个固定的值<code>1-αε</code>，使得θ接近于0</p>
+<h3 id="l1-norm">L1 norm
+</h3><p>L1 norm中的函数Ω是</p>
+$$
+\Omega(\theta)=\sum_{i=1}^N|\theta_i|
+$$<p>
+<code>Loss</code>的梯度变为
+</p>
+$$\nabla_{\theta} \hat{L}=\nabla_{\theta}L+\alpha \mathrm{sgn}(\theta)$$<p>带入梯度下降公式
+</p>
+$$
+\theta^{N+1} \leftarrow\theta^N-\epsilon\nabla_\theta \hat{L}
+=\theta^N-\epsilon\nabla_{\theta}L-\alpha\epsilon \mathrm{sgn}(\theta^N) = \theta ^N-\epsilon\nabla_\theta L -\alpha\epsilon \mathrm{sgn}(\theta^N)
+$$<p>发现参数更新时会在每一个分量<code>i</code>中<strong>减</strong>掉一个固定值<code>αε*sgn(i)</code></p>
+<p>L2 norm中，每次都乘上一个小于1的数，当参数大于1时，减小的速度就非常快；当参数小于1时，减小的速度就比较慢。因此L2中最终各个参数比较接近，但不会出现很多0。</p>
+<p>而L1 norm中，每次减小一个固定值。对很大的参数，减法的步长很小，减小的效果就不是很明显。而参数很小时，减法的步长相对很大，就很容易出现0。因此L1中很容易出现很大的参数和较多的0。</p>
+<p>含较多0的矩阵叫做稀疏矩阵(Sparse matrix)，因此用L1能够得到比较稀疏的参数。</p>
+<h2 id="early-stopping">Early stopping
+</h2><p><img src="/2020/07/15/regularization-of-neural-network/early-stopping.png"
+	width="1304"
+	height="980"
+	
+	loading="lazy"
+	
+		alt="early stopping"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="319px"
+	
+></p>
+<p>early stopping的思路就更简单了。既然复杂的模型训练时会关注一些无关的特征，那干脆不要跑那么多次训练就好了。</p>
+<p>early stopping的形式化描述：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Let n be the number of steps between evaluations.
+</span></span><span class="line"><span class="cl">Let p be the “patience,” the number of times to observe worsening validation set error before giving up. 
+</span></span><span class="line"><span class="cl">Let θ^o be the initial parameters. 
+</span></span><span class="line"><span class="cl">θ ← θ^o 
+</span></span><span class="line"><span class="cl">i ← 0 
+</span></span><span class="line"><span class="cl">j ← 0 
+</span></span><span class="line"><span class="cl">v ←∞ 
+</span></span><span class="line"><span class="cl">θ∗ ← θ 
+</span></span><span class="line"><span class="cl">i∗ ← i 
+</span></span><span class="line"><span class="cl">while j &lt; p do θ
+</span></span><span class="line"><span class="cl">    Update by running the training algorithm for n steps. 
+</span></span><span class="line"><span class="cl">    i ← i + n
+</span></span><span class="line"><span class="cl">    v&#39; ← ValidationSetError(θ) 
+</span></span><span class="line"><span class="cl">    if v&#39; &lt; v then 
+</span></span><span class="line"><span class="cl">        j  ← 0
+</span></span><span class="line"><span class="cl">        θ∗ ← θ 
+</span></span><span class="line"><span class="cl">        i∗ ← i
+</span></span><span class="line"><span class="cl">        v  ← v&#39;
+</span></span><span class="line"><span class="cl">    else 
+</span></span><span class="line"><span class="cl">        j ← j + 1 
+</span></span><span class="line"><span class="cl">    end if
+</span></span><span class="line"><span class="cl">end while 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">nodes:
+</span></span><span class="line"><span class="cl">Best parameters are θ∗ , best number of training steps is i∗
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="ensemble">Ensemble
+</h2><p>Ensemble认为，模型中出现的错误是随机的，那么使用<strong>同样</strong>的数据训练出k个不同的模型，将它们的结果取平均就可以得到比较好的结果。</p>
+<p>复杂模型error主要来自variance。从直觉上说，对多个模型取平均就能很好的抵消一部分variance。
+ensemble的坏处在于，它需要训练k个不同的模型，导致计算量大增。有时这样的计算量是无法承受的，因此希望有一个代价不那么大的ensemble方法，这就是dropout</p>
+<h3 id="dropout">dropout
+</h3><p>dropout和以往的方法不同，它把当前训练的模型当作是很多模型的叠加：每次训练时，每个单元都有p的概率从网络中被移除，每次只针对这些被留下来的单元做参数的更新。有n个单元时，因为每一个单元都可以被留下/丢掉，这就可能产生2^N个不同的网络结构。dropout就认为当前的模型是这2^N个网络的ensemble。</p>
+<p>下面是一个2层的神经网络。它有2个隐藏单元。dropout可以产生的网络由16个。使用dropout的网络经过一次训练后相当于训练了2^N个子网络，计算量的问题就这样解决了。
+<img src="/2020/07/15/regularization-of-neural-network/dropout.png"
+	width="942"
+	height="878"
+	
+	loading="lazy"
+	
+		alt="droupout"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="107"
+		data-flex-basis="257px"
+	
+></p>
+<p>使用dropout的网络训练完成后，在测试时不再移除神经元，而是给网络整体的参数乘上1-p。
+一个直觉的解释：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">设w是dropout得到的参数，w&#39;是训练时的参数。
+</span></span><span class="line"><span class="cl">在训练时神经元有p的概率被丢弃，所以网络中实际神经元个数的期望是n*(1-p)。
+</span></span><span class="line"><span class="cl">现在要让网络的输出尽可能的一致，则
+</span></span><span class="line"><span class="cl">n*w*(1-p) = n*w&#39;
+</span></span><span class="line"><span class="cl">即w&#39;=w*(1-p)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/2020/07/15/regularization-of-neural-network/linearity.png"
+	width="1286"
+	height="961"
+	
+	loading="lazy"
+	
+		alt="linearity"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="321px"
+	
+></p>
+<p>实际的分析发现，在整个网络是线性时，上面的论述是精确成立的，而加上激活函数的网络往往不是线性的。但实际使用上dropout的性能也确实比较接近ensemble的结果。为什么会这样我们不清楚，总之拿来主义了。世界各地有很多科学家也在探究背后的奥秘，希望有一天能找出一个精确的解释吧。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/regularization/">Regularization</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/2020/07/11/back-propagation-gradient-descent-improved/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">后向传播-进阶版的梯度下降算法</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/07/04/from-logistic-regression-to-neural-network/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">从分类到对率回归再到到神经网络</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/07/03/machine-learning-in-pure-paperworks/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——纸上谈兵</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/06/28/machine-learning-basics-numerical-computation/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——数值计算</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/2020/06/26/machine-learning-basics-probability-and-information-theory/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——概率论与信息论</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

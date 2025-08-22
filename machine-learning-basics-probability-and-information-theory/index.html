@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="\r前言\r本文的主体是机器学习中所用到的概率论知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识\n">
+<title>机器学习基础——概率论与信息论</title>
+
+<link rel='canonical' href='http://localhost:1313/machine-learning-basics-probability-and-information-theory/'>
+
+<link rel="stylesheet" href="/scss/style.min.b9c8156d464c343bdacaf14a871581fb94cbbdb9dd5cbce4ba017361187cc930.css"><meta property='og:title' content="机器学习基础——概率论与信息论">
+<meta property='og:description' content="\r前言\r本文的主体是机器学习中所用到的概率论知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识\n">
+<meta property='og:url' content='http://localhost:1313/machine-learning-basics-probability-and-information-theory/'>
+<meta property='og:site_name' content='Melchior on CLR'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Machine learning' /><meta property='article:tag' content='Probability' /><meta property='article:tag' content='Information theory' /><meta property='article:tag' content='The flower book' /><meta property='article:published_time' content='2020-06-26T22:25:05&#43;00:00'/><meta property='article:modified_time' content='2020-06-26T22:25:05&#43;00:00'/>
+<meta name="twitter:title" content="机器学习基础——概率论与信息论">
+<meta name="twitter:description" content="\r前言\r本文的主体是机器学习中所用到的概率论知识，因此奉行Lazy evaluation，对这些知识更深层次的探究只在绝对必要时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/rei_hu7677943030287955660.png" width="300"
+                            height="299" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Melchior on CLR</a></h1>
+            <h2 class="site-description">What one programmer can do in one month, two programmers can do in two months</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/verrickt'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>友链</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#probability">Probability</a>
+      <ol>
+        <li><a href="#conditional-probability">Conditional probability</a></li>
+        <li><a href="#independence">Independence</a></li>
+        <li><a href="#covariance">Covariance</a></li>
+        <li><a href="#gaussian-distribution">Gaussian Distribution</a></li>
+        <li><a href="#dirac-delta-distribution--empirical-distribution">Dirac delta distribution &amp; empirical distribution</a></li>
+        <li><a href="#mixture-distribution">Mixture distribution</a></li>
+        <li><a href="#latent-variable">Latent variable</a></li>
+        <li><a href="#useful-properties-of-common-functions">Useful properties of Common Functions</a></li>
+        <li><a href="#bayes-rule">Bayes&rsquo; Rule</a></li>
+        <li><a href="#prior-probability-and-posterior-probability">prior-probability and posterior-probability</a></li>
+        <li><a href="#pdf-of-y-where-ygx">PDF of y where y=g(x)</a></li>
+      </ol>
+    </li>
+    <li><a href="#information-theory">Information theory</a>
+      <ol>
+        <li><a href="#self-information--shanon-entropy">Self-information &amp; Shanon entropy</a></li>
+        <li><a href="#structed-probabilistic-models">Structed Probabilistic Models</a>
+          <ol>
+            <li><a href="#dag">DAG</a></li>
+            <li><a href="#uag">UAG</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/machine-learning/" >
+                Machine Learning
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/machine-learning-basics-probability-and-information-theory/">机器学习基础——概率论与信息论</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 26, 2020</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<h2 id="前言">前言
+</h2><p>本文的主体是机器学习中所用到的概率论知识，因此奉行<a class="link" href="https://en.wikipedia.org/wiki/Lazy_evaluation"  target="_blank" rel="noopener"
+    >Lazy evaluation</a>，对这些知识更深层次的探究只在<strong>绝对必要</strong>时完成。本文假设你学过《概率论与数理统计》，仅指出花书的现有定义的不同，同时补充花书中特有的知识</p>
+<!-- more -->
+<h2 id="probability">Probability
+</h2><h3 id="conditional-probability">Conditional probability
+</h3>$$P(A|B)=\frac{P(AB)}{P(B)}$$<p>Chain rule/product rule of conditiona probability</p>
+$$P(x^{(1)},...,x^{(n)})=P(x^{(1)})\prod_{i=2}^{n}P(x^{1}|x^{(1)},...,x^{(n)})$$<p>eg
+</p>
+$$P(a,b,c)=P(a|b,c)P(b,c)$$$$P(b,c)=P(b|c)P(c)$$$$P(a,b,c)=P(a|b,c)P(b|c)P(c)$$<h3 id="independence">Independence
+</h3><p>Indenpendence:</p>
+$$\forall x \in x,y \in y,p(x=x,y=y)=p(x=x)p(y=y)$$<p>则x,y互相独立。记作
+</p>
+$$x \perp y $$<p>Conditional independent:
+</p>
+$$\forall x \in x,y \in y ,z\in z,p(x=x,y=y|z=z)=p(x=x|z=z)p(y=y|z=z)$$<p>
+称x,y在z下相互独立，记作
+</p>
+$$x \perp y \mid z$$<h3 id="covariance">Covariance
+</h3>$$Cov(f(x),g(y))=\mathbb{E}[(f(x))-\mathbb{E}[f(x)])(g(x))-\mathbb{E}[g(x)]]$$<p>协方差值越高，意味着f和g的变化非常大，并且同时距离各自的均值很远。如果协方差是正值，那么f和g倾向于同时相对大的值。如果是负值，则一个取高值的同时另一个取低值。</p>
+<p>向量
+</p>
+$$x \in \mathbb{R}^n$$<p>
+的covariance matrix(协方差矩阵)是一个<code>nxn</code>的方阵，其中
+</p>
+$$Cov(x)_{i,j}=Cov(x_i,x_j)$$<p>
+对于对角线的元素，
+</p>
+$$Cov(x_i,x_i)=Var(x_i)$$<h3 id="gaussian-distribution">Gaussian Distribution
+</h3><p>高斯分布，又称正态分布。
+概率密度函数(PDF):
+</p>
+$$\mathcal{N}(x;\mu,\sigma)=\sqrt{\frac{1}{2 \pi \sigma^2}}exp(-\frac{1}{2\sigma^2}(x-\mu)^2)$$<p>计算概率密度时，经常要取σ的平方倒数，工程中常使用另一个参数β∈(0,∞)表示高斯分布的<strong>精准度</strong>
+</p>
+$$\mathcal{N}(x;\mu,\beta^{-1})=\sqrt{\frac{\beta}{2 \pi \sigma^2}}exp(-\frac{1}{2}\beta(x-\mu)^2)$$<p>高斯分布的特点</p>
+<ul>
+<li>现实中很多复杂的系统可以由高斯分布建模（<strong>中心极限定理</strong>）</li>
+<li>在方差相同的所有分布中，高斯分布在实数范围上的“不确定度”最高。换句话说，高斯分布是所有分布中对样本做出最少先验假设的</li>
+</ul>
+<p>N维高斯分布：</p>
+$$\mathcal{N}(x;\mu,\Sigma)=\sqrt{\frac{1}{(2\pi)^n det(\Sigma)}}exp(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu))$$<p>其中Σ是正定对称矩阵。μ是矢量形式的分布均值，Σ给出分布的协方差矩阵。为了便于计算，对于N维高斯分布，常用<strong>准确度矩阵β</strong>作为参数：</p>
+$$\mathcal{N}(x;\mu,\beta^{-1})=\sqrt{\frac{det(\beta)}{(2\pi)^n }}exp(-\frac{1}{2}(x-\mu)^T\beta(x-\mu))$$<p>实践上通常将协方差矩阵固定为对角阵。更简单的方式是将<strong>isotropic matrix</strong>作为协方差矩阵，其中<strong>isotropic matrix</strong>指标量数乘单位矩阵的结果。</p>
+<h3 id="dirac-delta-distribution--empirical-distribution">Dirac delta distribution &amp; empirical distribution
+</h3><p>有时我们希望所有的概率密度都聚集在一个点附近。这可以通过Dirac delta函数
+<code>$$\delta(x)$$</code>实现：
+</p>
+$$p(x)=\delta(x-\mu)$$<p>Dirac delta分布常常被用作empirical distribution（经验分布）的一个组件：</p>
+$$\hat{p}(x)=\frac{1}{m}\sum_{i=1}^m\delta(x-x^{(i)})$$<p>empirical distribution在全部m个点
+</p>
+$$x^{(1)},...x^{(m)}$$<p>
+上放置
+</p>
+$$\frac{1}{m}$$<p>
+概率密度</p>
+<h3 id="mixture-distribution">Mixture distribution
+</h3><p>用其他简单的概率分布来定义概率分布是十分普遍的，混合分布（mixture distribution)就是这样一种方式。混合分布由好几个组件(component)组成。每次采样时，由一个多重分布的结果选择组件标识(component identity)，由此最终结果是由哪一个分布给出的。</p>
+$$P(x)=\sum_iP(c=i)P(x\mid c=i)$$<p>其中P(c)是所有组件上的多重分布。</p>
+<p>一种常见且强大的混合模型是高斯混合模型。高斯混合模型所有组件都是高斯分布，他们具有不同的参数<code>μ</code>和<code>Σ</code>。有些分布可以增加限制，如所有组件共用协方差矩阵等。</p>
+<p>高斯混合分布是概率密度的通用近似方式。具有足够分量的高斯混合模型可以用任何特定的非零误差量来近似任何平滑密度。</p>
+<p>PS，如果用高斯分布来做分类问题，让两个分布共用协方差矩阵Σ通常效果会比使用各自的协方差矩阵效果好。</p>
+<h3 id="latent-variable">Latent variable
+</h3><p>隐含变量（Latent variable)指无法直接观测的随机变量。混合分布中的组件标识变量c就是隐含变量。</p>
+$$P(x,c)=P(x\mid c)P(c)$$<p>隐含变量的分布<code>P(c)</code>和条件分布<code>P(x|c)</code>共同决定了<code>P(x)</code>的分布。尽管<code>P(x)</code>可以在没有隐含变量的条件下被计算出来。</p>
+<h3 id="useful-properties-of-common-functions">Useful properties of Common Functions
+</h3><p>logistic sigmoid:
+</p>
+$$\sigma(x)=\frac{1}{1+exp(-x)}$$<p>softplus:
+</p>
+$$\zeta(x)=log(1+exp(x))$$<blockquote>
+<p>why the name softplus?<br>
+It&rsquo;s a &ldquo;softeded&rdquo; version of x^=max(0,x)</p>
+</blockquote>
+<h3 id="bayes-rule">Bayes&rsquo; Rule
+</h3><p>已知<code>P(y|x)</code>和<code>P(x)</code>求<code>P(x|y)</code>时可以使用贝叶斯公式：</p>
+$$P(x|y)=\frac{P(x)P(y \mid x)}{P(y)}$$<p>
+其中
+</p>
+$$P(y)=\sum_xP(y \mid x)P(x)$$<h3 id="prior-probability-and-posterior-probability">prior-probability and posterior-probability
+</h3><ul>
+<li>prior-probability
+即先验概率。指根据以往经验和分析得到的概率</li>
+<li>posterior-probability
+后验概率是在考虑和给出相关证据或数据后所得到的条件概率</li>
+</ul>
+<p>考虑bayes&rsquo; Rule</p>
+$$P(\theta \mid x)=\frac{P(x\mid\theta)P(\theta)}{P(x)}$$<ul>
+<li>θ：parameter</li>
+<li>x：observed value</li>
+<li>P(x)：evidence</li>
+<li>P(θ)：prior</li>
+<li>P(x|θ)：likelihood</li>
+<li>P(θ|x)：posterior</li>
+</ul>
+<h3 id="pdf-of-y-where-ygx">PDF of y where y=g(x)
+</h3><p>假设有现随机变量x，y，其中y=g(x)，求y的PDF</p>
+<p>PDF根据pdf的定义,
+</p>
+$$P(x)_{x \in \delta}=\int_{x}p(x)dx$$<p>
+p(x)dx为x落在某一邻域δ内的概率。现保留该属性，则有</p>
+$$|p_y(g(x))dy|=|p_x(x)dx|$$$$p_y(y)=p_x(g^{-1}(y))\mid \frac{\partial x}{\partial y} \mid$$$$p_x(x)=p_y(g(x))\mid \frac{\partial g(x)}{\partial y} \mid$$<p>考虑高维情况，x与y为向量，定义雅可比矩阵J，其中
+</p>
+$$J_{i,j}=\frac{\partial x_i}{\partial y_j}$$<p>则</p>
+$$p_x(x)=p_y(g(x))\mid \det \left\{ \frac{\partial g(x)}{\partial x}\right\} \mid$$<h2 id="information-theory">Information theory
+</h2><p>basic assemption:</p>
+<ul>
+<li>Likely events should have low information content, and in the extreme case, events that are guaranteed to happen should have no information content whatsoever.</li>
+<li>Less likely events should have higher information content.</li>
+<li>Independent events should have additive information. For example, finding out that a tossed coin has come up as heads twice should convey twice as much information as finding out that a tossed coin has come up as heads once.</li>
+</ul>
+<h3 id="self-information--shanon-entropy">Self-information &amp; Shanon entropy
+</h3><p>单一事件所含的信息，单位为nat
+</p>
+$$I(x)=-\log P(x)$$<p>整个概率分布上的不确定性，即香农熵</p>
+$$H(x)=E_{x\sim P}[I(x)]=-\mathbb{E}_{x\sim P}[\log P(x)]$$<p>也记作H(P).</p>
+<p>当P(x)和Q(x)为相同随机变量x的分部时，两种分布间的“距离”用
+Kullback-Leibler (KL) divergence定义：
+</p>
+$$D_{KL}(P\|Q)=\mathbb{E}_{x\sim P}\left[\log\frac{P(x)}{Q(x)}\right]=\mathbb{E}_{x\sim p}[\log P(x) - \log Q(x)]$$<p>the value means the extra amount of information
+needed to send a message containing symbols drawn from probability distribution P, when we use a code that was designed to minimize the length of messages drawn from probability distribution .</p>
+<p>KL divergence</p>
+<ul>
+<li>non-negarive</li>
+<li>not symmetric
+$$D_{KL}(P\|Q)\not ={D_{KL}(Q\|P)}$$</li>
+</ul>
+<p>与KL divergence密切相关的一种度量是cross-entropy
+定义为
+</p>
+$$
+H(P,Q) = H(P)+D_{KL}(P\|Q)=-\mathbb{E}_{x\sim P}\log Q(x)$$<p>Minimizing the cross-entropy with respect to Q is equivalent to minimizing the KL divergence, because Q does not participate in the omitted term.</p>
+<h3 id="structed-probabilistic-models">Structed Probabilistic Models
+</h3><p>机器学习中的参数成千上万，使用含有这么多参数的分布不切实际。根据条件概率的乘法公式，可以把大分布拆成小分布的乘积（这一过程叫factorization)。当使用CS中的图来表示这种<code>factorization</code>时，就把模型称为structured probabilistic model或graphical model。structed probabilistic model分为两类，分别使用DAG和UAG。</p>
+<h4 id="dag">DAG
+</h4><p>Directed models use graphs with directed edges, and they represent factorizations into conditional probability distributions,  Specifically, a directed model contains one factor for every random variable xi in the distribution</p>
+$$p(\mathbf{x})=\prod_ip(x_i|Pa\mathcal{G}(x_i))$$<p>where</p>
+$$Pa\mathcal{G}(x_i)$$<p>is the parents of xi.</p>
+<h4 id="uag">UAG
+</h4><p>Undirected models use graphs with undirected edges, and they represent
+factorizations into a set of functions; unlike in the directed case, these functions are usually not probability distributions of any kind. <strong>Any</strong> set of nodes that are all <strong>connected to each other</strong> in G is called a <strong><a class="link" href="https://en.wikipedia.org/wiki/Clique_%28graph_theory%29"  target="_blank" rel="noopener"
+    >clique</a></strong>. Each clique Ci in an undirected model is associated with a factor φi . These factors are just functions, not probability distributions. The output of each factor must be non-negative, but there is no constraint that the factor must sum or integrate to 1 like a probability distribution.</p>
+<p>The probability of a configuration of random variables is proportional to the
+product of all of these factors—assignments that result in larger factor values are more likely. Of course, there is no guarantee that this product will sum to 1. We therefore divide by a normalizing constant Z, defined to be the sum or integral over all states of the product of the φ functions, in order to obtain a normalized probability distribution:</p>
+$$p(x)=\frac{1}{Z}\prod_i\phi^{(i)}(\mathcal{C}^{(i)})$$<p>DAG和UAG都是描述概率分布的方法，他们并不是互斥的概率分布。使用DAG还是UAG并不是概率分布的属性，而是某种特定<strong>描述方式</strong>的属性</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/machine-learning/">Machine Learning</a>
+        
+            <a href="/tags/probability/">Probability</a>
+        
+            <a href="/tags/information-theory/">Information Theory</a>
+        
+            <a href="/tags/the-flower-book/">The Flower Book</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/machine-learning-basics-linear-algebra/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">机器学习基础——线性代数</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2018 - 
+        
+        2025 Melchior on CLR
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.9cfddbb06f4eb07be255b67dc9e59bf9a4a1ea8f8386837d4d27c36a1011beba.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
