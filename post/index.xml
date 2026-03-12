@@ -8,7 +8,7 @@
         <language>zh-cn</language>
         <copyright>Melchior on CLR</copyright>
         <lastBuildDate>Wed, 11 Mar 2026 15:38:00 +0800</lastBuildDate><atom:link href="https://verrickt.github.io/post/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>使ASP.NET Core端点同时支持JSON参数和流式文件</title>
+        <title>使ASP.NET Core端点同时支持JSON参数和流式文件上传</title>
         <link>https://verrickt.github.io/2026/03/11/supporting-json-parameter-and-streaming-fileupload-for-endpoints-in-asp-net-core/</link>
         <pubDate>Wed, 11 Mar 2026 15:38:00 +0800</pubDate>
         
